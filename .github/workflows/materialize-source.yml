@@ -1,0 +1,55 @@
+name: Materialize source
+
+on:
+  push:
+    paths:
+      - ".github/workflows/materialize-source.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore source files
+        shell: bash
+        run: |
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+          const zlib = require('node:zlib');
+
+          const appBase64 = ['01', '02', '03', '04']
+            .map((part) => fs.readFileSync(`.codex-transfer/app.js.br.b64.${part}`, 'utf8').trim())
+            .join('');
+          const cssBase64 = fs.readFileSync('.codex-transfer/styles.css.gz.b64', 'utf8').trim();
+
+          const files = {
+            'app.js': zlib.brotliDecompressSync(Buffer.from(appBase64, 'base64')),
+            'styles.css': zlib.gunzipSync(Buffer.from(cssBase64, 'base64')),
+          };
+          const expected = {
+            'app.js': 'aa79959be60d5cdc27465f6e8e7c15eab43c201c85764fd769fc45fff5bdae10',
+            'styles.css': 'ce570ef1229c8ce19f496e95b372c6cb9049668a2161bcd8112e90bc35394a10',
+          };
+
+          for (const [path, contents] of Object.entries(files)) {
+            const digest = crypto.createHash('sha256').update(contents).digest('hex');
+            if (digest !== expected[path]) {
+              throw new Error(`${path} checksum mismatch: ${digest}`);
+            }
+            fs.writeFileSync(path, contents);
+          }
+          NODE
+
+      - name: Commit restored source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js styles.css
+          git commit -m "Add application source"
+          git push
