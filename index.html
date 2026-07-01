@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#101419" />
+    <title>Draft Lantern</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero" aria-label="Draft builder overview">
+        <div class="hero__image" aria-hidden="true"></div>
+        <div class="hero__content">
+          <p class="eyebrow">Beginner comp builder</p>
+          <h1>Draft Lantern</h1>
+          <p>
+            Build a League-inspired team, spot simple synergy patterns, and find
+            general counter-pick ideas without chasing patch notes.
+          </p>
+        </div>
+      </section>
+
+      <nav class="view-tabs" aria-label="App views">
+        <button class="view-tab is-active" type="button" data-view="builderView">Team Builder</button>
+        <button class="view-tab" type="button" data-view="premadeView">Premade Comps</button>
+        <button class="view-tab" type="button" data-view="championExplorerView">Champions</button>
+        <button class="view-tab" type="button" data-view="matchupView">Matchups</button>
+        <button class="view-tab" type="button" data-view="draftRoomView">Draft Room</button>
+      </nav>
+
+      <section id="builderView" class="app-view" aria-label="Team builder">
+        <div class="workspace">
+        <aside class="panel roster-panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Champion Pool</p>
+              <h2>Pick by role</h2>
+            </div>
+            <div class="header-actions">
+              <span id="dataStatus" class="data-status">Curated data</span>
+              <button id="resetDraft" class="icon-button" type="button" aria-label="Reset draft" title="Reset draft">
+                &#8634;
+              </button>
+            </div>
+          </div>
+
+          <div class="controls">
+            <label class="search-field">
+              <span>Search</span>
+              <input id="champSearch" type="search" placeholder="Ahri, tank, engage..." autocomplete="off" />
+            </label>
+
+            <div class="role-tabs" role="tablist" aria-label="Filter champions by role">
+              <button class="role-tab is-active" type="button" data-role="All">All</button>
+              <button class="role-tab" type="button" data-role="Top">Top</button>
+              <button class="role-tab" type="button" data-role="Jungle">Jungle</button>
+              <button class="role-tab" type="button" data-role="Mid">Mid</button>
+              <button class="role-tab" type="button" data-role="ADC">ADC</button>
+              <button class="role-tab" type="button" data-role="Support">Support</button>
+            </div>
+          </div>
+
+          <div id="championGrid" class="champion-grid" aria-live="polite"></div>
+        </aside>
+
+        <section class="draft-panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Your Team</p>
+              <h2>Five-role draft</h2>
+            </div>
+            <div class="header-actions">
+              <div id="teamRating" class="rating-pill">Starter</div>
+              <button id="saveDraft" class="text-button" type="button">Save</button>
+              <button id="shareDraft" class="text-button" type="button">Copy link</button>
+            </div>
+          </div>
+
+          <div id="draftSlots" class="draft-slots" aria-label="Selected team slots"></div>
+
+          <section class="favorite-builder" aria-label="Build a team around favorite champions">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Favorite Core</p>
+                <h2>Build around your champions</h2>
+              </div>
+              <button id="useCurrentPicks" class="text-button" type="button">Lock current picks</button>
+            </div>
+
+            <div class="favorite-controls">
+              <label>
+                <span>Role</span>
+                <select id="favoriteRole"></select>
+              </label>
+              <label>
+                <span>Favorite champion</span>
+                <select id="favoriteChampion"></select>
+              </label>
+              <button id="addFavorite" class="text-button" type="button">Add favorite</button>
+              <button id="clearFavorites" class="text-button text-button--danger" type="button">Clear</button>
+            </div>
+
+            <div id="favoriteCore" class="favorite-core"></div>
+            <div id="favoriteCompSuggestions" class="favorite-comp-suggestions" aria-live="polite"></div>
+          </section>
+
+          <section class="recommendation-strip" aria-label="Recommended next picks">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Next Pick</p>
+                <h2>Recommended champions</h2>
+              </div>
+              <label class="compact-select">
+                <span>Fill role</span>
+                <select id="recommendRole"></select>
+              </label>
+            </div>
+            <div id="recommendations" class="recommendation-grid"></div>
+          </section>
+
+          <div class="analysis-grid">
+            <section class="panel score-panel" aria-label="Composition scores">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Comp Shape</p>
+                  <h2>Team strengths</h2>
+                </div>
+              </div>
+              <div id="scoreBars" class="score-bars"></div>
+            </section>
+
+            <section class="panel" aria-label="How this team wants to play">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Game Plan</p>
+                  <h2>Simple read</h2>
+                </div>
+              </div>
+              <div id="gamePlan" class="game-plan"></div>
+            </section>
+          </div>
+
+          <section class="panel draft-health" aria-label="Draft warnings">
+            <div class="panel__header">
+              <div>
+                <p class="eyebrow">Draft Check</p>
+                <h2>Warnings and fixes</h2>
+              </div>
+              <span id="warningCount" class="rating-pill">Waiting</span>
+            </div>
+            <div id="draftWarnings" class="draft-warnings"></div>
+          </section>
+
+          <section class="saved-strip" aria-label="Saved team compositions">
+            <label>
+              <span>Saved teams</span>
+              <select id="savedDrafts"></select>
+            </label>
+            <button id="loadDraft" class="text-button" type="button">Load</button>
+            <button id="deleteDraft" class="text-button text-button--danger" type="button">Delete</button>
+            <span id="saveStatus" class="save-status" aria-live="polite"></span>
+          </section>
+        </section>
+        </div>
+      </section>
+
+      <section id="premadeView" class="app-view is-hidden premade-view" aria-label="Premade team compositions">
+        <div class="panel premade-panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Team Playbooks</p>
+              <h2>Premade compositions</h2>
+            </div>
+            <label class="premade-filter">
+              <span>Style</span>
+              <select id="premadeFilter"></select>
+            </label>
+          </div>
+
+          <div class="premade-layout">
+            <aside id="premadeList" class="premade-list" aria-label="Composition list"></aside>
+            <article id="premadeDetails" class="premade-details" aria-live="polite"></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="championExplorerView" class="app-view is-hidden champion-explorer-view" aria-label="Champion explorer and hard counters">
+        <div class="panel champion-explorer-panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Champion Library</p>
+              <h2>Attributes and hard counters</h2>
+            </div>
+            <span id="explorerRosterCount" class="data-status">Loading roster</span>
+          </div>
+
+          <div class="explorer-controls">
+            <label class="search-field">
+              <span>Search champion</span>
+              <input id="explorerSearch" type="search" placeholder="Xin Zhao, Ahri, tank..." autocomplete="off" />
+            </label>
+            <label>
+              <span>Opponent role</span>
+              <select id="explorerRole"></select>
+            </label>
+            <label>
+              <span>Matchup strength</span>
+              <select id="explorerStrength"></select>
+            </label>
+          </div>
+
+          <div id="explorerSearchResults" class="explorer-search-results"></div>
+          <div id="explorerProfile" class="explorer-profile"></div>
+          <div id="explorerCounterResults" class="explorer-counter-results" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="matchupView" class="app-view is-hidden matchup-section" aria-label="Matchup and counter pick finder">
+        <div class="panel matchup-panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Matchup Finder</p>
+              <h2>Counter-pick ideas</h2>
+            </div>
+          </div>
+
+          <div class="matchup-controls">
+            <label>
+              <span>Enemy role</span>
+              <select id="enemyRole"></select>
+            </label>
+            <label>
+              <span>Enemy pick</span>
+              <select id="enemyPick"></select>
+            </label>
+            <label>
+              <span>Your role</span>
+              <select id="allyRole"></select>
+            </label>
+          </div>
+
+          <div id="matchupOverview" class="matchup-overview"></div>
+          <div id="counterResults" class="counter-results" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="draftRoomView" class="app-view is-hidden draft-room" aria-label="Guided draft room">
+        <div class="panel draft-room__panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Guided Draft</p>
+              <h2>Ban, pick, and build both teams</h2>
+            </div>
+            <div class="header-actions">
+              <button id="undoDraftRoom" class="text-button" type="button">Undo</button>
+              <button id="resetDraftRoom" class="icon-button" type="button" aria-label="Reset draft room" title="Reset draft room">&#8634;</button>
+            </div>
+          </div>
+
+          <div id="draftTurn" class="draft-turn"></div>
+
+          <div class="draft-room__layout">
+            <section class="draft-team draft-team--blue" aria-label="Blue team">
+              <div class="draft-team__heading">
+                <span>Blue Team</span>
+                <strong id="blueIdentity">Waiting</strong>
+              </div>
+              <div id="blueBans" class="ban-row"></div>
+              <div id="bluePicks" class="draft-team__picks"></div>
+            </section>
+
+            <section class="draft-picker" aria-label="Draft champion picker">
+              <label class="search-field">
+                <span>Find champion</span>
+                <input id="draftSearch" type="search" placeholder="Search the roster..." autocomplete="off" />
+              </label>
+              <div id="draftSuggestions" class="draft-suggestions"></div>
+              <div id="draftChampionGrid" class="draft-champion-grid"></div>
+            </section>
+
+            <section class="draft-team draft-team--red" aria-label="Red team">
+              <div class="draft-team__heading">
+                <span>Red Team</span>
+                <strong id="redIdentity">Waiting</strong>
+              </div>
+              <div id="redBans" class="ban-row"></div>
+              <div id="redPicks" class="draft-team__picks"></div>
+            </section>
+          </div>
+
+          <section class="draft-comparison" aria-label="Team comparison">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Match Plan</p>
+                <h2>How these teams play into each other</h2>
+              </div>
+              <span id="comparisonStatus" class="rating-pill">Add picks</span>
+            </div>
+            <div id="draftComparison"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="championDialog" class="champion-dialog">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">Champion Guide</p>
+          <h2 id="dialogTitle">Champion details</h2>
+        </div>
+        <button id="closeChampionDialog" class="icon-button" type="button" aria-label="Close champion details">&times;</button>
+      </div>
+      <div id="championDetails"></div>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
