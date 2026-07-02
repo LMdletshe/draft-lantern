@@ -2,6 +2,8 @@
 
 A beginner-friendly, patch-agnostic League-inspired champion comp builder.
 
+Production: https://lol-helper30.vercel.app
+
 Open `index.html` in a browser to use it. The app is fully static and keeps its
 champion data in `app.js`, so matchup logic can be edited without a backend or
 live patch-stat dependency.
