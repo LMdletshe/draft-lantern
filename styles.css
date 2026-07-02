@@ -328,6 +328,27 @@ select:focus {
   color: var(--text);
 }
 
+.toggle-field {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.toggle-field input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: var(--gold);
+}
+
+.toggle-field:has(input:checked) {
+  color: var(--text);
+}
+
 .champion-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -824,6 +845,21 @@ select:focus {
 
 .compact-select select {
   min-height: 36px;
+}
+
+.recommendation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px;
+}
+
+.recommendation-controls .compact-select {
+  grid-template-columns: auto minmax(120px, 150px);
+}
+
+.recommendation-controls .compact-select--count {
+  grid-template-columns: auto 90px;
 }
 
 .recommendation-grid {
@@ -1829,6 +1865,15 @@ select:focus {
   min-width: 0;
 }
 
+.matchup-controls .toggle-field--control {
+  min-height: 42px;
+  align-self: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10161d;
+  padding: 0 12px;
+}
+
 .counter-results {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1906,6 +1951,12 @@ select:focus {
   color: var(--green);
 }
 
+.difficulty-pill.is-hard {
+  border-color: rgba(215, 172, 85, 0.7);
+  background: rgba(215, 172, 85, 0.12);
+  color: #f3cf85;
+}
+
 .difficulty-pill.is-edge {
   border-color: rgba(101, 169, 221, 0.5);
   color: var(--blue);
@@ -1921,6 +1972,18 @@ select:focus {
   font-size: 0.74rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.off-role-note {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border: 1px solid rgba(170, 147, 229, 0.5);
+  border-radius: 999px;
+  padding: 0 7px;
+  color: var(--violet);
+  font-size: 0.66rem;
+  font-weight: 900;
 }
 
 .counter-card h3 {
@@ -2762,6 +2825,11 @@ select:focus {
   .explorer-profile-facts {
     grid-template-columns: 1fr;
   }
+
+  .recommendation-controls {
+    width: 100%;
+    justify-content: start;
+  }
 }
 
 @media (max-width: 620px) {
@@ -2975,6 +3043,16 @@ select:focus {
   }
 
   .compact-select {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-controls .compact-select,
+  .recommendation-controls .compact-select--count {
     grid-template-columns: 1fr;
   }
 

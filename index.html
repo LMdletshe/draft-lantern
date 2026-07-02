@@ -59,6 +59,11 @@
               <button class="role-tab" type="button" data-role="ADC">ADC</button>
               <button class="role-tab" type="button" data-role="Support">Support</button>
             </div>
+
+            <label class="toggle-field">
+              <input id="allowOffRolePicks" type="checkbox" />
+              <span>Include off-role picks</span>
+            </label>
           </div>
 
           <div id="championGrid" class="champion-grid" aria-live="polite"></div>
@@ -111,10 +116,31 @@
                 <p class="eyebrow">Next Pick</p>
                 <h2>Recommended champions</h2>
               </div>
-              <label class="compact-select">
-                <span>Fill role</span>
-                <select id="recommendRole"></select>
-              </label>
+              <div class="recommendation-controls">
+                <label class="compact-select">
+                  <span>Fill role</span>
+                  <select id="recommendRole"></select>
+                </label>
+                <label class="compact-select">
+                  <span>Goal</span>
+                  <select id="recommendGoal">
+                    <option value="balanced">Balanced fit</option>
+                    <option value="teamfight">Teamfight</option>
+                    <option value="protect">Protect carries</option>
+                    <option value="early">Early pressure</option>
+                    <option value="scaling">Scaling</option>
+                    <option value="pick">Pick and poke</option>
+                  </select>
+                </label>
+                <label class="compact-select compact-select--count">
+                  <span>Show</span>
+                  <select id="recommendCount">
+                    <option value="4">4 picks</option>
+                    <option value="8" selected>8 picks</option>
+                    <option value="12">12 picks</option>
+                  </select>
+                </label>
+              </div>
             </div>
             <div id="recommendations" class="recommendation-grid"></div>
           </section>
@@ -237,6 +263,26 @@
             <label>
               <span>Your role</span>
               <select id="allyRole"></select>
+            </label>
+            <label>
+              <span>Recommendation focus</span>
+              <select id="counterFocus">
+                <option value="hard">Hard counters first</option>
+                <option value="strong">Strong options</option>
+                <option value="all">All ranked options</option>
+              </select>
+            </label>
+            <label>
+              <span>Results</span>
+              <select id="counterCount">
+                <option value="3">3 picks</option>
+                <option value="6" selected>6 picks</option>
+                <option value="9">9 picks</option>
+              </select>
+            </label>
+            <label class="toggle-field toggle-field--control">
+              <input id="matchupOffRole" type="checkbox" checked />
+              <span>Include off-role counters</span>
             </label>
           </div>
 

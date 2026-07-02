@@ -854,6 +854,39 @@ let activePremadeId = premadeComps[0].id;
 let favoriteVariantsCache = [];
 let activeExplorerChampion = "Xin Zhao";
 
+const recommendationGoals = {
+  balanced: {
+    label: "Balanced fit",
+    weights: { engage: 1, frontline: 1, damage: 1, pick: 1, poke: 1, peel: 1, scaling: 1 },
+    tags: []
+  },
+  teamfight: {
+    label: "Teamfight",
+    weights: { engage: 1.6, frontline: 1.35, damage: 1.15, pick: 0.65, poke: 0.55, peel: 1, scaling: 0.85 },
+    tags: ["engage", "wombo", "aoe", "lockdown"]
+  },
+  protect: {
+    label: "Protect carries",
+    weights: { engage: 0.7, frontline: 1.25, damage: 0.75, pick: 0.55, poke: 0.7, peel: 1.7, scaling: 1.2 },
+    tags: ["peel", "shield", "anti-dive", "disengage", "frontline"]
+  },
+  early: {
+    label: "Early pressure",
+    weights: { engage: 1.1, frontline: 0.8, damage: 1.2, pick: 1.45, poke: 0.85, peel: 0.55, scaling: 0.35 },
+    tags: ["early", "snowball", "duel", "mobility", "pick"]
+  },
+  scaling: {
+    label: "Scaling",
+    weights: { engage: 0.7, frontline: 1, damage: 1.2, pick: 0.45, poke: 0.8, peel: 1.2, scaling: 1.75 },
+    tags: ["scaling", "marksman", "peel", "safe", "frontline"]
+  },
+  pick: {
+    label: "Pick and poke",
+    weights: { engage: 0.75, frontline: 0.55, damage: 1, pick: 1.55, poke: 1.5, peel: 0.65, scaling: 0.7 },
+    tags: ["pick", "poke", "range", "siege", "lockdown"]
+  }
+};
+
 const draftSequence = [
   ...Array.from({ length: 5 }, (_, index) => [
     { type: "ban", side: "Blue", round: index + 1 },
@@ -884,9 +917,15 @@ const dataStatus = document.querySelector("#dataStatus");
 const enemyRole = document.querySelector("#enemyRole");
 const enemyPick = document.querySelector("#enemyPick");
 const allyRole = document.querySelector("#allyRole");
+const counterFocus = document.querySelector("#counterFocus");
+const counterCount = document.querySelector("#counterCount");
+const matchupOffRole = document.querySelector("#matchupOffRole");
 const counterResults = document.querySelector("#counterResults");
 const matchupOverview = document.querySelector("#matchupOverview");
 const recommendRole = document.querySelector("#recommendRole");
+const recommendGoal = document.querySelector("#recommendGoal");
+const recommendCount = document.querySelector("#recommendCount");
+const allowOffRolePicks = document.querySelector("#allowOffRolePicks");
 const recommendations = document.querySelector("#recommendations");
 const savedDrafts = document.querySelector("#savedDrafts");
 const saveStatus = document.querySelector("#saveStatus");
@@ -1070,9 +1109,23 @@ function getTeamfightPlan(champion) {
   return "Play around the strongest teammate and use your highest-impact spell before chasing.";
 }
 
-function championMatchesQuery(champion, query) {
-  if (!query) return true;
-  const haystack = [
+const championSearchAliases = {
+  cc: ["crowd control", "lockdown", "engage", "pick"],
+  hook: ["hook", "engage", "pick"],
+  tank: ["tank", "frontline", "durable"],
+  carry: ["marksman", "damage", "scaling"],
+  assassin: ["assassin", "burst", "pick", "mobility"],
+  enchanter: ["support", "utility", "peel", "shield"],
+  disengage: ["disengage", "peel", "anti-dive", "anti-engage"],
+  engage: ["engage", "hard-engage", "lockdown", "wombo"],
+  early: ["early", "snowball", "duel"],
+  late: ["late", "scaling"],
+  ranged: ["range", "poke", "marksman"],
+  aoe: ["aoe", "wombo", "teamfight"]
+};
+
+function getChampionSearchHaystack(champion) {
+  return [
     champion.name,
     champion.style,
     champion.beginner,
@@ -1089,8 +1142,110 @@ function championMatchesQuery(champion, query) {
     ...champion.weakInto
   ]
     .join(" ")
-    .toLowerCase();
-  return haystack.includes(query.toLowerCase());
+    .toLowerCase()
+    .replaceAll("-", " ");
+}
+
+function getSearchTokens(query) {
+  return query
+    .toLowerCase()
+    .replaceAll("-", " ")
+    .match(/[a-z0-9']+/g) || [];
+}
+
+function championMatchesQuery(champion, query) {
+  if (!query) return true;
+  const haystack = getChampionSearchHaystack(champion);
+  return getSearchTokens(query).every((token) => {
+    const aliases = championSearchAliases[token] || [token];
+    return aliases.some((term) => haystack.includes(term.replaceAll("-", " ")));
+  });
+}
+
+function getChampionSearchRank(champion, query) {
+  if (!query) return 0;
+  const normalizedQuery = query.toLowerCase().trim();
+  const tokens = getSearchTokens(query);
+  let rank = 0;
+  if (champion.name.toLowerCase() === normalizedQuery) rank += 100;
+  else if (champion.name.toLowerCase().startsWith(normalizedQuery)) rank += 70;
+  tokens.forEach((token) => {
+    if (champion.tags.some((tag) => tag.replaceAll("-", " ").includes(token))) rank += 18;
+    if (champion.roles.some((role) => role.toLowerCase() === token)) rank += 8;
+  });
+  return rank;
+}
+
+function getChampionCombatTraits(champion) {
+  const traits = new Set([
+    ...champion.tags,
+    ...champion.goodInto,
+    ...(champion.official?.tags || []).map((tag) => tag.toLowerCase())
+  ]);
+  const scores = champion.scores || {};
+
+  if ((scores.engage || 0) >= 4 || traits.has("engage")) {
+    traits.add("engage");
+    traits.add("hard-engage");
+    traits.add("lockdown");
+  }
+  if ((scores.frontline || 0) >= 4 || traits.has("frontline")) {
+    traits.add("frontline");
+    traits.add("tank");
+  }
+  if ((scores.peel || 0) >= 4 || traits.has("peel") || traits.has("anti-dive")) {
+    traits.add("peel");
+    traits.add("disengage");
+  }
+  if ((scores.poke || 0) >= 4 || traits.has("poke") || traits.has("marksman")) {
+    traits.add("range");
+    traits.add("poke");
+  }
+  if ((scores.pick || 0) >= 4) {
+    traits.add("pick");
+    traits.add("lockdown");
+  }
+  if (traits.has("assassin")) {
+    traits.add("burst");
+    traits.add("dive");
+    traits.add("squishy");
+  }
+  if (traits.has("fighter") && traits.has("mobility")) traits.add("dive");
+  if (!traits.has("range") && !traits.has("poke") && (traits.has("fighter") || traits.has("tank") || traits.has("duel"))) {
+    traits.add("low-range");
+  }
+  if (!traits.has("mobility") && (traits.has("marksman") || traits.has("mage"))) traits.add("immobile");
+  if ((getChampionInfo(champion).defense || 0) <= 4 && !traits.has("tank")) traits.add("squishy");
+
+  return traits;
+}
+
+function getRoleFit(champion, role) {
+  if (champion.roles.includes(role)) {
+    return { score: champion.roles[0] === role ? 1 : 0.94, label: "Natural role", offRole: false };
+  }
+
+  const traits = getChampionCombatTraits(champion);
+  const roleTraits = {
+    Top: ["fighter", "tank", "duel", "frontline", "sustain", "split-push"],
+    Jungle: ["fighter", "tank", "assassin", "skirmish", "early", "engage", "mobility"],
+    Mid: ["mage", "assassin", "burst", "poke", "pick", "scaling"],
+    ADC: ["marksman", "range", "damage", "scaling", "safe"],
+    Support: ["support", "utility", "peel", "engage", "pick", "shield", "disengage"]
+  };
+  const matches = roleTraits[role].filter((trait) => traits.has(trait)).length;
+  let score = 0.3 + Math.min(0.42, matches * 0.09);
+
+  if (role === "Jungle" && !traits.has("skirmish") && !traits.has("early") && !traits.has("mobility")) score -= 0.12;
+  if (role === "ADC" && !traits.has("marksman") && !traits.has("range")) score -= 0.16;
+  if (role === "Support" && !traits.has("utility") && !traits.has("peel") && !traits.has("engage") && !traits.has("pick")) score -= 0.12;
+
+  score = Math.max(0.2, Math.min(0.78, score));
+  return {
+    score,
+    label: score >= 0.58 ? "Plausible off-role" : "Experimental off-role",
+    offRole: true
+  };
 }
 
 function uniqueList(values) {
@@ -1535,16 +1690,34 @@ async function loadRiotDataDragon() {
 
 function renderChampionGrid() {
   const query = champSearch.value.trim();
-  const filtered = champions.filter((champion) => {
-    const roleMatch = activeRole === "All" || champion.roles.includes(activeRole);
-    return roleMatch && championMatchesQuery(champion, query);
-  });
+  const includeOffRole = Boolean(allowOffRolePicks?.checked);
+  const filtered = champions
+    .filter((champion) => {
+      const roleFit = activeRole === "All" ? null : getRoleFit(champion, activeRole);
+      const roleMatch = activeRole === "All"
+        || champion.roles.includes(activeRole)
+        || (includeOffRole && roleFit.score >= 0.3);
+      return roleMatch && championMatchesQuery(champion, query);
+    })
+    .sort((a, b) => {
+      const searchDifference = getChampionSearchRank(b, query) - getChampionSearchRank(a, query);
+      if (searchDifference) return searchDifference;
+      if (activeRole !== "All") {
+        const roleDifference = getRoleFit(b, activeRole).score - getRoleFit(a, activeRole).score;
+        if (roleDifference) return roleDifference;
+      }
+      return a.name.localeCompare(b.name);
+    });
 
   championGrid.innerHTML = filtered
     .map((champion) => {
-      const primaryRole = activeRole !== "All" && champion.roles.includes(activeRole) ? activeRole : champion.roles[0];
+      const primaryRole = activeRole !== "All" ? activeRole : champion.roles[0];
+      const roleFit = getRoleFit(champion, primaryRole);
       const title = champion.official?.title ? `, ${champion.official.title}` : "";
       const sourceTag = champion.generated ? `<span class="tag tag--generated">modeled profile</span>` : "";
+      const offRoleTag = roleFit.offRole
+        ? `<span class="off-role-note">${escapeHtml(roleFit.label)} ${escapeHtml(primaryRole)}</span>`
+        : "";
       return `
         <article class="champion-card">
           <button class="champion-card__pick" type="button" data-champion="${escapeHtml(champion.name)}" data-role="${escapeHtml(primaryRole)}" aria-label="Add ${escapeHtml(champion.name)} as ${escapeHtml(primaryRole)}">
@@ -1557,6 +1730,7 @@ function renderChampionGrid() {
               <p>${escapeHtml(champion.style)}. ${escapeHtml(champion.beginner)}</p>
               <div class="tags">
                 ${champion.tags.slice(0, 3).map((tag) => `<span class="tag tag--${escapeHtml(tag)}">${escapeHtml(tag)}</span>`).join("")}
+                ${offRoleTag}
                 ${sourceTag}
               </div>
             </div>
@@ -1585,6 +1759,7 @@ function renderDraftSlots() {
         `;
       }
 
+      const roleFit = getRoleFit(champion, role);
       return `
         <article class="slot is-filled">
           <div class="slot__role">
@@ -1599,6 +1774,7 @@ function renderDraftSlots() {
             </div>
           </div>
           <div class="tags">
+            ${roleFit.offRole ? `<span class="off-role-note">${escapeHtml(roleFit.label)}</span>` : ""}
             ${champion.tags.slice(0, 5).map((tag) => `<span class="tag tag--${escapeHtml(tag)}">${escapeHtml(tag)}</span>`).join("")}
           </div>
         </article>
@@ -1773,10 +1949,12 @@ function getWarningSuggestions(warning, team) {
   if (!openRoles.length || !warning.needs.length) return [];
 
   return champions
-    .filter((champion) => champion.roles.some((role) => openRoles.includes(role)))
     .filter((champion) => !team.some((picked) => picked.name === champion.name))
-    .map((champion) => {
-      const role = champion.roles.find((candidateRole) => openRoles.includes(candidateRole));
+    .flatMap((champion) => openRoles
+      .filter((role) => champion.roles.includes(role)
+        || (allowOffRolePicks?.checked && getRoleFit(champion, role).score >= 0.3))
+      .map((role) => ({ champion, role })))
+    .map(({ champion, role }) => {
       let score = getDifficulty(champion) === "Beginner" ? 5 : 0;
       warning.needs.forEach((need) => {
         if (need === "magic" && getDamageType(champion) === "Magic") score += 18;
@@ -1785,6 +1963,8 @@ function getWarningSuggestions(warning, team) {
         else score += (champion.scores[need] || 0) * 4;
         if (champion.tags.includes(need)) score += 8;
       });
+      score += scoreRecommendation(champion, team, role, recommendGoal?.value || "balanced").score * 0.18;
+      score += getRoleFit(champion, role).score * 8;
       return { champion, role, score };
     })
     .sort((a, b) => b.score - a.score || a.champion.name.localeCompare(b.champion.name))
@@ -1834,9 +2014,24 @@ function renderDraftWarnings() {
   }).join("");
 }
 
-function scoreRecommendation(candidate, team, role) {
+function getRecommendationGoalProfile(goalId) {
+  return recommendationGoals[goalId] || recommendationGoals.balanced;
+}
+
+function getWarningWeight(warning) {
+  if (warning.severity === "high") return 14;
+  if (warning.severity === "medium") return 8;
+  if (warning.severity === "low") return 4;
+  return 0;
+}
+
+function scoreRecommendation(candidate, team, role, goalId = "balanced") {
   const currentScores = calculateScores(team);
-  let score = 40;
+  const nextTeam = [...team, candidate];
+  const nextScores = calculateScores(nextTeam);
+  const goal = getRecommendationGoalProfile(goalId);
+  const roleFit = getRoleFit(candidate, role);
+  let score = 34;
   const reasons = [];
   const needs = scoreKeys
     .map(([key, label]) => ({ key, label, value: currentScores[key] }))
@@ -1844,14 +2039,19 @@ function scoreRecommendation(candidate, team, role) {
 
   needs.slice(0, 3).forEach((need, index) => {
     const contribution = candidate.scores[need.key] || 0;
-    score += contribution * (4 - index);
-    if (contribution >= 4) reasons.push(`Adds strong ${need.label.toLowerCase()}.`);
+    const needWeight = 1 + Math.max(0, 45 - need.value) / 45;
+    score += contribution * (3.5 - index * 0.75) * needWeight * (goal.weights[need.key] || 1) * 0.45;
+    if (contribution >= 4) reasons.push(`Adds strong ${need.label.toLowerCase()} where the team is currently light.`);
   });
 
-  const pairReasons = findPairSynergies([...team, candidate]);
-  if (pairReasons.length) {
-    score += 18;
-    reasons.unshift(pairReasons[pairReasons.length - 1]);
+  let compatibilityScore = 0;
+  team.forEach((teammate) => {
+    const compatibility = getPairCompatibility(candidate, teammate);
+    compatibilityScore += compatibility.score;
+    reasons.push(...compatibility.reasons);
+  });
+  if (compatibilityScore) {
+    score += Math.min(24, compatibilityScore);
   }
 
   const mix = getTeamDamageMix(team);
@@ -1865,18 +2065,56 @@ function scoreRecommendation(candidate, team, role) {
     reasons.push("Adds physical damage so armor and magic resist choices are harder.");
   }
 
+  const currentWarnings = getDraftWarnings(team).filter((warning) => warning.severity !== "info");
+  const nextWarningIds = new Set(getDraftWarnings(nextTeam).map((warning) => warning.id));
+  const fixedWarnings = currentWarnings.filter((warning) => !nextWarningIds.has(warning.id));
+  if (fixedWarnings.length) {
+    score += fixedWarnings.reduce((total, warning) => total + getWarningWeight(warning), 0);
+    reasons.unshift(`Fixes ${fixedWarnings[0].title.toLowerCase()}.`);
+  }
+
+  const goalMatches = goal.tags.filter((tag) => getChampionCombatTraits(candidate).has(tag));
+  if (goalMatches.length) {
+    score += Math.min(16, goalMatches.length * 4);
+    reasons.push(`Fits the ${goal.label.toLowerCase()} goal through ${goalMatches.slice(0, 2).join(" and ")}.`);
+  }
+
+  const scoreImprovement = scoreKeys.reduce((total, [key]) => {
+    const weightedDelta = Math.max(0, nextScores[key] - currentScores[key]) * (goal.weights[key] || 1);
+    return total + weightedDelta;
+  }, 0);
+  score += Math.min(12, scoreImprovement * 0.22);
+
+  ["marksman", "assassin", "scaling", "frontline"].forEach((tag) => {
+    if (candidate.tags.includes(tag) && countTeamTag(team, [tag]) >= 2) score -= 6;
+  });
+
   if (getDifficulty(candidate) === "Beginner") {
-    score += 5;
+    score += 4;
     reasons.push("Beginner-friendly execution.");
   }
 
-  if (candidate.roles[0] === role) score += 3;
+  if (roleFit.offRole) {
+    score -= Math.round((1 - roleFit.score) * 24);
+    reasons.push(`${roleFit.label} for ${role}; use it for the kit fit, not conventional lane comfort.`);
+  } else {
+    score += candidate.roles[0] === role ? 7 : 4;
+  }
+
+  let category = goal.label;
+  if (fixedWarnings.length) category = "Fixes draft";
+  else if (compatibilityScore >= 14) category = "Best synergy";
+  else if (roleFit.offRole) category = "Off-role option";
+  else if (getDifficulty(candidate) === "Beginner") category = "Easy execution";
 
   return {
     candidate,
     role,
-    score: Math.min(99, Math.round(score)),
-    reasons: uniqueList(reasons).slice(0, 2)
+    score: Math.max(1, Math.min(99, Math.round(score))),
+    reasons: uniqueList(reasons).slice(0, 3),
+    roleFit,
+    category,
+    fixedWarnings: fixedWarnings.map((warning) => warning.id)
   };
 }
 
@@ -1885,12 +2123,20 @@ function getRecommendationRole() {
   return requested || roles.find((role) => !roleState[role]) || "Top";
 }
 
-function getRecommendationsForTeam(team, role, excludedNames = new Set()) {
+function getRecommendationsForTeam(team, role, excludedNames = new Set(), options = {}) {
+  const includeOffRole = Boolean(options.includeOffRole);
+  const goalId = options.goalId || "balanced";
+  const limit = options.limit || 4;
   return champions
-    .filter((champion) => champion.roles.includes(role) && !team.some((picked) => picked.name === champion.name) && !excludedNames.has(champion.name))
-    .map((champion) => scoreRecommendation(champion, team, role))
+    .filter((champion) => {
+      const roleFit = getRoleFit(champion, role);
+      return (champion.roles.includes(role) || (includeOffRole && roleFit.score >= 0.3))
+        && !team.some((picked) => picked.name === champion.name)
+        && !excludedNames.has(champion.name);
+    })
+    .map((champion) => scoreRecommendation(champion, team, role, goalId))
     .sort((a, b) => b.score - a.score || a.candidate.name.localeCompare(b.candidate.name))
-    .slice(0, 4);
+    .slice(0, limit);
 }
 
 function renderRecommendations() {
@@ -1901,7 +2147,13 @@ function renderRecommendations() {
   const role = getRecommendationRole();
   recommendRole.value = role;
   const team = selectedChampions();
-  const picks = getRecommendationsForTeam(team, role);
+  const goalId = recommendGoal?.value || "balanced";
+  const limit = Number.parseInt(recommendCount?.value || "8", 10);
+  const picks = getRecommendationsForTeam(team, role, new Set(), {
+    includeOffRole: Boolean(allowOffRolePicks?.checked),
+    goalId,
+    limit
+  });
 
   recommendations.innerHTML = picks
     .map((result) => `
@@ -1910,10 +2162,11 @@ function renderRecommendations() {
           ${getChampionIconMarkup(result.candidate, "small")}
           <div>
             <h3>${escapeHtml(result.candidate.name)}</h3>
-            <span>${escapeHtml(result.role)} &middot; ${escapeHtml(getDifficulty(result.candidate))}</span>
+            <span>${escapeHtml(result.category)} &middot; ${escapeHtml(result.role)} &middot; ${escapeHtml(getDifficulty(result.candidate))}</span>
           </div>
           <strong>${result.score}</strong>
         </div>
+        ${result.roleFit.offRole ? `<span class="off-role-note">${escapeHtml(result.roleFit.label)}</span>` : ""}
         <p>${escapeHtml(result.reasons.join(" ") || result.candidate.beginner)}</p>
         <div class="recommendation-card__actions">
           <button class="text-button" type="button" data-recommend="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(result.role)}">Add pick</button>
@@ -1937,7 +2190,11 @@ function populateFavoriteControls() {
   favoriteRole.value = roles.includes(previousRole) ? previousRole : "Jungle";
 
   const available = champions
-    .filter((champion) => champion.roles.includes(favoriteRole.value))
+    .filter((champion) => {
+      const roleFit = getRoleFit(champion, favoriteRole.value);
+      return champion.roles.includes(favoriteRole.value)
+        || (allowOffRolePicks?.checked && roleFit.score >= 0.3);
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
   const previousChampion = available.some((champion) => champion.name === favoriteChampion.value)
     ? favoriteChampion.value
@@ -2043,7 +2300,12 @@ function buildFavoriteCandidates(profile) {
     beam.forEach((state) => {
       const usedNames = new Set(state.team.map((champion) => champion.name));
       champions
-        .filter((champion) => champion.roles.includes(role) && !usedNames.has(champion.name))
+        .filter((champion) => {
+          const roleFit = getRoleFit(champion, role);
+          return (champion.roles.includes(role)
+            || (allowOffRolePicks?.checked && roleFit.score >= 0.3))
+            && !usedNames.has(champion.name);
+        })
         .map((champion) => ({ champion, fit: scoreFavoriteCandidate(champion, state.team, role, profile) }))
         .sort((a, b) => b.fit.score - a.fit.score || a.champion.name.localeCompare(b.champion.name))
         .slice(0, 12)
@@ -2148,12 +2410,13 @@ function renderFavoriteBuilder() {
               ${roles.map((role) => {
                 const champion = getChampion(variant.picks[role]);
                 const locked = favoriteState[role] === champion.name;
+                const roleFit = getRoleFit(champion, role);
                 return `
                   <div class="${locked ? "is-locked" : ""}">
                     <span>${escapeHtml(role)}</span>
                     ${getChampionIconMarkup(champion, "small")}
                     <strong>${escapeHtml(champion.name)}</strong>
-                    <small>${locked ? "Favorite" : "Suggested"}</small>
+                    <small>${locked ? "Favorite" : roleFit.offRole ? "Off-role" : "Suggested"}</small>
                   </div>
                 `;
               }).join("")}
@@ -2179,7 +2442,8 @@ function renderFavoriteBuilder() {
 function addFavoriteChampion() {
   const role = favoriteRole.value;
   const champion = getChampion(favoriteChampion.value);
-  if (!role || !champion || !champion.roles.includes(role)) return;
+  if (!roles.includes(role) || !champion) return;
+  if (!champion.roles.includes(role) && !allowOffRolePicks?.checked) return;
   favoriteState[role] = champion.name;
   roleState[role] = champion.name;
   renderAll();
@@ -2499,7 +2763,7 @@ function loadPremadeComp(id) {
 function selectChampion(name, role) {
   const champion = getChampion(name);
   if (!champion) return;
-  const targetRole = champion.roles.includes(role) ? role : champion.roles[0];
+  const targetRole = roles.includes(role) ? role : champion.roles[0];
   const wasEmpty = !roleState[targetRole];
   if (favoriteState[targetRole] && favoriteState[targetRole] !== name) {
     favoriteState[targetRole] = null;
@@ -2550,74 +2814,134 @@ function populateEnemyPicks() {
   enemyPick.innerHTML = optionList(picks, previous);
 }
 
-function scoreCounter(enemy, candidate) {
-  let score = 45;
+function scoreCounter(enemy, candidate, role = candidate.roles[0]) {
+  let score = 42;
   const reasons = [];
+  const enemyTraits = getChampionCombatTraits(enemy);
+  const candidateTraits = getChampionCombatTraits(candidate);
+  const enemyWeaknesses = new Set(enemy.weakInto);
+  const roleFit = getRoleFit(candidate, role);
+  let evidence = 0;
 
   candidate.goodInto.forEach((trait) => {
-    if (enemy.tags.includes(trait) || enemy.weakInto.includes(trait)) {
-      score += 12;
-      reasons.push(`${candidate.name} naturally plays well into ${trait.replace("-", " ")} patterns.`);
+    if (enemyTraits.has(trait)) {
+      score += 10;
+      evidence += 1;
+      reasons.push(`${candidate.name} naturally attacks ${enemy.name}'s ${trait.replaceAll("-", " ")} pattern.`);
+    } else if (enemyWeaknesses.has(trait)) {
+      score += 4;
     }
   });
 
-  candidate.tags.forEach((trait) => {
-    if (enemy.weakInto.includes(trait)) {
-      score += 14;
+  candidateTraits.forEach((trait) => {
+    if (enemyWeaknesses.has(trait)) {
+      score += 9;
+      evidence += 1;
       reasons.push(`${enemy.name} tends to dislike ${trait.replace("-", " ")} pressure.`);
     }
   });
 
   enemy.goodInto.forEach((trait) => {
-    if (candidate.tags.includes(trait)) {
-      score -= 10;
+    if (candidateTraits.has(trait)) {
+      score -= 8;
     }
   });
 
-  if (candidate.tags.includes("peel") && enemy.tags.some((tag) => ["dive", "assassin", "burst"].includes(tag))) {
-    score += 10;
+  if ((candidateTraits.has("peel") || candidateTraits.has("anti-dive"))
+    && ["dive", "assassin", "burst"].some((tag) => enemyTraits.has(tag))) {
+    score += 9;
+    evidence += 1;
     reasons.push("Peel lowers the value of enemy dive or burst.");
   }
 
-  if (candidate.tags.includes("poke") && enemy.tags.includes("low-range")) {
-    score += 10;
+  if ((candidateTraits.has("poke") || candidateTraits.has("range"))
+    && (enemyTraits.has("low-range") || enemyTraits.has("immobile"))) {
+    score += 9;
+    evidence += 1;
     reasons.push("Range can punish low-range champions before they start fights.");
   }
 
-  if (candidate.tags.includes("frontline") && enemy.tags.includes("poke")) {
-    score -= 5;
+  if (candidateTraits.has("lockdown") && (enemyTraits.has("mobility") || enemyTraits.has("assassin"))) {
+    score += 8;
+    evidence += 1;
+    reasons.push(`Reliable control can stop ${enemy.name} after their first movement commitment.`);
   }
 
+  if (candidateTraits.has("sustain") && enemyTraits.has("poke")) {
+    score += 7;
+    evidence += 1;
+    reasons.push("Sustain reduces the value of repeated poke trades.");
+  }
+
+  if ((candidateTraits.has("early") || candidateTraits.has("duel")) && enemyTraits.has("scaling")) {
+    score += 8;
+    evidence += 1;
+    reasons.push(`${candidate.name} can force pressure before ${enemy.name}'s scaling plan is ready.`);
+  }
+
+  if ((candidateTraits.has("tank") || candidateTraits.has("frontline"))
+    && (enemyTraits.has("burst") || enemyTraits.has("assassin"))) {
+    score += 6;
+    evidence += 1;
+    reasons.push(`${candidate.name} is difficult for ${enemy.name} to remove in one burst window.`);
+  }
+
+  if (candidateTraits.has("hard-engage") && (enemyTraits.has("immobile") || enemyTraits.has("squishy"))) {
+    score += 7;
+    evidence += 1;
+    reasons.push(`${enemy.name} has limited room for error against reliable engage.`);
+  }
+
+  const override = explorerCounterOverrides[candidate.name]?.[enemy.name];
+  if (override) {
+    score += override.bonus;
+    evidence += 3;
+    reasons.unshift(override.reason);
+  }
+
+  if (roleFit.offRole) {
+    score -= Math.round((1 - roleFit.score) * 16);
+  } else {
+    score += candidate.roles[0] === role ? 5 : 3;
+  }
+
+  const finalScore = Math.max(5, Math.min(97, Math.round(score)));
   return {
     candidate,
-    score: Math.max(5, Math.min(95, score)),
-    reasons: reasons.slice(0, 2)
+    score: finalScore,
+    reasons: uniqueList(reasons).slice(0, 3),
+    evidence,
+    roleFit,
+    tier: getMatchupDifficulty(finalScore, evidence, Boolean(override))
   };
 }
 
-function getMatchupDifficulty(score) {
-  if (score >= 78) return { label: "Favorable", className: "is-favorable" };
-  if (score >= 60) return { label: "Slight edge", className: "is-edge" };
-  if (score >= 42) return { label: "Even", className: "is-even" };
-  return { label: "Difficult", className: "is-difficult" };
+function getMatchupDifficulty(score, evidence = 0, hasOverride = false) {
+  if (hasOverride || (score >= 84 && evidence >= 2)) return { key: "hard", label: "Hard counter", className: "is-hard" };
+  if (score >= 72 && evidence >= 2) return { key: "strong", label: "Strong counter", className: "is-favorable" };
+  if (score >= 60) return { key: "favorable", label: "Favorable", className: "is-edge" };
+  if (score >= 46) return { key: "even", label: "Even", className: "is-even" };
+  return { key: "difficult", label: "Difficult", className: "is-difficult" };
 }
 
 function getMatchupAdvice(enemy, candidate) {
   const tips = [];
+  const enemyTraits = getChampionCombatTraits(enemy);
+  const candidateTraits = getChampionCombatTraits(candidate);
 
-  if ((candidate.tags.includes("poke") || candidate.tags.includes("range")) && enemy.tags.includes("low-range")) {
+  if ((candidateTraits.has("poke") || candidateTraits.has("range")) && enemyTraits.has("low-range")) {
     tips.push(`Keep ${enemy.name} at the edge of your range and avoid giving them a clean all-in.`);
   }
-  if (enemy.tags.some((tag) => ["engage", "burst", "assassin"].includes(tag))) {
+  if (["engage", "burst", "assassin"].some((tag) => enemyTraits.has(tag))) {
     tips.push(`Track ${enemy.name}'s main engage cooldown; trade more confidently while it is unavailable.`);
   }
-  if (candidate.tags.includes("scaling") && enemy.tags.some((tag) => ["early", "snowball"].includes(tag))) {
+  if (candidateTraits.has("scaling") && ["early", "snowball"].some((tag) => enemyTraits.has(tag))) {
     tips.push("A quiet lane is a win. Give up risky farm rather than feeding their early snowball.");
   }
-  if (candidate.tags.includes("sustain")) {
+  if (candidateTraits.has("sustain")) {
     tips.push("Take short trades, recover, and repeat instead of committing to one long fight.");
   }
-  if (candidate.tags.includes("pick") || candidate.tags.includes("lockdown")) {
+  if (candidateTraits.has("pick") || candidateTraits.has("lockdown")) {
     tips.push("Hold crowd control until the enemy uses their movement tool or walks away from the wave.");
   }
 
@@ -2941,11 +3265,32 @@ function renderCounters() {
   }
 
   const role = allyRole.value || enemyRole.value;
-  const candidates = champions
-    .filter((champion) => champion.roles.includes(role) && champion.name !== enemy.name)
-    .map((champion) => scoreCounter(enemy, champion))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+  const includeOffRole = Boolean(matchupOffRole?.checked);
+  const focus = counterFocus?.value || "hard";
+  const limit = Number.parseInt(counterCount?.value || "6", 10);
+  const ranked = champions
+    .filter((champion) => champion.name !== enemy.name)
+    .filter((champion) => champion.roles.includes(role) || includeOffRole)
+    .map((champion) => scoreCounter(enemy, champion, role))
+    .sort((a, b) => {
+      const tierOrder = { hard: 4, strong: 3, favorable: 2, even: 1, difficult: 0 };
+      return (tierOrder[b.tier.key] || 0) - (tierOrder[a.tier.key] || 0)
+        || b.score - a.score
+        || b.roleFit.score - a.roleFit.score
+        || a.candidate.name.localeCompare(b.candidate.name);
+    });
+
+  let focusedCandidates = ranked;
+  if (focus === "hard") {
+    const counters = ranked.filter((result) => ["hard", "strong"].includes(result.tier.key));
+    const favorableFallbacks = ranked.filter((result) => result.tier.key === "favorable");
+    focusedCandidates = [...counters, ...favorableFallbacks];
+  } else if (focus === "strong") {
+    focusedCandidates = ranked.filter((result) => result.score >= 56);
+  }
+  const candidates = focusedCandidates.slice(0, limit);
+  const hardCount = ranked.filter((result) => result.tier.key === "hard").length;
+  const strongCount = ranked.filter((result) => result.tier.key === "strong").length;
 
   matchupOverview.innerHTML = `
     <div class="matchup-overview__enemy">
@@ -2958,35 +3303,38 @@ function renderCounters() {
     <div class="matchup-overview__notes">
       <span><strong>Respect:</strong> ${escapeHtml(getChampionStrengths(enemy).slice(0, 2).join(" and ").toLowerCase())}</span>
       <span><strong>Attack:</strong> ${escapeHtml(getChampionWeaknesses(enemy).slice(0, 2).join(" and "))}</span>
+      <span><strong>Counter read:</strong> ${hardCount} hard and ${strongCount} strong general answer${hardCount + strongCount === 1 ? "" : "s"} found${includeOffRole ? ", including off-role options" : ""}.</span>
     </div>
   `;
 
   if (!candidates.length) {
-    counterResults.innerHTML = `<p class="empty-state">No counter ideas found for that role yet.</p>`;
+    counterResults.innerHTML = `<p class="empty-state">No reliable hard or favorable counter was found for these filters. Try enabling off-role counters or switch to "All ranked options".</p>`;
     return;
   }
 
   counterResults.innerHTML = candidates
     .map((result, index) => {
-      const difficulty = getMatchupDifficulty(result.score);
+      const difficulty = result.tier;
       const laneAdvice = getMatchupAdvice(enemy, result.candidate);
       const reasons = result.reasons.length
         ? result.reasons.join(" ")
-        : `${result.candidate.name} is a reasonable general answer, but the matchup depends more on execution and team context.`;
+        : `${result.candidate.name} has the strongest available general pattern into ${enemy.name}, but execution still matters.`;
 
       return `
         <article class="counter-card">
           <div class="counter-card__top">
             ${getChampionIconMarkup(result.candidate, "small")}
             <div>
-              <span class="counter-card__rank">Idea ${index + 1}</span>
+              <span class="counter-card__rank">${escapeHtml(difficulty.label)} ${index + 1}</span>
               <h3>${escapeHtml(result.candidate.name)}</h3>
+              <small>${escapeHtml(result.candidate.roles.join(" / "))}</small>
             </div>
             <span class="difficulty-pill ${difficulty.className}">${difficulty.label}</span>
           </div>
+          ${result.roleFit.offRole ? `<span class="off-role-note">${escapeHtml(result.roleFit.label)} ${escapeHtml(role)}</span>` : ""}
           <p>${escapeHtml(reasons)}</p>
-          <div class="lane-tip"><strong>Lane plan:</strong> ${escapeHtml(laneAdvice.join(" ") || getLanePlan(result.candidate))}</div>
-          <div class="meter"><span>General fit</span><span>${result.score}%</span></div>
+          <div class="lane-tip"><strong>How to win:</strong> ${escapeHtml(laneAdvice.join(" ") || getLanePlan(result.candidate))}</div>
+          <div class="meter"><span>Counter confidence</span><span>${result.score}%</span></div>
           <div class="counter-card__actions">
             <button class="text-button" type="button" data-counter-pick="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(role)}">Use in team</button>
             <button class="icon-button icon-button--small" type="button" data-details="${escapeHtml(result.candidate.name)}" aria-label="View ${escapeHtml(result.candidate.name)} details">i</button>
@@ -3650,8 +3998,17 @@ enemyRole.addEventListener("change", () => {
 
 enemyPick.addEventListener("change", renderCounters);
 allyRole.addEventListener("change", renderCounters);
+counterFocus.addEventListener("change", renderCounters);
+counterCount.addEventListener("change", renderCounters);
+matchupOffRole.addEventListener("change", renderCounters);
 
 recommendRole.addEventListener("change", renderRecommendations);
+recommendGoal.addEventListener("change", () => {
+  renderRecommendations();
+  renderDraftWarnings();
+});
+recommendCount.addEventListener("change", renderRecommendations);
+allowOffRolePicks.addEventListener("change", renderAll);
 
 favoriteRole.addEventListener("change", populateFavoriteControls);
 document.querySelector("#addFavorite").addEventListener("click", addFavoriteChampion);
