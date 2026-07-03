@@ -1,0 +1,50 @@
+name: Materialize learning guide
+
+on:
+  push:
+    paths:
+      - ".github/workflows/materialize-learning-guide.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore verified source files
+        shell: bash
+        run: |
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+          const zlib = require('node:zlib');
+
+          const encoded = ['01', '02', '03', '04']
+            .map((part) => fs.readFileSync(`.codex-transfer/learning-guide.br.b64.${part}`, 'utf8').trim())
+            .join('');
+          const files = JSON.parse(zlib.brotliDecompressSync(Buffer.from(encoded, 'base64')).toString('utf8'));
+          const expected = {
+            'index.html': 'da039fa9b0e2ecc3fb6bc8d1c9b388934328671c1efc36b287a26c9e5f716891',
+            'styles.css': '42f976f1f415eee688393d723c2a10d0fdb6e88e936d4b3112a1c5b98e16467e',
+            'app.js': '84d7daedefd3b06d058b786ce977f4ccb23b1088270a202a15ef990d7bb05cb3',
+          };
+
+          for (const [path, text] of Object.entries(files)) {
+            const contents = Buffer.from(text, 'utf8');
+            const digest = crypto.createHash('sha256').update(contents).digest('hex');
+            if (digest !== expected[path]) throw new Error(`${path} checksum mismatch: ${digest}`);
+            fs.writeFileSync(path, contents);
+          }
+          NODE
+
+      - name: Commit learning guide
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html styles.css app.js
+          git commit -m "Add role and team play guides"
+          git push
