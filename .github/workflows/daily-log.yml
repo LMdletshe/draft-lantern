@@ -1,0 +1,31 @@
+name: Daily Log
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-log:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Update log
+        run: |
+          {
+            echo "- $(date -u '+%Y-%m-%d %H:%M:%S UTC') daily check-in"
+          } >> log.md
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "Lwandile Mdletshe"
+          git config user.email "lwandileamdletshe@gmail.com"
+          git add log.md
+          git commit -m "Daily log $(date -u '+%Y-%m-%d')" || exit 0
+          git push
