@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#101419" />
     <title>Draft Lantern</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="learn.css" />
   </head>
   <body>
     <main class="app-shell">
@@ -26,6 +27,7 @@
         <button class="view-tab" type="button" data-view="premadeView">Premade Comps</button>
         <button class="view-tab" type="button" data-view="championExplorerView">Champions</button>
         <button class="view-tab" type="button" data-view="matchupView">Matchups</button>
+        <button class="view-tab" type="button" data-view="learnView">How to Play</button>
         <button class="view-tab" type="button" data-view="draftRoomView">Draft Room</button>
       </nav>
 
@@ -291,6 +293,24 @@
         </div>
       </section>
 
+      <section id="learnView" class="app-view is-hidden learn-view" aria-label="How to play League by role and as a team">
+        <div class="panel learn-panel">
+          <div class="panel__header learn-panel__header">
+            <div>
+              <p class="eyebrow">Game Fundamentals</p>
+              <h2>How to play your role and your team</h2>
+            </div>
+            <div class="learn-mode-tabs" role="tablist" aria-label="Learning guide mode">
+              <button class="learn-mode-tab is-active" type="button" data-learn-mode="roles">Role guides</button>
+              <button class="learn-mode-tab" type="button" data-learn-mode="team">Team play</button>
+            </div>
+          </div>
+
+          <div id="roleGuideControls" class="role-guide-controls" role="tablist" aria-label="Choose a role"></div>
+          <div id="learnGuideContent" class="learn-guide-content" aria-live="polite"></div>
+        </div>
+      </section>
+
       <section id="draftRoomView" class="app-view is-hidden draft-room" aria-label="Guided draft room">
         <div class="panel draft-room__panel">
           <div class="panel__header">
@@ -361,5 +381,6 @@
     </dialog>
 
     <script src="app.js"></script>
+    <script src="learn.js"></script>
   </body>
 </html>
