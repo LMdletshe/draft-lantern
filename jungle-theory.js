@@ -4,7 +4,7 @@
     : (value) => String(value).replace(/[&<>'"]/g, (character) => ({
         "&": "&amp;",
         "<": "&lt;",
-        "&gt;": "&gt;",
+        ">": "&gt;",
         "'": "&#39;",
         "\"": "&quot;"
       })[character]);
