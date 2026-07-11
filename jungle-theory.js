@@ -4,7 +4,7 @@
     : (value) => String(value).replace(/[&<>'"]/g, (character) => ({
         "&": "&amp;",
         "<": "&lt;",
-        ">": "&gt;",
+        "&gt;": "&gt;",
         "'": "&#39;",
         "\"": "&quot;"
       })[character]);
@@ -82,20 +82,20 @@
   };
 
   const targetFramework = [
-    { title: "Top lane", text: "Good when the lane is long, enemy is extended, wave can freeze or stack, and enemy jungle route is readable. Convert into Herald, plates, weak-side release, or camp denial." },
-    { title: "Mid lane", text: "Good with allied push, setup CC, enemy Flash down, or a route that preserves tempo. Convert into river control, raptor invade, dragon access, or side-lane move." },
-    { title: "Bot lane", text: "Good when allied wave creates a 3v2 or dive, support can move, and the play links to dragon or first tower. Avoid coinflips just because two kills are possible." },
-    { title: "Enemy jungler", text: "Good with first move, item or level edge, known cooldown edge, and nearby lanes that arrive first. Convert into camp denial, tempo lead, or forced objective control." },
-    { title: "Countergank", text: "Good when enemy prey is obvious, your ally can bait safely, and you arrive first in fog. Convert into a tempo swing, objective access, or collapsed enemy route." }
+    { title: "Top lane", text: "Good when the lane is long, enemy is extended, wave can freeze or stack, and enemy jungle route is readable. Convert into Herald, plates, weak-side release, or camp denial. Examples: Jarvan IV, Sejuani, Elise, Rek'Sai, or Lee Sin ganking for Renekton, Darius, Camille, Jax, or Irelia setup." },
+    { title: "Mid lane", text: "Good with allied push, setup CC, enemy Flash down, or a route that preserves tempo. Convert into river control, raptor invade, dragon access, or side-lane move. Examples: Vi, Xin Zhao, Nocturne, Lillia, or Maokai pairing with Ahri, Annie, Lissandra, Galio, or Twisted Fate." },
+    { title: "Bot lane", text: "Good when allied wave creates a 3v2 or dive, support can move, and the play links to dragon or first tower. Avoid coinflips just because two kills are possible. Examples: Zac, Rammus, Amumu, Jarvan IV, or Nocturne attacking with Nautilus, Leona, Thresh, Rakan, or Ashe setup." },
+    { title: "Enemy jungler", text: "Good with first move, item or level edge, known cooldown edge, and nearby lanes that arrive first. Convert into camp denial, tempo lead, or forced objective control. Examples: Kindred, Graves, Nidalee, Lee Sin, or Xin Zhao invading Amumu, Karthus, Fiddlesticks, Shyvana, or Evelynn when lanes can move." },
+    { title: "Countergank", text: "Good when enemy prey is obvious, your ally can bait safely, and you arrive first in fog. Convert into a tempo swing, objective access, or collapsed enemy route. Examples: Poppy, Ivern, Maokai, Sejuani, or Wukong shadowing obvious Lee Sin, Elise, Jarvan IV, Nocturne, or Zac gank paths." }
   ];
 
   const archetypes = [
-    { title: "Early gank utility", text: "Creates lane tempo before first contest. Wants 3-4 camp or side-skewed routes, lane setup, and early access through priority." },
-    { title: "Farming fighter", text: "Converts camp efficiency into level and item pressure. Wants high-camp routes, river 1v1 strength, and first access to neutrals." },
-    { title: "Tank engage", text: "Turns structured fights with reliable initiation and frontline value. Wants safe clear or hover routes into lanes that can follow." },
-    { title: "Assassin pick", text: "Uses fog and isolated targets before objectives. Wants angles, flank paths, and picks instead of front-door starts." },
-    { title: "AP control", text: "Wins through clear-to-positioning, choke control, anti-engage, poke, and objective-zone setup." },
-    { title: "Countergank utility", text: "Wins by reading the enemy first. Wants mirror routes, shadow timings, disengage, peel, and follow-up around likely attacks." }
+    { title: "Early gank utility", text: "Creates lane tempo before first contest. Wants 3-4 camp or side-skewed routes, lane setup, and early access through priority. Examples: Jarvan IV, Elise, Lee Sin, Rek'Sai, Nunu, Xin Zhao." },
+    { title: "Farming fighter", text: "Converts camp efficiency into level and item pressure. Wants high-camp routes, river 1v1 strength, and first access to neutrals. Examples: Graves, Viego, Bel'Veth, Master Yi, Udyr, Diana." },
+    { title: "Tank engage", text: "Turns structured fights with reliable initiation and frontline value. Wants safe clear or hover routes into lanes that can follow. Examples: Sejuani, Amumu, Zac, Rammus, Maokai, Skarner." },
+    { title: "Assassin pick", text: "Uses fog and isolated targets before objectives. Wants angles, flank paths, and picks instead of front-door starts. Examples: Kha'Zix, Rengar, Evelynn, Shaco, Kayn, Nocturne." },
+    { title: "AP control", text: "Wins through clear-to-positioning, choke control, anti-engage, poke, and objective-zone setup. Examples: Fiddlesticks, Karthus, Lillia, Brand, Taliyah, Morgana." },
+    { title: "Countergank utility", text: "Wins by reading the enemy first. Wants mirror routes, shadow timings, disengage, peel, and follow-up around likely attacks. Examples: Ivern, Poppy, Trundle, Maokai, Nunu, Sejuani." }
   ];
 
   function list(items, className = "") {
