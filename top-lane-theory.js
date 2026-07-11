@@ -58,12 +58,12 @@
       "When ahead, test whether your side pressure forces a high-cost answer. If not, convert your lead through grouped objectives instead."
     ],
     matchupClasses: [
-      { title: "Early bully vs scaler", text: "Treat it as a repeated game with different time horizons. Deny early, but avoid dives that flip the lane back." },
-      { title: "Ranged harass vs melee all-in", text: "Track cooldowns and wave length. The melee player needs brush, minion cover, or a baited gap-close window." },
-      { title: "Sustain tank vs attrition bruiser", text: "Preserve health floor and recall value. Overtrading into sustain resets usually loses the resource game." },
-      { title: "Split pusher vs teamfighter", text: "This is a future-state problem. Side pressure is correct only when the enemy answer cost is higher than your grouping value." },
-      { title: "Proxy or roam specialist vs freeze punisher", text: "Leave lane only after banking tempo. Roaming while the wave punishes you is usually fake pressure." },
-      { title: "Volatile kill lane vs volatile kill lane", text: "Use mixed timing and downside protection. Repeating the same all-in timing becomes exploitable." }
+      { title: "Early bully vs scaler", text: "Treat it as a repeated game with different time horizons. Deny early, but avoid dives that flip the lane back. Examples: Renekton, Darius, Jayce, or Pantheon pressuring Kayle, Nasus, Ornn, Jax, or Camille." },
+      { title: "Ranged harass vs melee all-in", text: "Track cooldowns and wave length. The melee player needs brush, minion cover, or a baited gap-close window. Examples: Teemo, Quinn, Jayce, Vayne, or Gnar into Irelia, Tryndamere, Jax, Riven, or Kled." },
+      { title: "Sustain tank vs attrition bruiser", text: "Preserve health floor and recall value. Overtrading into sustain resets usually loses the resource game. Examples: Dr. Mundo, Sion, Cho'Gath, Ornn, or Tahm Kench into Aatrox, Mordekaiser, Darius, Illaoi, or Sett." },
+      { title: "Split pusher vs teamfighter", text: "This is a future-state problem. Side pressure is correct only when the enemy answer cost is higher than your grouping value. Examples: Fiora, Jax, Tryndamere, Yorick, or Camille against Malphite, Ornn, Kennen, Rumble, or Gnar." },
+      { title: "Proxy or roam specialist vs freeze punisher", text: "Leave lane only after banking tempo. Roaming while the wave punishes you is usually fake pressure. Examples: Singed, Sion, Quinn, Shen, or Pantheon trying to move against Darius, Sett, Irelia, Renekton, or Olaf holding punish freezes." },
+      { title: "Volatile kill lane vs volatile kill lane", text: "Use mixed timing and downside protection. Repeating the same all-in timing becomes exploitable. Examples: Riven, Irelia, Fiora, Camille, Jax, Tryndamere, Yone, Aatrox, Kled, or Gwen in snowball-heavy skill matchups." }
     ],
     decisionRules: [
       "If you want to recall and can crash cleanly: hard shove and recall.",
