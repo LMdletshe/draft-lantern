@@ -51,11 +51,11 @@
       "If you need to recover tempo: crash and bounce, then recall or move before the enemy can freeze."
     ],
     matchupRules: [
-      "Mage into assassin: deny movement first, protect HP, crash cleanly, and make every roam expensive.",
-      "Assassin into mage: preserve HP until wave, cooldown, or fog creates a real lethal window.",
-      "Skirmisher into mage: pull the lane longer, threaten extended trades, and punish missed cooldowns.",
-      "Artillery into engage: range works only with vision and spacing. If river or side entrance control breaks, reset the position.",
-      "Utility roamer into scaling lane: use escorted first move to create side pressure; if the move is late, punish or reset instead."
+      "Mage into assassin: deny movement first, protect HP, crash cleanly, and make every roam expensive. Examples: Orianna, Viktor, Syndra, Azir, or Taliyah into Zed, Talon, Fizz, Qiyana, or Katarina.",
+      "Assassin into mage: preserve HP until wave, cooldown, or fog creates a real lethal window. Examples: Zed, Talon, Fizz, Akali, or Qiyana looking for angles against Lux, Xerath, Veigar, Viktor, or Orianna.",
+      "Skirmisher into mage: pull the lane longer, threaten extended trades, and punish missed cooldowns. Examples: Yone, Yasuo, Irelia, Sylas, or Naafiri into Syndra, Hwei, Anivia, Taliyah, or Lissandra.",
+      "Artillery into engage: range works only with vision and spacing. If river or side entrance control breaks, reset the position. Examples: Xerath, Vel'Koz, Ziggs, Lux, or Hwei against Lissandra, Galio, Pantheon, Annie, or Twisted Fate engage setup.",
+      "Utility roamer into scaling lane: use escorted first move to create side pressure; if the move is late, punish or reset instead. Examples: Twisted Fate, Galio, Taliyah, Ryze, or Pantheon into Aurelion Sol, Veigar, Kassadin, Corki, or Azir."
     ],
     climb: [
       "Iron to Bronze: reliable last hitting, camera movement, minimap checks, and respect for missing enemies.",
@@ -84,14 +84,14 @@
   };
 
   const archetypes = [
-    { title: "Control mage", text: "Push, chip, and deny roams. Wants wave priority and range control, then objective setup. Fight job: zone, peel, front-to-back damage." },
-    { title: "Burst mage", text: "Trades around cooldown spikes and fog angles. Wants HP lead or hidden access. Fight job: delete the accessible target." },
-    { title: "Artillery mage", text: "Controls space through range, siege, and anti-entry. Needs safe vision and a front line. Fight job: pre-fight chunking and zone control." },
-    { title: "Battle mage", text: "Survives early and scales into durable space control. Wants stable resources and shorter-range fights. Fight job: sustained area control." },
-    { title: "Assassin", text: "Preserves HP, creates lethal windows, and threatens fog. Wants crash or bounce into hidden angle. Fight job: backline access, cleanup, or pressure through absence." },
-    { title: "AD skirmisher", text: "Pulls longer lanes and punishes oversteps. Wants wave on own side or strong all-in timing. Fight job: side pressure and collapse." },
-    { title: "Utility roamer", text: "Prioritizes move timing over raw lane domination. Wants wave escort and guaranteed first move. Fight job: engage follow-up or numbers advantage." },
-    { title: "Anti-carry setup", text: "Focuses on reliability and target access. Wants guaranteed setup around objectives. Fight job: lockdown, peel, chain CC, and anti-dive." }
+    { title: "Control mage", text: "Push, chip, and deny roams. Wants wave priority and range control, then objective setup. Fight job: zone, peel, front-to-back damage. Examples: Orianna, Viktor, Syndra, Azir, Anivia, Hwei." },
+    { title: "Burst mage", text: "Trades around cooldown spikes and fog angles. Wants HP lead or hidden access. Fight job: delete the accessible target. Examples: Annie, Syndra, LeBlanc, Vex, Zoe, Veigar." },
+    { title: "Artillery mage", text: "Controls space through range, siege, and anti-entry. Needs safe vision and a front line. Fight job: pre-fight chunking and zone control. Examples: Xerath, Vel'Koz, Ziggs, Lux, Hwei, Jayce." },
+    { title: "Battle mage", text: "Survives early and scales into durable space control. Wants stable resources and shorter-range fights. Fight job: sustained area control. Examples: Swain, Vladimir, Cassiopeia, Ryze, Sylas, Aurelion Sol." },
+    { title: "Assassin", text: "Preserves HP, creates lethal windows, and threatens fog. Wants crash or bounce into hidden angle. Fight job: backline access, cleanup, or pressure through absence. Examples: Zed, Talon, Fizz, Qiyana, Akali, Katarina." },
+    { title: "AD skirmisher", text: "Pulls longer lanes and punishes oversteps. Wants wave on own side or strong all-in timing. Fight job: side pressure and collapse. Examples: Yasuo, Yone, Irelia, Tristana, Tryndamere, Naafiri." },
+    { title: "Utility roamer", text: "Prioritizes move timing over raw lane domination. Wants wave escort and guaranteed first move. Fight job: engage follow-up or numbers advantage. Examples: Twisted Fate, Galio, Taliyah, Pantheon, Lissandra, Ryze." },
+    { title: "Anti-carry setup", text: "Focuses on reliability and target access. Wants guaranteed setup around objectives. Fight job: lockdown, peel, chain CC, and anti-dive. Examples: Malzahar, Lissandra, Annie, Galio, Vex, Karma." }
   ];
 
   const patchRules = [
