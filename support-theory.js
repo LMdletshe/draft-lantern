@@ -106,19 +106,19 @@
   };
 
   const matchupShells = [
-    { title: "Engage into enchanter", text: "Force short, decisive windows after key shield, heal, or disengage cooldowns. Throw: bleeding too much poke before commit." },
-    { title: "Engage into mage or poke", text: "Survive first, use minions as cover, then punish missed skillshots or wave states that let you close distance." },
-    { title: "Enchanter into engage", text: "Trade on enemy entry timing, deny the clean commit, and extend fights. Throw: using peel spell for poke." },
-    { title: "Mage or poke into enchanter", text: "Build HP lead and wave control into plate pressure. Throw: overpushing without jungle cover." },
-    { title: "Catch or pick into immobile lane", text: "Threaten fog and misposition punish more than raw DPS trades. Throw: repeating the same hook angle every wave." }
+    { title: "Engage into enchanter", text: "Force short, decisive windows after key shield, heal, or disengage cooldowns. Throw: bleeding too much poke before commit. Examples: Leona, Nautilus, Rell, Alistar, or Blitzcrank into Lulu, Janna, Nami, Milio, or Sona." },
+    { title: "Engage into mage or poke", text: "Survive first, use minions as cover, then punish missed skillshots or wave states that let you close distance. Examples: Nautilus, Leona, Rakan, Rell, or Alistar into Lux, Zyra, Brand, Xerath, or Vel'Koz." },
+    { title: "Enchanter into engage", text: "Trade on enemy entry timing, deny the clean commit, and extend fights. Throw: using peel spell for poke. Examples: Janna, Lulu, Milio, Nami, or Renata Glasc into Leona, Nautilus, Rell, Alistar, or Pyke." },
+    { title: "Mage or poke into enchanter", text: "Build HP lead and wave control into plate pressure. Throw: overpushing without jungle cover. Examples: Zyra, Brand, Lux, Karma, Xerath, or Vel'Koz into Soraka, Sona, Yuumi, Lulu, or Milio." },
+    { title: "Catch or pick into immobile lane", text: "Threaten fog and misposition punish more than raw DPS trades. Throw: repeating the same hook angle every wave. Examples: Thresh, Blitzcrank, Pyke, Bard, or Morgana into Jhin, Ashe, Varus, Kog'Maw, or Aphelios lanes." }
   ];
 
   const archetypes = [
-    { title: "Engage support", text: "Creates pressure by standing in credible threat range. Wants level spikes, brush control, ally follow-up, and decisive windows." },
-    { title: "Catch support", text: "Wins through fog, angle variation, and punishment of predictable movement. Wants vision denial and enemy route pressure." },
-    { title: "Enchanter utility", text: "Wins by protecting carries, extending fights, denying engage, and turning cooldown trades into longer-resource wins." },
-    { title: "Mage poke", text: "Wins lane through HP tax, wave pressure, and spell angles. Needs jungle respect and clean pivoting beside ADC." },
-    { title: "Warden anti-engage", text: "Wins by making enemy commit fail. Wants carry proximity, cooldown patience, and front-to-back discipline." }
+    { title: "Engage support", text: "Creates pressure by standing in credible threat range. Wants level spikes, brush control, ally follow-up, and decisive windows. Examples: Leona, Nautilus, Rell, Alistar, Rakan, Maokai." },
+    { title: "Catch support", text: "Wins through fog, angle variation, and punishment of predictable movement. Wants vision denial and enemy route pressure. Examples: Thresh, Blitzcrank, Pyke, Bard, Morgana, Renata Glasc." },
+    { title: "Enchanter utility", text: "Wins by protecting carries, extending fights, denying engage, and turning cooldown trades into longer-resource wins. Examples: Lulu, Janna, Nami, Milio, Soraka, Sona, Yuumi." },
+    { title: "Mage poke", text: "Wins lane through HP tax, wave pressure, and spell angles. Needs jungle respect and clean pivoting beside ADC. Examples: Zyra, Brand, Lux, Xerath, Vel'Koz, Karma, Seraphine." },
+    { title: "Warden anti-engage", text: "Wins by making enemy commit fail. Wants carry proximity, cooldown patience, and front-to-back discipline. Examples: Braum, Taric, Tahm Kench, Poppy support, Galio support, Shen support." }
   ];
 
   function list(items, className = "") {
