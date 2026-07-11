@@ -98,17 +98,17 @@
   };
 
   const archetypes = [
-    { title: "Hypercarry scaler", text: "Examples: Jinx, Xayah. Play for clean farm, protected pushes, and 2-3 item fights. Fight job: sustained DPS from structured front-to-back or peel setups." },
-    { title: "Lane bully snowball", text: "Examples: Draven, Miss Fortune. Push early leads into crash, plate, first tower, and objective timing before the scaling window closes." },
-    { title: "Utility control ADC", text: "Example: Ashe. Use slows, arrows, and setup to create favorable starts. Fight job: start, stabilize, chase, pick, or peel." },
-    { title: "Caster or poke mobility ADC", text: "Example: Ezreal. Trade on spell-hit windows, preserve safety, and keep mid-game tempo through siege and follow-up angles." }
+    { title: "Hypercarry scaler", text: "Examples: Jinx, Xayah, Aphelios, Kog'Maw, Twitch, Zeri, Kai'Sa. Play for clean farm, protected pushes, and 2-3 item fights. Fight job: sustained DPS from structured front-to-back or peel setups." },
+    { title: "Lane bully snowball", text: "Examples: Draven, Miss Fortune, Caitlyn, Kalista, Lucian, Samira, Varus. Push early leads into crash, plate, first tower, and objective timing before the scaling window closes." },
+    { title: "Utility control ADC", text: "Examples: Ashe, Jhin, Varus, Senna, Sivir, Seraphine APC. Use slows, roots, arrows, waves, and setup to create favorable starts. Fight job: start, stabilize, chase, pick, or peel." },
+    { title: "Caster or poke mobility ADC", text: "Examples: Ezreal, Corki, Kai'Sa, Lucian, Smolder, Ziggs APC. Trade on spell-hit windows, preserve safety, and keep mid-game tempo through siege and follow-up angles." }
   ];
 
   const itemFamilies = [
-    { title: "Crit capstone scaling", text: "Use when you can reliably reach multiple items and fight with peel or stable farm path. The problem to solve is maximum sustained auto value." },
-    { title: "Repeated-hit anti-frontline", text: "Use when enemy frontline cannot be burst and you will get long DPS windows. The problem to solve is durable targets." },
-    { title: "Tempo, wave, or burst access", text: "Use when first-hit pressure, rotations, or mid-game skirmish pace matter more than pure late scaling." },
-    { title: "Safety or anti-burst", text: "Use when survival increases total damage more than greedy DPS. The problem to solve is one-rotation threat." }
+    { title: "Crit capstone scaling", text: "Use when you can reliably reach multiple items and fight with peel or stable farm path. The problem to solve is maximum sustained auto value. Common users: Jinx, Caitlyn, Xayah, Tristana, Aphelios." },
+    { title: "Repeated-hit anti-frontline", text: "Use when enemy frontline cannot be burst and you will get long DPS windows. The problem to solve is durable targets. Common users: Kog'Maw, Kai'Sa, Vayne, Varus, Zeri." },
+    { title: "Tempo, wave, or burst access", text: "Use when first-hit pressure, rotations, or mid-game skirmish pace matter more than pure late scaling. Common users: Jhin, Lucian, Miss Fortune, Caitlyn, Sivir, Smolder." },
+    { title: "Safety or anti-burst", text: "Use when survival increases total damage more than greedy DPS. The problem to solve is one-rotation threat. Common users: Xayah, Ezreal, Kai'Sa, Samira, Zeri, Vayne." }
   ];
 
   const phases = [
