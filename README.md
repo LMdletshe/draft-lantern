@@ -1,6 +1,13 @@
 # Draft Lantern
 
-A beginner-friendly, patch-agnostic League-inspired champion comp builder.
+An AI-assisted, beginner-friendly, patch-agnostic League-inspired champion comp builder.
+
+This started as a self-directed experiment to test how well AI could help turn
+a personal idea into a usable app. I chose a competitive gaming context because
+drafting has real decision pressure: roles, counters, synergy, scaling, team
+fight plans, and trade-offs. The project became a practical way to explore
+AI-assisted development while building something connected to how I think about
+games and strategy.
 
 Production: https://lol-helper30.vercel.app
 
