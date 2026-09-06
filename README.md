@@ -11,9 +11,10 @@ games and strategy.
 
 Production: https://lol-helper30.vercel.app
 
-Open `index.html` in a browser to use it. The app is fully static. The main
-runtime lives in `src/core/app.js`, feature modules live in `src/features`, role
-and team learning content lives in `src/guides`, and CSS lives in `src/styles`.
+Open `index.html` in a browser to use it. The app is fully static. Data lives
+in `src/data`, shared runtime helpers live in `src/core`, feature modules live
+in `src/features`, role and team learning content lives in `src/guides`, and CSS
+lives in `src/styles`.
 
 The interface is responsive across desktop, tablet, and phone layouts. Mobile
 views use touch-sized controls, a swipeable view navigation bar, single-column
@@ -80,11 +81,23 @@ built-in curated starter pool and initials automatically.
 ```text
 index.html
 src/
+  data/
+    app-config.js
+    champions.js
+    compositions.js
   core/
+    dom.js
+    state.js
+    utils.js
     app.js
   features/
     learn.js
     comp-builder.js
+    team-builder.js
+    premade-comps.js
+    matchups.js
+    persistence.js
+    draft-room.js
   guides/
     top-lane-theory.js
     jungle-theory.js
@@ -105,7 +118,8 @@ steps.
 ## Editing The Data
 
 Hand-curated champion entries live in the `champions` array in
-`src/core/app.js`. Generated full-roster entries are created from Riot Data
+`src/data/champions.js`. Preset team comps and favorite-core profiles live in
+`src/data/compositions.js`. Generated full-roster entries are created from Riot Data
 Dragon at runtime.
 
 Useful fields:
