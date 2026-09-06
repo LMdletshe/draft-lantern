@@ -11,9 +11,9 @@ games and strategy.
 
 Production: https://lol-helper30.vercel.app
 
-Open `index.html` in a browser to use it. The app is fully static and keeps its
-champion data in `app.js`, so matchup logic can be edited without a backend or
-live patch-stat dependency.
+Open `index.html` in a browser to use it. The app is fully static. The main
+runtime lives in `src/core/app.js`, feature modules live in `src/features`, role
+and team learning content lives in `src/guides`, and CSS lives in `src/styles`.
 
 The interface is responsive across desktop, tablet, and phone layouts. Mobile
 views use touch-sized controls, a swipeable view navigation bar, single-column
@@ -39,6 +39,9 @@ built-in curated starter pool and initials automatically.
 - Includes a dedicated library of premade team compositions covering beginner
   engage, wombo combo, front-to-back, protect-the-carry, pick, poke, siege, and
   anti-dive styles.
+- Includes a golden-rule comp builder that suggests full teams by strategic jobs
+  such as engage, poke, scaling, assassin threat, split pressure, peel,
+  waveclear, objective DPS, and pick tools.
 - Each premade team explains its pros, cons, golden rule, flexible champion
   swaps, and separate early-, mid-, and late-game plans.
 - Loads any premade composition directly into the Team Builder for editing and
@@ -72,10 +75,38 @@ built-in curated starter pool and initials automatically.
 - Marks modeled profiles separately while preserving richer hand-curated
   advice for champions that have it.
 
+## File Structure
+
+```text
+index.html
+src/
+  core/
+    app.js
+  features/
+    learn.js
+    comp-builder.js
+  guides/
+    top-lane-theory.js
+    jungle-theory.js
+    mid-lane-theory.js
+    adc-theory.js
+    support-theory.js
+    team-theory.js
+  styles/
+    styles.css
+    learn.css
+docs/
+  file-structure.md
+```
+
+See `docs/file-structure.md` for ownership rules and the next safe cleanup
+steps.
+
 ## Editing The Data
 
-Hand-curated champion entries live in the `champions` array in `app.js`.
-Generated full-roster entries are created from Riot Data Dragon at runtime.
+Hand-curated champion entries live in the `champions` array in
+`src/core/app.js`. Generated full-roster entries are created from Riot Data
+Dragon at runtime.
 
 Useful fields:
 
