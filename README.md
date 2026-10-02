@@ -14,7 +14,8 @@ Production: https://lol-helper30.vercel.app
 Open `index.html` in a browser to use it. The app is fully static. Data lives
 in `src/data`, shared runtime helpers live in `src/core`, feature modules live
 in `src/features`, role and team learning content lives in `src/guides`, and CSS
-lives in `src/styles`.
+lives in `src/styles`. On Vercel, `api/riot-player.js` runs as a serverless
+function for Riot API lookups.
 
 The interface is responsive across desktop, tablet, and phone layouts. Mobile
 views use touch-sized controls, a swipeable view navigation bar, single-column
@@ -58,6 +59,9 @@ built-in curated starter pool and initials automatically.
   range. Open roles receive suggested fixes.
 - Suggests general counter-pick ideas with matchup difficulty, reasons, and lane
   advice.
+- Uses a server-side Riot API scout, when `RIOT_API_KEY` is configured, to look
+  up a Riot ID, ranked profile, champion mastery, and recent match patterns
+  without exposing the API key to the browser.
 - Highlights curated champion-pair synergies.
 - Opens a champion guide with strengths, weaknesses, lane advice, teamfight
   advice, partners, and general answers.
@@ -79,6 +83,8 @@ built-in curated starter pool and initials automatically.
 ## File Structure
 
 ```text
+api/
+  riot-player.js
 index.html
 src/
   data/
@@ -93,6 +99,7 @@ src/
   features/
     learn.js
     comp-builder.js
+    riot-scout.js
     team-builder.js
     premade-comps.js
     matchups.js
@@ -136,16 +143,19 @@ Pair combos live in `pairSynergies`. Common role assignments live in
 
 ## Riot Data Layer
 
-The current integration uses public Data Dragon endpoints and does not require a
-Riot API key. It is used for the full champion roster, champion visuals, and
-official metadata. The original curated champions keep richer matchup advice;
-the rest receive complete modeled profiles from Riot combat attributes,
-champion class, role, and champion-specific archetype traits.
+The app uses public Data Dragon endpoints for the full champion roster,
+champion visuals, and official metadata. Data Dragon does not require a Riot API
+key and can run directly in the browser. The original curated champions keep
+richer matchup advice; the rest receive complete modeled profiles from Riot
+combat attributes, champion class, role, and champion-specific archetype traits.
 
-A real Riot API key would be needed for account lookup, match history, mastery,
-or large-scale matchup statistics. That would also require a small backend or
-serverless function so the key is not exposed in the browser.
+Account lookup, match history, ranked data, and champion mastery use the
+server-side Vercel function in `api/riot-player.js`. Set `RIOT_API_KEY` in the
+Vercel project environment variables for production. For local Vercel
+development, copy `.env.example` to `.env.local` and add a valid Riot
+development, personal, or production key.
 
-The current app deliberately does not ask for or store a Riot API key. Its
-recommendations remain patch-agnostic and are based on broad champion identity,
-team needs, and curated synergy patterns.
+The frontend never receives the Riot key. It only calls `/api/riot-player`,
+which forwards requests to Riot with `X-Riot-Token` from the server environment.
+The recommendations remain matchup-theory-first, with Riot player data used as
+extra scouting context.
