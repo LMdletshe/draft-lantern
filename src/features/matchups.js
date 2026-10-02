@@ -24,15 +24,16 @@ function populateEnemyPicks() {
 function scoreCounter(enemy, candidate, role = candidate.roles[0]) {
   let score = 42;
   const reasons = [];
-  const enemyTraits = getChampionCombatTraits(enemy);
-  const candidateTraits = getChampionCombatTraits(candidate);
+  const enemyTraits = getChampionProfileSignals(enemy);
+  const candidateTraits = getChampionProfileSignals(candidate);
   const enemyWeaknesses = new Set(enemy.weakInto);
   const roleFit = getRoleFit(candidate, role);
+  const smartRead = getSmartMatchupFactors(enemy, candidate);
   let evidence = 0;
 
   candidate.goodInto.forEach((trait) => {
     if (enemyTraits.has(trait)) {
-      score += 10;
+      score += 8;
       evidence += 1;
       reasons.push(`${candidate.name} naturally attacks ${enemy.name}'s ${trait.replaceAll("-", " ")} pattern.`);
     } else if (enemyWeaknesses.has(trait)) {
@@ -54,50 +55,9 @@ function scoreCounter(enemy, candidate, role = candidate.roles[0]) {
     }
   });
 
-  if ((candidateTraits.has("peel") || candidateTraits.has("anti-dive"))
-    && ["dive", "assassin", "burst"].some((tag) => enemyTraits.has(tag))) {
-    score += 9;
-    evidence += 1;
-    reasons.push("Peel lowers the value of enemy dive or burst.");
-  }
-
-  if ((candidateTraits.has("poke") || candidateTraits.has("range"))
-    && (enemyTraits.has("low-range") || enemyTraits.has("immobile"))) {
-    score += 9;
-    evidence += 1;
-    reasons.push("Range can punish low-range champions before they start fights.");
-  }
-
-  if (candidateTraits.has("lockdown") && (enemyTraits.has("mobility") || enemyTraits.has("assassin"))) {
-    score += 8;
-    evidence += 1;
-    reasons.push(`Reliable control can stop ${enemy.name} after their first movement commitment.`);
-  }
-
-  if (candidateTraits.has("sustain") && enemyTraits.has("poke")) {
-    score += 7;
-    evidence += 1;
-    reasons.push("Sustain reduces the value of repeated poke trades.");
-  }
-
-  if ((candidateTraits.has("early") || candidateTraits.has("duel")) && enemyTraits.has("scaling")) {
-    score += 8;
-    evidence += 1;
-    reasons.push(`${candidate.name} can force pressure before ${enemy.name}'s scaling plan is ready.`);
-  }
-
-  if ((candidateTraits.has("tank") || candidateTraits.has("frontline"))
-    && (enemyTraits.has("burst") || enemyTraits.has("assassin"))) {
-    score += 6;
-    evidence += 1;
-    reasons.push(`${candidate.name} is difficult for ${enemy.name} to remove in one burst window.`);
-  }
-
-  if (candidateTraits.has("hard-engage") && (enemyTraits.has("immobile") || enemyTraits.has("squishy"))) {
-    score += 7;
-    evidence += 1;
-    reasons.push(`${enemy.name} has limited room for error against reliable engage.`);
-  }
+  score += smartRead.scoreDelta;
+  evidence += smartRead.positiveEvidence;
+  reasons.push(...smartRead.positives.map((factor) => factor.reason));
 
   const override = explorerCounterOverrides[candidate.name]?.[enemy.name];
   if (override) {
@@ -119,6 +79,8 @@ function scoreCounter(enemy, candidate, role = candidate.roles[0]) {
     reasons: uniqueList(reasons).slice(0, 3),
     evidence,
     roleFit,
+    smartFactors: smartRead.positives.slice(0, 3),
+    smartRisks: smartRead.negatives.slice(0, 2),
     tier: getMatchupDifficulty(finalScore, evidence, Boolean(override))
   };
 }
@@ -133,8 +95,8 @@ function getMatchupDifficulty(score, evidence = 0, hasOverride = false) {
 
 function getMatchupAdvice(enemy, candidate) {
   const tips = [];
-  const enemyTraits = getChampionCombatTraits(enemy);
-  const candidateTraits = getChampionCombatTraits(candidate);
+  const enemyTraits = getChampionProfileSignals(enemy);
+  const candidateTraits = getChampionProfileSignals(candidate);
 
   if ((candidateTraits.has("poke") || candidateTraits.has("range")) && enemyTraits.has("low-range")) {
     tips.push(`Keep ${enemy.name} at the edge of your range and avoid giving them a clean all-in.`);
@@ -150,6 +112,12 @@ function getMatchupAdvice(enemy, candidate) {
   }
   if (candidateTraits.has("pick") || candidateTraits.has("lockdown")) {
     tips.push("Hold crowd control until the enemy uses their movement tool or walks away from the wave.");
+  }
+  if (candidateTraits.has("wave-clear") && enemyTraits.has("split-push")) {
+    tips.push("Clear waves first, then move while their side-lane pressure is temporarily neutralized.");
+  }
+  if (candidateTraits.has("frontline-check") && enemyTraits.has("frontline")) {
+    tips.push("Hit the closest durable target safely; your sustained damage matters more than chasing carries.");
   }
 
   return uniqueList(tips).slice(0, 2);
@@ -181,11 +149,14 @@ function getExplorerTier(score) {
 function scoreChampionIntoOpponent(champion, opponent) {
   let score = 50;
   const reasons = [];
+  const championSignals = getChampionProfileSignals(champion);
+  const opponentSignals = getChampionProfileSignals(opponent);
+  const smartRead = getSmartMatchupFactors(opponent, champion);
   let positiveMatches = 0;
   let negativeMatches = 0;
 
   champion.goodInto.forEach((trait) => {
-    if (opponent.tags.includes(trait)) {
+    if (opponentSignals.has(trait)) {
       score += 8;
       positiveMatches += 1;
       reasons.push(`${champion.name} naturally performs well into ${trait.replaceAll("-", " ")} champions like ${opponent.name}.`);
@@ -196,7 +167,7 @@ function scoreChampionIntoOpponent(champion, opponent) {
     }
   });
 
-  champion.tags.forEach((trait) => {
+  championSignals.forEach((trait) => {
     if (opponent.weakInto.includes(trait)) {
       score += 6;
       positiveMatches += 1;
@@ -205,32 +176,37 @@ function scoreChampionIntoOpponent(champion, opponent) {
   });
 
   opponent.goodInto.forEach((trait) => {
-    if (champion.tags.includes(trait)) {
+    if (championSignals.has(trait)) {
       score -= 6;
       negativeMatches += 1;
     }
   });
 
+  score += smartRead.scoreDelta;
+  positiveMatches += smartRead.positiveEvidence;
+  negativeMatches += smartRead.negatives.length;
+  reasons.push(...smartRead.positives.map((factor) => factor.reason));
+
   if (positiveMatches > 3) score -= (positiveMatches - 3) * 3;
   if (negativeMatches > 2) score += (negativeMatches - 2) * 2;
 
-  if (champion.tags.includes("early") && opponent.tags.includes("scaling")) {
+  if (championSignals.has("early") && opponentSignals.has("scaling")) {
     score += 7;
     reasons.push(`${champion.name} can pressure ${opponent.name} before their scaling plan is ready.`);
   }
-  if (champion.tags.includes("duel") && opponent.tags.some((tag) => ["assassin", "scaling", "low-range"].includes(tag))) {
+  if (championSignals.has("duel") && ["assassin", "scaling", "low-range"].some((tag) => opponentSignals.has(tag))) {
     score += 5;
     reasons.push(`${champion.name} is comfortable forcing direct skirmishes against this pattern.`);
   }
-  if (champion.tags.includes("engage") && opponent.tags.includes("immobile")) {
+  if (championSignals.has("engage") && opponentSignals.has("immobile")) {
     score += 6;
     reasons.push(`${opponent.name} has limited ways to avoid ${champion.name}'s engage.`);
   }
-  if (champion.tags.includes("peel") && opponent.tags.some((tag) => ["dive", "assassin", "burst"].includes(tag))) {
+  if (championSignals.has("peel") && ["dive", "assassin", "burst"].some((tag) => opponentSignals.has(tag))) {
     score += 6;
     reasons.push(`${champion.name}'s defensive tools reduce ${opponent.name}'s main way of reaching carries.`);
   }
-  if (champion.tags.includes("poke") && opponent.tags.includes("low-range")) {
+  if (championSignals.has("poke") && opponentSignals.has("low-range")) {
     score += 6;
     reasons.push(`${champion.name} can apply pressure before ${opponent.name} reaches effective range.`);
   }
@@ -258,7 +234,9 @@ function scoreChampionIntoOpponent(champion, opponent) {
     opponent,
     score: finalScore,
     tier: getExplorerTier(finalScore),
-    reasons: uniqueList(reasons).slice(0, 3)
+    reasons: uniqueList(reasons).slice(0, 3),
+    smartFactors: smartRead.positives.slice(0, 3),
+    smartRisks: smartRead.negatives.slice(0, 2)
   };
 }
 
@@ -371,6 +349,9 @@ function renderChampionExplorer() {
   const matchups = getExplorerMatchups(champion);
   const hardCount = getRankedExplorerMatchups(champion)
     .filter((result) => result.tier.key === "hard").length;
+  const dataSourceLabel = riotData.status === "ready"
+    ? `Latest Riot Data Dragon ${riotData.version}`
+    : "Offline modeled roster";
 
   explorerProfile.innerHTML = `
     <div class="explorer-profile__identity">
@@ -441,7 +422,7 @@ function renderChampionExplorer() {
         <p class="eyebrow">Who ${escapeHtml(champion.name)} Counters</p>
         <h2>${matchups.length} ${escapeHtml(filterLabel.toLowerCase())}${explorerRole.value === "All" ? "" : ` in ${escapeHtml(explorerRole.value)}`}</h2>
       </div>
-      <p>General kit and archetype analysis, not live patch win-rate data.</p>
+      <p>${escapeHtml(dataSourceLabel)} + kit/archetype analysis, not live patch win-rate data.</p>
     </div>
     ${
       matchups.length
@@ -454,6 +435,7 @@ function renderChampionExplorer() {
               </div>
               <div class="explorer-advantage"><span>General advantage</span><strong>${result.score}%</strong></div>
               <p>${escapeHtml(result.reasons.join(" ") || `${champion.name}'s general game plan matches well into ${result.opponent.name}.`)}</p>
+              ${result.smartFactors?.length ? `<div class="smart-read">${result.smartFactors.map((factor) => `<span>${escapeHtml(factor.label)}</span>`).join("")}</div>` : ""}
               <div class="explorer-plan"><strong>How to play it:</strong> ${escapeHtml(getExplorerOpponentPlan(champion, result.opponent))}</div>
               <button class="text-button" type="button" data-details="${escapeHtml(result.opponent.name)}">View ${escapeHtml(result.opponent.name)}</button>
             </article>
@@ -498,6 +480,14 @@ function renderCounters() {
   const candidates = focusedCandidates.slice(0, limit);
   const hardCount = ranked.filter((result) => result.tier.key === "hard").length;
   const strongCount = ranked.filter((result) => result.tier.key === "strong").length;
+  const dataSourceLabel = riotData.status === "ready"
+    ? `Latest Riot Data Dragon ${riotData.version}`
+    : "Offline modeled roster";
+  const strongestSmartFactors = uniqueList(
+    ranked
+      .flatMap((result) => result.smartFactors || [])
+      .map((factor) => factor.label)
+  ).slice(0, 4);
 
   matchupOverview.innerHTML = `
     <div class="matchup-overview__enemy">
@@ -510,6 +500,8 @@ function renderCounters() {
     <div class="matchup-overview__notes">
       <span><strong>Respect:</strong> ${escapeHtml(getChampionStrengths(enemy).slice(0, 2).join(" and ").toLowerCase())}</span>
       <span><strong>Attack:</strong> ${escapeHtml(getChampionWeaknesses(enemy).slice(0, 2).join(" and "))}</span>
+      <span><strong>Data:</strong> ${escapeHtml(dataSourceLabel)}</span>
+      ${strongestSmartFactors.length ? `<span><strong>Smart reads:</strong> ${escapeHtml(strongestSmartFactors.join(", "))}</span>` : ""}
       <span><strong>Counter read:</strong> ${hardCount} hard and ${strongCount} strong general answer${hardCount + strongCount === 1 ? "" : "s"} found${includeOffRole ? ", including off-role options" : ""}.</span>
     </div>
   `;
@@ -540,6 +532,8 @@ function renderCounters() {
           </div>
           ${result.roleFit.offRole ? `<span class="off-role-note">${escapeHtml(result.roleFit.label)} ${escapeHtml(role)}</span>` : ""}
           <p>${escapeHtml(reasons)}</p>
+          ${result.smartFactors?.length ? `<div class="smart-read">${result.smartFactors.map((factor) => `<span>${escapeHtml(factor.label)}</span>`).join("")}</div>` : ""}
+          ${result.smartRisks?.length ? `<div class="counter-risk"><strong>Watch:</strong> ${escapeHtml(result.smartRisks.map((factor) => factor.label.toLowerCase()).join(", "))}</div>` : ""}
           <div class="lane-tip"><strong>How to win:</strong> ${escapeHtml(laneAdvice.join(" ") || getLanePlan(result.candidate))}</div>
           <div class="meter"><span>Counter confidence</span><span>${result.score}%</span></div>
           <div class="counter-card__actions">

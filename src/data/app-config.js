@@ -290,6 +290,121 @@ const championTraitGroups = {
   ])
 };
 
+const matchupFactorRules = [
+  {
+    label: "Range controls low reach",
+    candidateAny: ["poke", "range", "siege"],
+    enemyAny: ["low-range", "immobile", "frontline"],
+    score: 9,
+    evidence: 1,
+    reason: "{candidate} can start the lane or fight before {enemy} reaches their useful range."
+  },
+  {
+    label: "Peel breaks dive",
+    candidateAny: ["peel", "anti-dive", "disengage"],
+    enemyAny: ["dive", "assassin", "burst"],
+    score: 10,
+    evidence: 1,
+    reason: "{candidate}'s defensive tools reduce {enemy}'s main burst or backline access plan."
+  },
+  {
+    label: "Lockdown punishes mobility",
+    candidateAny: ["lockdown", "point-click"],
+    enemyAny: ["mobility", "assassin", "dive"],
+    score: 9,
+    evidence: 1,
+    reason: "Reliable control can catch {enemy} after their first movement commitment."
+  },
+  {
+    label: "Tempo before scaling",
+    candidateAny: ["early", "snowball", "duel", "skirmish"],
+    enemyAny: ["scaling", "item-reliant", "farming-jungle"],
+    score: 9,
+    evidence: 1,
+    reason: "{candidate} can force action before {enemy}'s scaling plan is ready."
+  },
+  {
+    label: "Sustain absorbs poke",
+    candidateAny: ["sustain", "durable"],
+    enemyAny: ["poke", "range", "attrition"],
+    score: 7,
+    evidence: 1,
+    reason: "{candidate} can recover through repeated chip damage instead of losing every short trade."
+  },
+  {
+    label: "Frontline soaks burst",
+    candidateAny: ["tank", "frontline", "durable"],
+    enemyAny: ["burst", "assassin", "pick"],
+    score: 7,
+    evidence: 1,
+    reason: "{candidate} is hard for {enemy} to remove in one cooldown window."
+  },
+  {
+    label: "DPS cuts tanks",
+    candidateAny: ["high-dps", "frontline-check", "marksman"],
+    enemyAny: ["tank", "frontline", "sustain"],
+    score: 7,
+    evidence: 1,
+    reason: "{candidate} has the sustained damage profile needed to punish {enemy}'s durability."
+  },
+  {
+    label: "Map answer to side lane",
+    candidateAny: ["wave-clear", "global", "hard-engage"],
+    enemyAny: ["split-push", "roam", "proxy"],
+    score: 6,
+    evidence: 1,
+    reason: "{candidate} can answer {enemy}'s side-lane or roam pressure without giving up the whole map."
+  },
+  {
+    label: "Squishy into burst",
+    candidateAny: ["squishy", "fragile-carry"],
+    enemyAny: ["burst", "assassin", "dive"],
+    score: -10,
+    evidence: 1,
+    reason: "{candidate} has a thin health buffer if {enemy} reaches them first."
+  },
+  {
+    label: "Low reach into kite",
+    candidateAny: ["low-range"],
+    enemyAny: ["range", "poke", "kite", "disengage"],
+    score: -8,
+    evidence: 1,
+    reason: "{candidate} can be forced to spend health before they enter threat range."
+  },
+  {
+    label: "Scaling can be rushed",
+    candidateAny: ["scaling", "item-reliant", "farming-jungle"],
+    enemyAny: ["early", "snowball", "duel", "skirmish"],
+    score: -8,
+    evidence: 1,
+    reason: "{candidate} may lose too much tempo if {enemy} forces early fights."
+  },
+  {
+    label: "Skillshots into mobility",
+    candidateAny: ["skillshot-reliant", "poke"],
+    enemyAny: ["mobility", "safe", "dash"],
+    score: -6,
+    evidence: 1,
+    reason: "{enemy}'s movement can reduce the reliability of {candidate}'s main threat."
+  },
+  {
+    label: "Pick into protection",
+    candidateAny: ["assassin", "pick", "burst"],
+    enemyAny: ["peel", "frontline", "tank", "anti-dive"],
+    score: -7,
+    evidence: 1,
+    reason: "{enemy}'s protection tools make it harder for {candidate} to finish isolated targets."
+  },
+  {
+    label: "Poke into hard engage",
+    candidateAny: ["poke", "range", "siege"],
+    enemyAny: ["hard-engage", "dive", "mobility"],
+    score: -7,
+    evidence: 1,
+    reason: "{candidate} must keep spacing clean because {enemy} can punish one bad step."
+  }
+];
+
 const explorerCounterOverrides = {
   "Xin Zhao": {
     "Master Yi": {

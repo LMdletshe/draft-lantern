@@ -1998,6 +1998,33 @@ select:focus {
   line-height: 1.45;
 }
 
+.smart-read {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.smart-read span {
+  display: inline-flex;
+  min-height: 23px;
+  align-items: center;
+  border: 1px solid rgba(101, 184, 143, 0.36);
+  border-radius: 999px;
+  background: rgba(101, 184, 143, 0.08);
+  padding: 0 8px;
+  color: #a7dfc0;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.counter-risk {
+  margin: 0 0 12px;
+  color: #dca7a7;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .lane-tip {
   min-height: 92px;
   margin-bottom: 12px;

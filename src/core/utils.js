@@ -257,6 +257,93 @@ function getChampionCombatTraits(champion) {
   return traits;
 }
 
+function traitsHaveAny(traits, values = []) {
+  return values.some((value) => traits.has(value));
+}
+
+function addTraitIf(traits, condition, ...values) {
+  if (condition) values.forEach((value) => traits.add(value));
+}
+
+function renderMatchupTemplate(template, enemy, candidate) {
+  return template
+    .replaceAll("{enemy}", enemy.name)
+    .replaceAll("{candidate}", candidate.name);
+}
+
+function getChampionProfileSignals(champion) {
+  const traits = new Set(getChampionCombatTraits(champion));
+  const info = getChampionInfo(champion);
+  const damageType = getDamageType(champion);
+  const tags = champion.tags || [];
+  const rolesForChampion = champion.roles || [];
+  const scoreValues = champion.scores || {};
+
+  addTraitIf(traits, damageType === "Magic", "magic-damage");
+  addTraitIf(traits, damageType === "Physical", "physical-damage");
+  addTraitIf(traits, damageType === "Mixed", "mixed-damage");
+  addTraitIf(traits, (scoreValues.damage || 0) >= 4 || (info.attack || 0) >= 8, "high-dps", "frontline-check");
+  addTraitIf(traits, (scoreValues.poke || 0) >= 4 || traits.has("siege"), "wave-clear", "skillshot-reliant");
+  addTraitIf(traits, (scoreValues.frontline || 0) >= 4 || (info.defense || 0) >= 7, "durable");
+  addTraitIf(traits, traits.has("scaling") && !traits.has("early"), "item-reliant");
+  addTraitIf(traits, rolesForChampion.includes("Jungle") && traits.has("scaling") && !traits.has("early"), "farming-jungle");
+  addTraitIf(traits, rolesForChampion.includes("Support") && (traits.has("peel") || traits.has("utility")), "low-income-value");
+  addTraitIf(traits, traits.has("global") || traits.has("mobility"), "map-pressure");
+  addTraitIf(traits, traits.has("split-push") || traits.has("global") || traits.has("mobility"), "roam");
+  addTraitIf(traits, traits.has("marksman") && !traits.has("mobility"), "fragile-carry");
+  addTraitIf(traits, tags.includes("safe") || traits.has("mobility"), "kite");
+  addTraitIf(traits, tags.includes("mobility"), "dash");
+
+  const pointClickControl = new Set([
+    "Annie", "Lissandra", "Malzahar", "Pantheon", "Poppy", "Rammus", "Renekton",
+    "Ryze", "Twisted Fate", "Vi", "Warwick"
+  ]);
+  if (pointClickControl.has(champion.name)) traits.add("point-click");
+
+  return traits;
+}
+
+function getSmartMatchupFactors(enemy, candidate) {
+  const enemySignals = getChampionProfileSignals(enemy);
+  const candidateSignals = getChampionProfileSignals(candidate);
+  const positives = [];
+  const negatives = [];
+  let scoreDelta = 0;
+  let evidence = 0;
+  let positiveEvidence = 0;
+
+  matchupFactorRules.forEach((rule) => {
+    if (!traitsHaveAny(candidateSignals, rule.candidateAny) || !traitsHaveAny(enemySignals, rule.enemyAny)) {
+      return;
+    }
+
+    const factor = {
+      label: rule.label,
+      reason: renderMatchupTemplate(rule.reason, enemy, candidate),
+      score: rule.score
+    };
+
+    scoreDelta += rule.score;
+    evidence += rule.evidence || 0;
+    if (rule.score > 0) {
+      positiveEvidence += rule.evidence || 0;
+      positives.push(factor);
+    } else {
+      negatives.push(factor);
+    }
+  });
+
+  return {
+    scoreDelta,
+    evidence,
+    positiveEvidence,
+    positives,
+    negatives,
+    candidateSignals,
+    enemySignals
+  };
+}
+
 function getRoleFit(champion, role) {
   if (champion.roles.includes(role)) {
     return { score: champion.roles[0] === role ? 1 : 0.94, label: "Natural role", offRole: false };
