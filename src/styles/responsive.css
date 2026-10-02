@@ -44,7 +44,8 @@
   }
 
   .explorer-attributes,
-  .explorer-matchup-grid {
+  .explorer-matchup-grid,
+  .tier-row__champions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -133,6 +134,15 @@
 
   .explorer-controls .search-field {
     grid-column: 1 / -1;
+  }
+
+  .champion-tier-section__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tier-controls {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .explorer-profile__identity {
@@ -476,7 +486,9 @@
   .explorer-controls,
   .explorer-search-results,
   .explorer-attributes,
-  .explorer-matchup-grid {
+  .explorer-matchup-grid,
+  .tier-row,
+  .tier-row__champions {
     grid-template-columns: 1fr;
   }
 
@@ -499,6 +511,18 @@
 
   .explorer-matchup-card {
     min-height: 0;
+  }
+
+  .tier-row__label {
+    grid-template-columns: auto 1fr;
+    justify-items: start;
+    min-height: 0;
+    padding: 8px 10px;
+    column-gap: 10px;
+  }
+
+  .tier-row__label strong {
+    font-size: 1.25rem;
   }
 
   .explorer-counter-heading {

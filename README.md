@@ -32,6 +32,10 @@ built-in curated starter pool and initials automatically.
 - Includes a searchable Champion Explorer for the full loaded roster.
 - Shows champion roles, damage type, difficulty, attributes, strengths,
   weaknesses, team contribution scores, and general hard-counter targets.
+- Shows a current-patch S-to-D Champion Tier model, filterable by role, with
+  plausible off-role picks separated from natural-role picks.
+- Adds Riot Data Dragon attributes and optional Riot Scout mastery/recent-game
+  signals directly into champion evaluations.
 - Filters the champions a selected pick counters by opponent role and matchup
   strength, with reasons and simple matchup plans.
 - Locks one or more favorite champions into their preferred roles and generates
@@ -162,4 +166,8 @@ development, personal, or production key.
 The frontend never receives the Riot key. It only calls `/api/riot-player`,
 which forwards requests to Riot with `X-Riot-Token` from the server environment.
 The recommendations remain matchup-theory-first, with Riot player data used as
-extra scouting context.
+extra scouting context. The S-to-D Champion Tier view is a Draft Lantern model
+based on current Data Dragon roster attributes, local role-fit and matchup
+rules, and optional player-specific Scout data. Riot does not provide a free
+global champion tier-list endpoint, so the app labels this as model-based
+rather than live global win-rate data.

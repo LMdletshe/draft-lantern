@@ -3,7 +3,10 @@ function switchView(viewId) {
   document.querySelectorAll(".view-tab").forEach((tab) => tab.classList.toggle("is-active", tab.dataset.view === viewId));
   if (viewId === "draftRoomView") renderDraftRoom();
   if (viewId === "premadeView") renderPremadeComps();
-  if (viewId === "championExplorerView") renderChampionExplorer();
+  if (viewId === "championExplorerView") {
+    renderChampionExplorer();
+    renderChampionTierList();
+  }
   window.scrollTo({ top: document.querySelector(".view-tabs").offsetTop - 12, behavior: "smooth" });
 }
 
@@ -19,6 +22,7 @@ function renderAll() {
   renderDraftRoom();
   renderPremadeComps();
   renderChampionExplorer();
+  renderChampionTierList();
 }
 
 document.querySelectorAll(".role-tab").forEach((button) => {
@@ -127,9 +131,15 @@ explorerSearch.addEventListener("keydown", (event) => {
 });
 explorerRole.addEventListener("change", renderChampionExplorer);
 explorerStrength.addEventListener("change", renderChampionExplorer);
+tierRole.addEventListener("change", renderChampionTierList);
+tierIncludeOffRole.addEventListener("change", renderChampionTierList);
 explorerSearchResults.addEventListener("click", (event) => {
   const button = event.target.closest("[data-explorer-champion]");
   if (button) selectExplorerChampion(button.dataset.explorerChampion);
+});
+tierList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-tier-champion]");
+  if (button) selectExplorerChampion(button.dataset.tierChampion);
 });
 explorerProfile.addEventListener("click", (event) => {
   const button = event.target.closest("[data-explorer-pick]");

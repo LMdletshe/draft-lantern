@@ -310,6 +310,261 @@ function populateExplorerControls() {
     .join("");
 }
 
+function populateTierControls() {
+  if (!tierRole) return;
+  const currentRole = tierRole.value || "All";
+  tierRole.innerHTML = optionList(["All", ...roles], currentRole);
+}
+
+function getChampionRecentScoutMatches(champion) {
+  const scout = riotScoutProfile || window.riotScoutProfile;
+  const matches = scout?.recent?.matches || [];
+  return matches.filter((match) => getChampionByRiotApiName(match.championName)?.name === champion.name);
+}
+
+function getScoutChampionContext(champion, role = "") {
+  const scout = riotScoutProfile || window.riotScoutProfile;
+  if (!scout?.ok) {
+    return {
+      score: 0,
+      label: "No Riot Scout lookup loaded",
+      detail: "Scout a Riot ID to add mastery and recent-match signals.",
+      reasons: []
+    };
+  }
+
+  const mastery = (scout.mastery || [])
+    .map((entry, index) => ({ ...entry, index }))
+    .find((entry) => getChampionByRiotChampionId(entry.championId)?.name === champion.name);
+  const recentMatches = getChampionRecentScoutMatches(champion);
+  const roleMatches = role ? recentMatches.filter((match) => getRoleFromRiotPosition(match.teamPosition) === role) : recentMatches;
+  const wins = recentMatches.filter((match) => match.win).length;
+  const winRate = recentMatches.length ? Math.round((wins / recentMatches.length) * 100) : 0;
+  const reasons = [];
+  let score = 0;
+
+  if (mastery) {
+    const masteryRankBonus = Math.max(0, 8 - mastery.index * 2);
+    const levelBonus = Math.min(5, Math.floor((mastery.championLevel || 0) / 2));
+    score += masteryRankBonus + levelBonus;
+    reasons.push(`Mastery level ${mastery.championLevel || "?"} with ${(mastery.championPoints || 0).toLocaleString()} points.`);
+  }
+
+  if (recentMatches.length) {
+    score += Math.min(8, recentMatches.length * 2);
+    if (winRate >= 60) score += 4;
+    if (winRate <= 35) score -= 3;
+    reasons.push(`${recentMatches.length} recent game${recentMatches.length === 1 ? "" : "s"} at ${winRate}% WR.`);
+  }
+
+  if (role && roleMatches.length) {
+    score += Math.min(4, roleMatches.length * 2);
+    reasons.push(`${roleMatches.length} recent ${role} game${roleMatches.length === 1 ? "" : "s"}.`);
+  }
+
+  if (!reasons.length) {
+    return {
+      score: 0,
+      label: "No player-specific signal",
+      detail: "The champion was not visible in recent games or top mastery.",
+      reasons: []
+    };
+  }
+
+  return {
+    score: Math.max(-5, Math.min(16, score)),
+    label: recentMatches.length ? `${recentMatches.length} recent, ${winRate}% WR` : "Mastery signal",
+    detail: reasons.join(" "),
+    reasons
+  };
+}
+
+function getRoleTierWeights(role) {
+  const weights = {
+    Top: { engage: 0.7, frontline: 1.1, damage: 1.1, pick: 0.65, poke: 0.55, peel: 0.45, scaling: 0.95 },
+    Jungle: { engage: 1.15, frontline: 0.85, damage: 0.95, pick: 1.05, poke: 0.35, peel: 0.35, scaling: 0.55 },
+    Mid: { engage: 0.55, frontline: 0.35, damage: 1.25, pick: 1.2, poke: 1.05, peel: 0.4, scaling: 0.95 },
+    ADC: { engage: 0.25, frontline: 0.2, damage: 1.65, pick: 0.45, poke: 0.85, peel: 0.25, scaling: 1.3 },
+    Support: { engage: 1.15, frontline: 0.75, damage: 0.3, pick: 1.05, poke: 0.75, peel: 1.55, scaling: 0.35 }
+  };
+  return weights[role] || recommendationGoals.balanced.weights;
+}
+
+function getRoleTraitBonus(champion, role) {
+  const traits = getChampionProfileSignals(champion);
+  const roleTraits = {
+    Top: ["duel", "sustain", "frontline", "split-push", "durable", "wave-clear"],
+    Jungle: ["early", "skirmish", "mobility", "engage", "pick", "map-pressure"],
+    Mid: ["burst", "poke", "wave-clear", "pick", "mobility", "scaling"],
+    ADC: ["marksman", "range", "high-dps", "safe", "scaling", "frontline-check"],
+    Support: ["utility", "peel", "engage", "pick", "disengage", "low-income-value"]
+  };
+  return (roleTraits[role] || []).filter((trait) => traits.has(trait)).length * 1.8;
+}
+
+function getChampionTier(score) {
+  if (score >= 78) return { key: "S", label: "S tier", className: "is-s-tier" };
+  if (score >= 70) return { key: "A", label: "A tier", className: "is-a-tier" };
+  if (score >= 58) return { key: "B", label: "B tier", className: "is-b-tier" };
+  if (score >= 52) return { key: "C", label: "C tier", className: "is-c-tier" };
+  return { key: "D", label: "D tier", className: "is-d-tier" };
+}
+
+function getChampionTierByKey(key) {
+  const tiers = {
+    S: { key: "S", label: "S tier", className: "is-s-tier" },
+    A: { key: "A", label: "A tier", className: "is-a-tier" },
+    B: { key: "B", label: "B tier", className: "is-b-tier" },
+    C: { key: "C", label: "C tier", className: "is-c-tier" },
+    D: { key: "D", label: "D tier", className: "is-d-tier" }
+  };
+  return tiers[key] || tiers.D;
+}
+
+function getRankedTier(index, total) {
+  const percentile = (index + 1) / Math.max(1, total);
+  if (percentile <= 0.08) return getChampionTierByKey("S");
+  if (percentile <= 0.28) return getChampionTierByKey("A");
+  if (percentile <= 0.68) return getChampionTierByKey("B");
+  if (percentile <= 0.9) return getChampionTierByKey("C");
+  return getChampionTierByKey("D");
+}
+
+function getChampionTierScore(champion, role = champion.roles[0]) {
+  const scores = champion.scores || {};
+  const info = getChampionInfo(champion);
+  const roleFit = getRoleFit(champion, role);
+  const weights = getRoleTierWeights(role);
+  const scout = getScoutChampionContext(champion, role);
+  const traits = getChampionProfileSignals(champion);
+  const scoreTotal = scoreKeys.reduce((total, [key]) => total + ((scores[key] || 0) * (weights[key] || 1)), 0);
+  const scoreMax = scoreKeys.reduce((total, [key]) => total + (5 * (weights[key] || 1)), 0);
+  let score = 25 + (scoreTotal / Math.max(1, scoreMax)) * 38;
+  const reasons = [];
+
+  score += roleFit.offRole ? (roleFit.score - 0.58) * 18 : roleFit.score * 5;
+  score += getRoleTraitBonus(champion, role);
+  score += Math.min(4, (info.attack || 0) * 0.24 + (info.defense || 0) * 0.16 + (info.magic || 0) * 0.16);
+  score += scout.score;
+
+  if (traits.has("early") && traits.has("scaling")) {
+    score += 3.5;
+    reasons.push("Has both early pressure and scaling insurance.");
+  }
+  if (champion.roles.length > 1) {
+    score += Math.min(2.5, champion.roles.length * 0.9);
+    reasons.push("Flexible role profile gives draft value.");
+  }
+  if (getDifficulty(champion) === "Beginner") {
+    score += 1;
+    reasons.push("Lower execution floor makes the pick easier to convert.");
+  } else if (getDifficulty(champion) === "Advanced") {
+    score -= 1.5;
+    reasons.push("High execution demand lowers blind climb reliability.");
+  }
+  if (roleFit.offRole) {
+    reasons.push(`${roleFit.label} for ${role}, so the score is role-fit adjusted.`);
+  } else {
+    reasons.push(`Natural ${role} profile.`);
+  }
+  if (scout.reasons.length) {
+    reasons.push(scout.detail);
+  }
+
+  const finalScore = Math.max(1, Math.min(99, Math.round(score)));
+  return {
+    champion,
+    role,
+    score: finalScore,
+    tier: getChampionTier(finalScore),
+    roleFit,
+    scout,
+    reasons: uniqueList(reasons).slice(0, 4)
+  };
+}
+
+function getBestTierRole(champion) {
+  return champion.roles
+    .map((role) => getChampionTierScore(champion, role))
+    .sort((a, b) => b.score - a.score || a.role.localeCompare(b.role))[0];
+}
+
+function getChampionTierRows(role = "All", includeOffRole = true) {
+  const tierKeys = ["S", "A", "B", "C", "D"];
+  const rows = Object.fromEntries(tierKeys.map((tier) => [tier, []]));
+  const items = [];
+
+  champions.forEach((champion) => {
+    let item = null;
+    if (role === "All") {
+      item = getBestTierRole(champion);
+    } else if (champion.roles.includes(role)) {
+      item = getChampionTierScore(champion, role);
+    } else if (includeOffRole) {
+      const roleFit = getRoleFit(champion, role);
+      if (roleFit.score >= 0.58) item = getChampionTierScore(champion, role);
+    }
+
+    if (item) items.push(item);
+  });
+
+  items
+    .sort((a, b) => b.score - a.score || a.champion.name.localeCompare(b.champion.name))
+    .forEach((item, index) => {
+      const rankedItem = { ...item, tier: getRankedTier(index, items.length) };
+      rows[rankedItem.tier.key].push(rankedItem);
+    });
+
+  return rows;
+}
+
+function renderChampionTierList() {
+  if (!tierList) return;
+  if (!tierRole.innerHTML) populateTierControls();
+
+  const role = tierRole.value || "All";
+  const includeOffRole = Boolean(tierIncludeOffRole?.checked);
+  const rows = getChampionTierRows(role, includeOffRole);
+  const dataSourceLabel = getRiotDataSourceLabel();
+  const scoutLabel = (riotScoutProfile || window.riotScoutProfile)?.ok
+    ? "Riot Scout mastery and recent games are included."
+    : "Scout a Riot ID to personalize mastery and recent-pick weighting.";
+
+  tierList.innerHTML = `
+    <div class="tier-list__note">
+      <strong>${escapeHtml(dataSourceLabel)}</strong>
+      <span>Model-based S to D ranking from Riot champion attributes, role fit, archetype value, matchup rules, and optional Scout data. This is not a live global win-rate feed.</span>
+      <span>${escapeHtml(scoutLabel)}</span>
+    </div>
+    ${["S", "A", "B", "C", "D"].map((tierKey) => {
+      const items = rows[tierKey] || [];
+      return `
+        <section class="tier-row tier-row--${tierKey.toLowerCase()}">
+          <div class="tier-row__label">
+            <strong>${tierKey}</strong>
+            <span>${items.length} pick${items.length === 1 ? "" : "s"}</span>
+          </div>
+          <div class="tier-row__champions">
+            ${
+              items.length
+                ? items.map((item) => `
+                    <button type="button" class="tier-chip ${item.tier.className}" data-tier-champion="${escapeHtml(item.champion.name)}" title="${escapeHtml(item.reasons.join(" "))}">
+                      ${getChampionIconMarkup(item.champion, "small")}
+                      <span>
+                        <strong>${escapeHtml(item.champion.name)}</strong>
+                        <small>${escapeHtml(item.role)}${item.roleFit.offRole ? " off-role" : ""} &middot; ${item.score}/100${item.scout.score ? " &middot; Scout +" + item.scout.score : ""}</small>
+                      </span>
+                    </button>
+                  `).join("")
+                : `<p class="empty-state">No champions meet this tier with the current filters.</p>`
+            }
+          </div>
+        </section>
+      `;
+    }).join("")}
+  `;
+}
+
 function getExplorerTier(score) {
   if (score >= 84) return { key: "hard", label: "Hard counter", className: "is-hard" };
   if (score >= 66) return { key: "favored", label: "Favored", className: "is-favored" };
@@ -518,12 +773,16 @@ function renderChampionExplorer() {
 
   const scores = champion.scores;
   const info = getChampionInfo(champion);
+  const evalRole = explorerRole.value && explorerRole.value !== "All"
+    ? explorerRole.value
+    : tierRole?.value && tierRole.value !== "All"
+      ? tierRole.value
+      : champion.roles[0];
+  const tierEval = getChampionTierScore(champion, evalRole);
   const matchups = getExplorerMatchups(champion);
   const hardCount = getRankedExplorerMatchups(champion)
     .filter((result) => result.tier.key === "hard").length;
-  const dataSourceLabel = riotData.status === "ready"
-    ? `Latest Riot Data Dragon ${riotData.version}`
-    : "Offline modeled roster";
+  const dataSourceLabel = getRiotDataSourceLabel();
 
   explorerProfile.innerHTML = `
     <div class="explorer-profile__identity">
@@ -541,9 +800,12 @@ function renderChampionExplorer() {
     </div>
 
     <div class="explorer-profile-facts">
+      <div><span>Patch tier model</span><strong>${escapeHtml(tierEval.tier.label)} as ${escapeHtml(evalRole)} (${tierEval.score}/100)</strong></div>
+      <div><span>Role fit</span><strong>${escapeHtml(tierEval.roleFit.label)}${tierEval.roleFit.offRole ? ` for ${escapeHtml(evalRole)}` : ""}</strong></div>
+      <div><span>Riot Scout signal</span><strong>${escapeHtml(tierEval.scout.label)}</strong></div>
       <div><span>Power curve</span><strong>${escapeHtml(champion.profile?.powerCurve || "Most reliable in the mid game")}</strong></div>
       <div><span>Fight pattern</span><strong>${escapeHtml(champion.profile?.fightPattern || getTeamfightPlan(champion))}</strong></div>
-      <div><span>Best into</span><strong>${escapeHtml(champion.goodInto.slice(0, 3).map((item) => item.replaceAll("-", " ")).join(", "))}</strong></div>
+      <div><span>Riot attributes</span><strong>Attack ${info.attack || 0}/10, defense ${info.defense || 0}/10, magic ${info.magic || 0}/10, complexity ${info.difficulty || 0}/10</strong></div>
     </div>
 
     <div class="explorer-attributes">
@@ -642,9 +904,7 @@ function renderCounters() {
   const hardCount = smartPool.filter((result) => result.tier.key === "hard").length;
   const strongCount = smartPool.filter((result) => result.tier.key === "strong").length;
   const threatText = threats.map((threat) => threat.label).join(", ");
-  const dataSourceLabel = riotData.status === "ready"
-    ? `Latest Riot Data Dragon ${riotData.version}`
-    : "Offline modeled roster";
+  const dataSourceLabel = getRiotDataSourceLabel();
 
   matchupOverview.innerHTML = `
     <div class="matchup-overview__enemy">

@@ -28,41 +28,18 @@
     vn2: "sea"
   };
 
-  const roleNames = {
-    TOP: "Top",
-    JUNGLE: "Jungle",
-    MIDDLE: "Mid",
-    BOTTOM: "ADC",
-    UTILITY: "Support"
-  };
-
-  const championAliases = {
-    FiddleSticks: "Fiddlesticks",
-    MonkeyKing: "Wukong"
-  };
-
   function setScoutStatus(text, tone = "offline") {
     form.status.textContent = text;
     form.status.classList.remove("is-loading", "is-ready", "is-offline");
     form.status.classList.add(`is-${tone}`);
   }
 
-  function getChampionFromRiotName(name) {
-    const target = championAliases[name] || name;
-    if (typeof getChampion === "function") {
-      const direct = getChampion(target);
-      if (direct) return direct;
-    }
-    if (typeof normalizeChampionName !== "function" || typeof champions === "undefined") return null;
-    const normalized = normalizeChampionName(target);
-    return champions.find((champion) => normalizeChampionName(champion.name) === normalized) || null;
-  }
-
   function getRoleFromMatches(matches, championName) {
+    const targetChampion = getChampionByRiotApiName(championName);
     const roleCounts = matches
-      .filter((match) => match.championName === championName)
+      .filter((match) => getChampionByRiotApiName(match.championName)?.name === targetChampion?.name)
       .reduce((counts, match) => {
-        const role = roleNames[match.teamPosition] || "";
+        const role = getRoleFromRiotPosition(match.teamPosition);
         if (role) counts[role] = (counts[role] || 0) + 1;
         return counts;
       }, {});
@@ -79,7 +56,7 @@
     const matches = data.recent?.matches || [];
     return (data.recent?.summary?.topChampions || [])
       .map((item) => {
-        const champion = getChampionFromRiotName(item.name);
+        const champion = getChampionByRiotApiName(item.name);
         return {
           ...item,
           champion,
@@ -93,7 +70,7 @@
     const summary = data.recent?.summary || {};
     const knownChampionRows = getKnownChampionRows(data);
     const topRoles = (summary.topRoles || [])
-      .map((item) => `${roleNames[item.name] || item.name}: ${item.count}`)
+      .map((item) => `${getRoleFromRiotPosition(item.name) || item.name}: ${item.count}`)
       .join(", ");
 
     form.results.innerHTML = `
@@ -160,8 +137,13 @@
       if (!response.ok || !data.ok) {
         throw new Error(data.error || "Riot lookup failed.");
       }
+      riotScoutProfile = data;
+      window.riotScoutProfile = data;
       setScoutStatus("Riot connected", "ready");
       renderScoutData(data);
+      if (typeof renderChampionExplorer === "function") renderChampionExplorer();
+      if (typeof renderChampionTierList === "function") renderChampionTierList();
+      window.dispatchEvent(new CustomEvent("riot-scout-loaded", { detail: data }));
     } catch (error) {
       setScoutStatus("Setup needed", "offline");
       form.results.innerHTML = `<p class="empty-state">${escapeHtml(error.message)} ${error.message.includes("key") ? "Add RIOT_API_KEY in Vercel project environment variables, then redeploy." : ""}</p>`;

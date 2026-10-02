@@ -6,6 +6,7 @@ let selectedDetailChampion = null;
 let activePremadeId = premadeComps[0].id;
 let favoriteVariantsCache = [];
 let activeExplorerChampion = "Xin Zhao";
+let riotScoutProfile = null;
 
 const draftRoomState = {
   turn: 0,

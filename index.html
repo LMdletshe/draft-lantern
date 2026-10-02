@@ -244,6 +244,25 @@
 
           <div id="explorerSearchResults" class="explorer-search-results"></div>
           <div id="explorerProfile" class="explorer-profile"></div>
+          <section class="champion-tier-section" aria-label="Current patch champion tier model">
+            <div class="champion-tier-section__header">
+              <div>
+                <p class="eyebrow">Current Patch Model</p>
+                <h2>Champion tiers</h2>
+              </div>
+              <div class="tier-controls">
+                <label>
+                  <span>Role filter</span>
+                  <select id="tierRole"></select>
+                </label>
+                <label class="toggle-field toggle-field--control">
+                  <input id="tierIncludeOffRole" type="checkbox" checked />
+                  <span>Include plausible off-role picks</span>
+                </label>
+              </div>
+            </div>
+            <div id="tierList" class="tier-list" aria-live="polite"></div>
+          </section>
           <div id="explorerCounterResults" class="explorer-counter-results" aria-live="polite"></div>
         </div>
       </section>

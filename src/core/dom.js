@@ -51,3 +51,6 @@ const explorerStrength = document.querySelector("#explorerStrength");
 const explorerSearchResults = document.querySelector("#explorerSearchResults");
 const explorerProfile = document.querySelector("#explorerProfile");
 const explorerCounterResults = document.querySelector("#explorerCounterResults");
+const tierRole = document.querySelector("#tierRole");
+const tierIncludeOffRole = document.querySelector("#tierIncludeOffRole");
+const tierList = document.querySelector("#tierList");
