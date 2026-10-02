@@ -123,6 +123,178 @@ function getMatchupAdvice(enemy, candidate) {
   return uniqueList(tips).slice(0, 2);
 }
 
+function championHasAnyTag(champion, tags) {
+  const traits = typeof getChampionProfileSignals === "function"
+    ? getChampionProfileSignals(champion)
+    : new Set(champion.tags || []);
+  return tags.some((tag) => traits.has(tag));
+}
+
+function getEnemyThreatProfile(enemy) {
+  const scores = enemy.scores || {};
+  const profile = [];
+  if ((scores.engage || 0) >= 4 || championHasAnyTag(enemy, ["dive", "engage", "lockdown"])) {
+    profile.push({ key: "dive", label: "dive/engage", answerTags: ["peel", "safe", "kite", "disengage"], note: "deny the first engage and punish the overextension" });
+  }
+  if ((scores.poke || 0) >= 4 || championHasAnyTag(enemy, ["poke", "siege", "range"])) {
+    profile.push({ key: "poke", label: "poke/siege", answerTags: ["engage", "dive", "sustain", "pick"], note: "force commitment before repeated poke wins space" });
+  }
+  if ((scores.pick || 0) >= 4 || championHasAnyTag(enemy, ["pick", "global", "burst"])) {
+    profile.push({ key: "pick", label: "pick pressure", answerTags: ["safe", "peel", "frontline", "vision"], note: "move with vision and avoid isolated paths" });
+  }
+  if ((scores.frontline || 0) >= 4 || championHasAnyTag(enemy, ["frontline", "tank", "sustain"])) {
+    profile.push({ key: "frontline", label: "frontline", answerTags: ["damage", "scaling", "poke", "marksman"], note: "bring sustained damage or range to cut through the front" });
+  }
+  if ((scores.scaling || 0) >= 4 || championHasAnyTag(enemy, ["scaling", "reset"])) {
+    profile.push({ key: "scaling", label: "scaling", answerTags: ["early", "pick", "engage", "snowball"], note: "attack before item breakpoints and convert early leads" });
+  }
+  return profile.length
+    ? profile
+    : [{ key: "general", label: "general threat", answerTags: ["safe", "pick", "damage", "frontline"], note: "choose a reliable lane pattern and play around cooldowns" }];
+}
+
+function getSelectedTeamContext(role) {
+  return Object.entries(roleState)
+    .filter(([teamRole, name]) => name && teamRole !== role)
+    .map(([, name]) => getChampion(name))
+    .filter(Boolean);
+}
+
+function getDamageNeed(team) {
+  if (!team.length) return null;
+  const physical = team.filter((champion) => getDamageType(champion) === "Physical").length;
+  const magic = team.filter((champion) => getDamageType(champion) === "Magic").length;
+  if (physical >= 3 && magic === 0) return "Magic";
+  if (magic >= 3 && physical === 0) return "Physical";
+  return null;
+}
+
+function getSeenCounters() {
+  try {
+    return JSON.parse(sessionStorage.getItem("draft-lantern-seen-counters") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function rememberCounters(results) {
+  const seen = getSeenCounters();
+  results.forEach((result) => {
+    seen[result.candidate.name] = Math.min(6, (seen[result.candidate.name] || 0) + 1);
+  });
+  try {
+    sessionStorage.setItem("draft-lantern-seen-counters", JSON.stringify(seen));
+  } catch {
+    return;
+  }
+}
+
+function classifySmartCounter(result, enemy, role, team, seen) {
+  const candidate = result.candidate;
+  const threats = getEnemyThreatProfile(enemy);
+  const damageNeed = getDamageNeed(team);
+  const matchedThreats = threats.filter((threat) => championHasAnyTag(candidate, threat.answerTags));
+  const reasons = [...result.reasons];
+  let smartScore = result.score;
+  let label = result.tier.label;
+  let bucket = result.tier.key;
+
+  if (matchedThreats.length) {
+    smartScore += matchedThreats.length * 8;
+    bucket = `answers ${matchedThreats[0].label}`;
+    label = `Answers ${matchedThreats[0].label}`;
+    reasons.unshift(`${candidate.name} has tools to ${matchedThreats[0].note}.`);
+  }
+
+  if (damageNeed && getDamageType(candidate) === damageNeed) {
+    smartScore += 7;
+    bucket = "damage fix";
+    label = `${damageNeed} damage fix`;
+    reasons.unshift(`${candidate.name} helps balance your team's ${damageNeed.toLowerCase()} damage profile.`);
+  }
+
+  if (team.length) {
+    const compFit = scoreRecommendation(candidate, team, role, "balanced");
+    smartScore += Math.max(-6, Math.min(12, (compFit.score - 60) * 0.22));
+    if (compFit.reasons?.[0]) reasons.push(compFit.reasons[0]);
+    if (compFit.score >= 72 && bucket === result.tier.key) {
+      bucket = "team fit";
+      label = "Best for your team";
+    }
+  }
+
+  if (getDifficulty(candidate) === "Beginner") {
+    smartScore += 4;
+    if (["hard", "strong", "favorable"].includes(result.tier.key) && bucket === result.tier.key) {
+      bucket = "beginner safe";
+      label = "Beginner-safe answer";
+    }
+  }
+
+  if (result.roleFit?.offRole) {
+    smartScore -= 8;
+    if (smartScore >= 58) {
+      bucket = "off-role option";
+      label = "Off-role option";
+    }
+  }
+
+  const repeatPenalty = Math.min(18, (seen[candidate.name] || 0) * 5);
+  smartScore -= repeatPenalty;
+  if (repeatPenalty) {
+    reasons.push(`${candidate.name} was shown recently, so it is weighted down unless the matchup is still strong.`);
+  }
+
+  return {
+    ...result,
+    smartScore,
+    smartLabel: label,
+    smartBucket: bucket,
+    smartReasons: uniqueList(reasons).slice(0, 4),
+    matchedThreats
+  };
+}
+
+function pickDiverseCounters(items, limit, focus) {
+  const ordered = [...items].sort((a, b) => b.smartScore - a.smartScore || b.score - a.score || a.candidate.name.localeCompare(b.candidate.name));
+  if (focus === "all") return ordered.slice(0, limit);
+  if (focus === "hard") return ordered.filter((item) => ["hard", "strong", "favorable"].includes(item.tier.key) || item.smartScore >= 60).slice(0, limit);
+  if (focus === "strong") return ordered.filter((item) => item.smartScore >= 58).slice(0, limit);
+
+  const buckets = [
+    "hard",
+    "strong",
+    "answers dive/engage",
+    "answers poke/siege",
+    "answers pick pressure",
+    "answers frontline",
+    "answers scaling",
+    "damage fix",
+    "team fit",
+    "beginner safe",
+    "off-role option",
+    "favorable"
+  ];
+  const selected = [];
+  const used = new Set();
+  buckets.forEach((bucket) => {
+    if (selected.length >= limit) return;
+    const match = ordered.find((item) => !used.has(item.candidate.name) && (item.smartBucket === bucket || item.tier.key === bucket));
+    if (match) {
+      selected.push(match);
+      used.add(match.candidate.name);
+    }
+  });
+  ordered.forEach((item) => {
+    if (selected.length >= limit) return;
+    if (!used.has(item.candidate.name)) {
+      selected.push(item);
+      used.add(item.candidate.name);
+    }
+  });
+  return selected;
+}
+
 function populateExplorerControls() {
   const currentRole = explorerRole.value || "All";
   explorerRole.innerHTML = optionList(["All", ...roles], currentRole);
@@ -455,39 +627,24 @@ function renderCounters() {
 
   const role = allyRole.value || enemyRole.value;
   const includeOffRole = Boolean(matchupOffRole?.checked);
-  const focus = counterFocus?.value || "hard";
+  const focus = counterFocus?.value || "diverse";
   const limit = Number.parseInt(counterCount?.value || "6", 10);
-  const ranked = champions
+  const team = getSelectedTeamContext(role);
+  const seen = getSeenCounters();
+  const threats = getEnemyThreatProfile(enemy);
+  const smartPool = champions
     .filter((champion) => champion.name !== enemy.name)
     .filter((champion) => champion.roles.includes(role) || includeOffRole)
-    .map((champion) => scoreCounter(enemy, champion, role))
-    .sort((a, b) => {
-      const tierOrder = { hard: 4, strong: 3, favorable: 2, even: 1, difficult: 0 };
-      return (tierOrder[b.tier.key] || 0) - (tierOrder[a.tier.key] || 0)
-        || b.score - a.score
-        || b.roleFit.score - a.roleFit.score
-        || a.candidate.name.localeCompare(b.candidate.name);
-    });
+    .map((champion) => classifySmartCounter(scoreCounter(enemy, champion, role), enemy, role, team, seen))
+    .sort((a, b) => b.smartScore - a.smartScore || b.score - a.score || a.candidate.name.localeCompare(b.candidate.name));
 
-  let focusedCandidates = ranked;
-  if (focus === "hard") {
-    const counters = ranked.filter((result) => ["hard", "strong"].includes(result.tier.key));
-    const favorableFallbacks = ranked.filter((result) => result.tier.key === "favorable");
-    focusedCandidates = [...counters, ...favorableFallbacks];
-  } else if (focus === "strong") {
-    focusedCandidates = ranked.filter((result) => result.score >= 56);
-  }
-  const candidates = focusedCandidates.slice(0, limit);
-  const hardCount = ranked.filter((result) => result.tier.key === "hard").length;
-  const strongCount = ranked.filter((result) => result.tier.key === "strong").length;
+  const candidates = pickDiverseCounters(smartPool, limit, focus);
+  const hardCount = smartPool.filter((result) => result.tier.key === "hard").length;
+  const strongCount = smartPool.filter((result) => result.tier.key === "strong").length;
+  const threatText = threats.map((threat) => threat.label).join(", ");
   const dataSourceLabel = riotData.status === "ready"
     ? `Latest Riot Data Dragon ${riotData.version}`
     : "Offline modeled roster";
-  const strongestSmartFactors = uniqueList(
-    ranked
-      .flatMap((result) => result.smartFactors || [])
-      .map((factor) => factor.label)
-  ).slice(0, 4);
 
   matchupOverview.innerHTML = `
     <div class="matchup-overview__enemy">
@@ -498,16 +655,15 @@ function renderCounters() {
       </div>
     </div>
     <div class="matchup-overview__notes">
-      <span><strong>Respect:</strong> ${escapeHtml(getChampionStrengths(enemy).slice(0, 2).join(" and ").toLowerCase())}</span>
-      <span><strong>Attack:</strong> ${escapeHtml(getChampionWeaknesses(enemy).slice(0, 2).join(" and "))}</span>
+      <span><strong>Threat profile:</strong> ${escapeHtml(threatText)}</span>
+      <span><strong>Attack:</strong> ${escapeHtml(threats.map((threat) => threat.note).join(" "))}</span>
       <span><strong>Data:</strong> ${escapeHtml(dataSourceLabel)}</span>
-      ${strongestSmartFactors.length ? `<span><strong>Smart reads:</strong> ${escapeHtml(strongestSmartFactors.join(", "))}</span>` : ""}
-      <span><strong>Counter read:</strong> ${hardCount} hard and ${strongCount} strong general answer${hardCount + strongCount === 1 ? "" : "s"} found${includeOffRole ? ", including off-role options" : ""}.</span>
+      <span><strong>Smart pool:</strong> ${hardCount} hard and ${strongCount} strong answers found. Suggestions are diversified and recent repeats are weighted down${includeOffRole ? ", including off-role options" : ""}.</span>
     </div>
   `;
 
   if (!candidates.length) {
-    counterResults.innerHTML = `<p class="empty-state">No reliable hard or favorable counter was found for these filters. Try enabling off-role counters or switch to "All ranked options".</p>`;
+    counterResults.innerHTML = `<p class="empty-state">No reliable counter was found for these filters. Try enabling off-role counters or switch to all ranked options.</p>`;
     return;
   }
 
@@ -515,16 +671,17 @@ function renderCounters() {
     .map((result, index) => {
       const difficulty = result.tier;
       const laneAdvice = getMatchupAdvice(enemy, result.candidate);
-      const reasons = result.reasons.length
-        ? result.reasons.join(" ")
-        : `${result.candidate.name} has the strongest available general pattern into ${enemy.name}, but execution still matters.`;
+      const reasons = result.smartReasons.length
+        ? result.smartReasons.join(" ")
+        : `${result.candidate.name} has a reasonable pattern into ${enemy.name}, but execution and wave state still matter.`;
+      const confidence = Math.max(1, Math.min(99, Math.round(result.smartScore)));
 
       return `
         <article class="counter-card">
           <div class="counter-card__top">
             ${getChampionIconMarkup(result.candidate, "small")}
             <div>
-              <span class="counter-card__rank">${escapeHtml(difficulty.label)} ${index + 1}</span>
+              <span class="counter-card__rank">${escapeHtml(result.smartLabel)} ${index + 1}</span>
               <h3>${escapeHtml(result.candidate.name)}</h3>
               <small>${escapeHtml(result.candidate.roles.join(" / "))}</small>
             </div>
@@ -535,7 +692,7 @@ function renderCounters() {
           ${result.smartFactors?.length ? `<div class="smart-read">${result.smartFactors.map((factor) => `<span>${escapeHtml(factor.label)}</span>`).join("")}</div>` : ""}
           ${result.smartRisks?.length ? `<div class="counter-risk"><strong>Watch:</strong> ${escapeHtml(result.smartRisks.map((factor) => factor.label.toLowerCase()).join(", "))}</div>` : ""}
           <div class="lane-tip"><strong>How to win:</strong> ${escapeHtml(laneAdvice.join(" ") || getLanePlan(result.candidate))}</div>
-          <div class="meter"><span>Counter confidence</span><span>${result.score}%</span></div>
+          <div class="meter"><span>Smart fit confidence</span><span>${confidence}%</span></div>
           <div class="counter-card__actions">
             <button class="text-button" type="button" data-counter-pick="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(role)}">Use in team</button>
             <button class="icon-button icon-button--small" type="button" data-details="${escapeHtml(result.candidate.name)}" aria-label="View ${escapeHtml(result.candidate.name)} details">i</button>
@@ -544,6 +701,7 @@ function renderCounters() {
       `;
     })
     .join("");
+  rememberCounters(candidates);
 }
 
 function showChampionDetails(name) {

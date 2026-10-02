@@ -6,6 +6,8 @@ Draft Lantern is a static browser app. Files are grouped by runtime responsibili
 
 ```text
 index.html
+api/
+  riot-player.js          # Server-side Riot API proxy for account/ranked/match scouting
 src/
   data/
     app-config.js          # Roles, scoring keys, trait groups, role overrides, recommendation config
@@ -23,6 +25,7 @@ src/
     favorite-builder.js    # Favorite-core controls and generated team variants
     premade-comps.js       # Premade comp list/detail rendering and loading
     matchups.js            # Matchup finder, champion explorer, counter scoring, champion dialog
+    riot-scout.js          # Browser UI for the server-side Riot player scout
     persistence.js         # Saved drafts and share links
     draft-room.js          # Guided two-team draft room and comparison view
     learn.js               # How-to-play tab controller
@@ -35,8 +38,12 @@ src/
     support-theory.js
     team-theory.js
   styles/
-    styles.css
-    learn.css
+    styles.css             # Global shell, team builder, recommendations, warnings
+    premade.css            # Premade comp styles
+    matchups.css           # Champion explorer, matchups, Riot scout, champion dialog
+    draft-room.css         # Two-team draft room and comparison styles
+    learn.css              # How-to-play styles
+    responsive.css         # Shared breakpoints and mobile overrides
 docs/
   file-structure.md
 ```
@@ -53,7 +60,7 @@ docs/
 6. `src/core/utils.js`
 7. Feature modules
 8. `src/core/app.js`
-9. Learning guide modules
+9. Learning guide modules and optional feature extensions
 
 Do not convert files to ES modules unless the deployment model is changed deliberately. The current app works as a no-build static site.
 
@@ -66,11 +73,11 @@ Do not convert files to ES modules unless the deployment model is changed delibe
 - Put feature-specific rendering and behavior in the matching `src/features` file.
 - Keep `src/core/app.js` small. It should wire events, switch views, and start the app.
 - Put static guide content in `src/guides`; each guide should render only its own role or topic.
-- Keep general UI styles in `src/styles/styles.css`; learning-guide-only styles stay in `src/styles/learn.css`.
+- Keep general UI styles in `src/styles/styles.css`; feature-specific styles belong in their matching stylesheet.
+- Keep responsive overrides in `src/styles/responsive.css` unless they only affect one isolated feature.
 - Avoid embedding a feature inside an unrelated guide file.
 
 ## Next cleanup targets
 
-- Move inline golden-rule builder styles from `src/features/comp-builder.js` into a dedicated stylesheet.
 - Split the large guide controller `src/features/learn.js` into role-guide data and rendering helpers.
 - Add a simple browser smoke test that clicks each main tab and checks for console errors.

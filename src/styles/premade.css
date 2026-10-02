@@ -1,0 +1,375 @@
+.premade-view {
+  margin-top: 18px;
+}
+
+.premade-panel {
+  padding: 18px;
+}
+
+.premade-filter {
+  display: grid;
+  grid-template-columns: auto 150px;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.premade-filter select {
+  min-height: 36px;
+}
+
+.premade-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  gap: 18px;
+  min-width: 0;
+}
+
+.premade-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  max-height: 1120px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.premade-list-item {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 12px;
+  color: var(--text);
+  text-align: left;
+}
+
+.premade-list-item:hover {
+  border-color: rgba(215, 172, 85, 0.55);
+}
+
+.premade-list-item.is-active {
+  border-color: var(--gold);
+  background: rgba(215, 172, 85, 0.1);
+}
+
+.premade-list-item__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.premade-list-item__heading span {
+  color: var(--gold);
+  font-size: 0.67rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.premade-list-item__heading h3 {
+  margin: 3px 0 0;
+  font-size: 0.94rem;
+}
+
+.premade-list-item__heading > strong {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 7px;
+  color: var(--muted);
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+
+.premade-list-item > p {
+  margin: 8px 0 10px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.premade-mini-roster {
+  display: flex;
+  gap: 5px;
+}
+
+.premade-mini-roster .champion-icon {
+  width: 34px;
+  height: 34px;
+}
+
+.premade-details {
+  min-width: 0;
+  border-left: 1px solid var(--line);
+  padding-left: 18px;
+}
+
+.premade-details__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 16px;
+}
+
+.premade-details__header h2 {
+  margin-top: 9px;
+  font-size: 1.8rem;
+}
+
+.premade-details__header p {
+  max-width: 660px;
+  margin: 7px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.premade-load-button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.premade-roster {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+}
+
+.premade-pick {
+  display: grid;
+  min-width: 0;
+  min-height: 164px;
+  justify-items: center;
+  align-content: start;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 10px 8px;
+  color: var(--text);
+  text-align: center;
+}
+
+.premade-pick:hover {
+  border-color: var(--blue);
+}
+
+.premade-pick > span {
+  color: var(--muted);
+  font-size: 0.67rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.premade-pick strong {
+  overflow-wrap: anywhere;
+  font-size: 0.83rem;
+}
+
+.premade-pick small {
+  color: var(--muted);
+  font-size: 0.67rem;
+  line-height: 1.3;
+}
+
+.premade-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 20px;
+  padding: 18px 0;
+}
+
+.premade-strengths h3,
+.premade-pros-cons h3,
+.premade-footer-grid h3 {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+}
+
+.premade-score-grid {
+  display: grid;
+  gap: 9px;
+}
+
+.premade-score > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.premade-score > div:first-child strong {
+  color: var(--text);
+}
+
+.premade-score__track {
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.premade-score__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+}
+
+.premade-key-rule {
+  margin-top: 13px;
+  border-left: 3px solid var(--gold);
+  background: rgba(215, 172, 85, 0.07);
+  padding: 10px;
+}
+
+.premade-key-rule span,
+.premade-key-rule strong {
+  display: block;
+}
+
+.premade-key-rule span {
+  color: var(--gold);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.premade-key-rule strong {
+  margin-top: 3px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.premade-pros-cons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.premade-pros-cons > div {
+  border-top: 2px solid var(--green);
+  padding-top: 10px;
+}
+
+.premade-pros-cons > div:last-child {
+  border-top-color: var(--red);
+}
+
+.premade-pros-cons ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.premade-pros-cons li + li {
+  margin-top: 6px;
+}
+
+.phase-playbook {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.phase-playbook__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.phase-playbook article {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  border-top: 3px solid var(--blue);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 11px;
+}
+
+.phase-playbook article:nth-child(2) {
+  border-top-color: var(--gold);
+}
+
+.phase-playbook article:nth-child(3) {
+  border-top-color: var(--violet);
+}
+
+.phase-playbook article > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.phase-playbook h3 {
+  margin: 4px 0 7px;
+  font-size: 0.84rem;
+}
+
+.phase-playbook p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.premade-footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.premade-footer-grid > section:last-child p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.premade-swaps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.premade-swaps > div {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 9px;
+}
+
+.premade-swaps span,
+.premade-swaps strong {
+  display: block;
+}
+
+.premade-swaps span {
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.premade-swaps strong {
+  margin-top: 2px;
+  font-size: 0.72rem;
+}
+

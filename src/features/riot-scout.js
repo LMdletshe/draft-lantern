@@ -194,7 +194,6 @@
     }
     if (enemyPick) enemyPick.value = champion.name;
     if (allyRole && enemyRole?.value) allyRole.value = enemyRole.value;
-    if (typeof renderSmartCounters === "function") renderSmartCounters();
-    else if (typeof renderCounters === "function") renderCounters();
+    if (typeof renderCounters === "function") renderCounters();
   });
 })();

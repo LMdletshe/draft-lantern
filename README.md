@@ -13,9 +13,9 @@ Production: https://lol-helper30.vercel.app
 
 Open `index.html` in a browser to use it. The app is fully static. Data lives
 in `src/data`, shared runtime helpers live in `src/core`, feature modules live
-in `src/features`, role and team learning content lives in `src/guides`, and CSS
-lives in `src/styles`. On Vercel, `api/riot-player.js` runs as a serverless
-function for Riot API lookups.
+in `src/features`, role and team learning content lives in `src/guides`, and
+feature-scoped CSS lives in `src/styles`. On Vercel, `api/riot-player.js` runs
+as a serverless function for Riot API lookups.
 
 The interface is responsive across desktop, tablet, and phone layouts. Mobile
 views use touch-sized controls, a swipeable view navigation bar, single-column
@@ -114,7 +114,11 @@ src/
     team-theory.js
   styles/
     styles.css
+    premade.css
+    matchups.css
+    draft-room.css
     learn.css
+    responsive.css
 docs/
   file-structure.md
 ```
