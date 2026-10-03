@@ -12,7 +12,7 @@ src/
   data/
     app-config.js          # Roles, scoring keys, trait groups, role overrides, recommendation config
     champions.js           # Hand-curated champion starter pool
-    compositions.js        # Pair synergies, premade comps, favorite-core profiles
+    compositions.js        # Pair synergies, best-comp library entries, favorite-core profiles
   core/
     state.js               # Mutable app state
     dom.js                 # Shared DOM references
@@ -29,7 +29,6 @@ src/
     persistence.js         # Saved drafts and share links
     draft-room.js          # Guided two-team draft room and comparison view
     learn.js               # How-to-play tab controller
-    comp-builder.js        # Golden-rule premade comp builder
   guides/
     top-lane-theory.js
     jungle-theory.js
@@ -68,7 +67,7 @@ Do not convert files to ES modules unless the deployment model is changed delibe
 
 - Put static role, trait, matchup, and scoring config in `src/data/app-config.js`.
 - Put hand-curated champion entries in `src/data/champions.js`.
-- Put preset team comps and pair/favorite composition data in `src/data/compositions.js`.
+- Put best-comp library entries and pair/favorite composition data in `src/data/compositions.js`.
 - Put shared helpers and Data Dragon hydration in `src/core/utils.js`.
 - Put feature-specific rendering and behavior in the matching `src/features` file.
 - Keep `src/core/app.js` small. It should wire events, switch views, and start the app.

@@ -2,6 +2,20 @@ function getPremadeTeam(comp) {
   return roles.map((role) => getChampion(comp.picks[role])).filter(Boolean);
 }
 
+function getPremadeOfferItems(comp, team) {
+  const scores = calculateScores(team);
+  const strongestScores = scoreKeys
+    .map(([key, label]) => ({ key, label, value: scores[key] || 0 }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3)
+    .map((item) => `${item.label}: ${item.value}%`);
+
+  return uniqueList([
+    ...(comp.pros || []),
+    ...strongestScores
+  ]).slice(0, 6);
+}
+
 function populatePremadeFilter() {
   const current = premadeFilter.value || "All";
   const categories = ["All", ...uniqueList(premadeComps.map((comp) => comp.category)).sort()];
@@ -41,11 +55,17 @@ function renderPremadeComps() {
             <span>${escapeHtml(comp.category)}</span>
             <h3>${escapeHtml(comp.name)}</h3>
           </div>
-          <strong>${escapeHtml(comp.difficulty)}</strong>
+          <strong>${escapeHtml(comp.tier || comp.difficulty)}</strong>
         </div>
         <p>${escapeHtml(comp.summary)}</p>
+        <small>${escapeHtml(comp.bestWhen || "Best when the team can play around this comp's main identity.")}</small>
         <div class="premade-mini-roster">
-          ${team.map((champion) => getChampionIconMarkup(champion, "small")).join("")}
+          ${roles.map((role) => {
+            const champion = getChampion(comp.picks[role]);
+            return champion
+              ? getChampionIconMarkup(champion, "small")
+              : `<span class="champion-icon champion-icon--small" aria-hidden="true">${escapeHtml(role.slice(0, 2).toUpperCase())}</span>`;
+          }).join("")}
         </div>
       </button>
     `;
@@ -61,6 +81,7 @@ function renderPremadeComps() {
   const scores = calculateScores(team);
   const archetypes = getCompArchetypes(scores);
   const warnings = getDraftWarnings(team).filter((warning) => warning.severity !== "info");
+  const offerItems = getPremadeOfferItems(comp, team);
 
   premadeDetails.innerHTML = `
     <header class="premade-details__header">
@@ -68,6 +89,7 @@ function renderPremadeComps() {
         <div class="archetype-row">
           <span class="archetype-chip">${escapeHtml(comp.category)}</span>
           <span class="archetype-chip">${escapeHtml(comp.difficulty)}</span>
+          ${comp.tier ? `<span class="archetype-chip">${escapeHtml(comp.tier)}</span>` : ""}
           ${archetypes.slice(0, 2).map((item) => `<span class="archetype-chip">${escapeHtml(item)}</span>`).join("")}
         </div>
         <h2>${escapeHtml(comp.name)}</h2>
@@ -80,30 +102,48 @@ function renderPremadeComps() {
       ${roles.map((role) => {
         const champion = getChampion(comp.picks[role]);
         return `
-          <button class="premade-pick" type="button" data-details="${escapeHtml(champion.name)}" aria-label="View ${escapeHtml(champion.name)} details">
+          <button class="premade-pick" type="button" ${champion ? `data-details="${escapeHtml(champion.name)}"` : ""} aria-label="${champion ? `View ${escapeHtml(champion.name)} details` : `${escapeHtml(role)} champion loading`}">
             <span>${escapeHtml(role)}</span>
-            ${getChampionIconMarkup(champion)}
-            <strong>${escapeHtml(champion.name)}</strong>
-            <small>${escapeHtml(champion.style)}</small>
+            ${champion ? getChampionIconMarkup(champion) : `<span class="champion-icon" aria-hidden="true">${escapeHtml(role.slice(0, 2).toUpperCase())}</span>`}
+            <strong>${escapeHtml(champion?.name || comp.picks[role])}</strong>
+            <small>${escapeHtml(champion?.style || "Loads when Riot roster data is ready")}</small>
           </button>
         `;
       }).join("")}
     </div>
 
+    <section class="premade-library-section">
+      <div class="comparison-subheading"><span>Library read</span><strong>What this comp offers</strong></div>
+      <div class="premade-offer-grid">
+        ${offerItems.map((item) => `<div><span>Offer</span><strong>${escapeHtml(item)}</strong></div>`).join("")}
+      </div>
+    </section>
+
+    <div class="premade-context-grid">
+      <section>
+        <h3>Pick this when</h3>
+        <p>${escapeHtml(comp.bestWhen || "Your team can play around this comp's main identity and avoid fighting against its plan.")}</p>
+      </section>
+      <section>
+        <h3>Needs to function</h3>
+        <p>${escapeHtml(comp.needs || comp.rule)}</p>
+      </section>
+    </div>
+
     <div class="premade-overview-grid">
       <section class="premade-strengths">
-        <h3>Why it works</h3>
+        <h3>Power profile</h3>
         <div class="premade-score-grid">${renderPremadeScoreSnapshot(team)}</div>
         <div class="premade-key-rule"><span>Golden rule</span><strong>${escapeHtml(comp.rule)}</strong></div>
       </section>
 
       <section class="premade-pros-cons">
         <div>
-          <h3>Pros</h3>
+          <h3>Best offers</h3>
           <ul>${comp.pros.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
         </div>
         <div>
-          <h3>Cons</h3>
+          <h3>Watch-outs</h3>
           <ul>${comp.cons.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
         </div>
       </section>

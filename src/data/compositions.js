@@ -18,10 +18,13 @@ const pairSynergies = [
 const premadeComps = [
   {
     id: "wombo-combo",
-    name: "Wombo Combo",
+    name: "AoE Wombo Combo",
     category: "Teamfight",
     difficulty: "Beginner",
+    tier: "Best beginner 5v5",
     summary: "Layer large area-of-effect ultimates onto one clear engage.",
+    bestWhen: "Your team wants simple objective fights and the enemy has several immobile or short-range champions.",
+    needs: "Ultimate cooldown tracking, grouped objective setup, and one player calling the first engage.",
     picks: { Top: "Malphite", Jungle: "Amumu", Mid: "Orianna", ADC: "Miss Fortune", Support: "Leona" },
     pros: [
       "Extremely clear 5v5 win condition.",
@@ -46,10 +49,13 @@ const premadeComps = [
   },
   {
     id: "protect-jinx",
-    name: "Protect the Jinx",
+    name: "Protect the Hypercarry",
     category: "Protect",
     difficulty: "Beginner",
+    tier: "Best scaling shell",
     summary: "Build a durable shell around one scaling reset carry.",
+    bestWhen: "Your ADC is comfortable carrying late fights and the enemy has dive threats that must cross your frontline.",
+    needs: "Patience before two items, disciplined front-to-back spacing, and peel cooldowns saved for the real threat.",
     picks: { Top: "Shen", Jungle: "Maokai", Mid: "Orianna", ADC: "Jinx", Support: "Lulu" },
     pros: [
       "Exceptional peel and front-to-back fighting.",
@@ -77,7 +83,10 @@ const premadeComps = [
     name: "Global Pick Squad",
     category: "Pick",
     difficulty: "Intermediate",
+    tier: "Best map pressure",
     summary: "Use global pressure and reliable crowd control to create unfair fights.",
+    bestWhen: "The enemy splits side waves carelessly or your team can track flashes and punish isolated targets.",
+    needs: "Vision denial, side-wave control, and everyone collapsing on the same target instead of chasing separate kills.",
     picks: { Top: "Shen", Jungle: "Nocturne", Mid: "Twisted Fate", ADC: "Ashe", Support: "Nautilus" },
     pros: [
       "Excellent at catching isolated enemies.",
@@ -105,7 +114,10 @@ const premadeComps = [
     name: "Siege and Traps",
     category: "Poke",
     difficulty: "Intermediate",
+    tier: "Best tower setup",
     summary: "Arrive first, control space, and damage enemies before they can engage.",
+    bestWhen: "You have winning lanes or reliable wave priority and want to turn that tempo into towers and dragons.",
+    needs: "First move to objectives, trap lines before fights start, and restraint when enemies are already losing health.",
     picks: { Top: "Ornn", Jungle: "Jarvan IV", Mid: "Lux", ADC: "Caitlyn", Support: "Morgana" },
     pros: [
       "Strong range, wave clear, and objective setup.",
@@ -130,10 +142,13 @@ const premadeComps = [
   },
   {
     id: "simple-engage",
-    name: "Beginner Engage",
+    name: "Reliable Engage Core",
     category: "Beginner",
     difficulty: "Beginner",
+    tier: "Best low-elo starter",
     summary: "A forgiving team with obvious buttons, durable champions, and reliable crowd control.",
+    bestWhen: "Your group needs clear jobs, simple target selection, and champions that still function after small mistakes.",
+    needs: "One target call, grouped follow-up, and patience to wait for key engage cooldowns.",
     picks: { Top: "Garen", Jungle: "Amumu", Mid: "Annie", ADC: "Ashe", Support: "Leona" },
     pros: [
       "Every player has a straightforward job.",
@@ -161,7 +176,10 @@ const premadeComps = [
     name: "Front-to-Back Fortress",
     category: "Teamfight",
     difficulty: "Beginner",
+    tier: "Best standard fight",
     summary: "Two tanks hold the line while Jinx deals damage from a protected backline.",
+    bestWhen: "The enemy must walk into you and your ADC can safely hit the nearest target.",
+    needs: "A stable formation, flank control, and carries who resist chasing past the frontline.",
     picks: { Top: "Ornn", Jungle: "Sejuani", Mid: "Annie", ADC: "Jinx", Support: "Janna" },
     pros: [
       "Very durable frontline and excellent disengage.",
@@ -189,7 +207,10 @@ const premadeComps = [
     name: "Anti-Dive Shelter",
     category: "Protect",
     difficulty: "Intermediate",
+    tier: "Best answer to assassins",
     summary: "Invite the enemy forward, stop their dive, and win the second half of the fight.",
+    bestWhen: "The enemy draft relies on assassins, divers, or one explosive engage to reach your carries.",
+    needs: "Defensive cooldown discipline and enough poke/wave clear to avoid being forced into bad starts.",
     picks: { Top: "Shen", Jungle: "Maokai", Mid: "Annie", ADC: "Ezreal", Support: "Janna" },
     pros: [
       "Difficult for assassins and divers to reach the backline.",
@@ -217,7 +238,10 @@ const premadeComps = [
     name: "Catch into Reset",
     category: "Pick",
     difficulty: "Intermediate",
+    tier: "Best snowball pick",
     summary: "Catch one target with reliable crowd control, then let Jinx clean up the fight.",
+    bestWhen: "The enemy face-checks fog, lacks cleanse tools, or has fragile carries that can be locked down.",
+    needs: "Vision pockets, burst on the first target, and immediate objective conversion after the catch.",
     picks: { Top: "Darius", Jungle: "Jarvan IV", Mid: "Ahri", ADC: "Jinx", Support: "Nautilus" },
     pros: [
       "Many ways to lock down one exposed target.",
@@ -238,6 +262,130 @@ const premadeComps = [
     alternatives: [
       { role: "Jungle", from: "Jarvan IV", to: "Nocturne" },
       { role: "Support", from: "Nautilus", to: "Leona" }
+    ]
+  },
+  {
+    id: "dive-reset",
+    name: "Dive and Reset",
+    category: "Dive",
+    difficulty: "Advanced",
+    tier: "Best backline access",
+    summary: "Collapse onto the enemy backline fast, then use resets and follow-up shields to keep the dive alive.",
+    bestWhen: "The enemy carries are immobile, their peel is thin, or your team can coordinate one explosive flank.",
+    needs: "Synchronized engage timing, flank vision, and no trickling in after the first diver commits.",
+    picks: { Top: "Camille", Jungle: "Nocturne", Mid: "Galio", ADC: "Kai'Sa", Support: "Rakan" },
+    pros: [
+      "Threatens carries from multiple angles.",
+      "Galio and Rakan add follow-up protection after the first dive.",
+      "Kai'Sa can join the same target instead of playing a slow front-to-back fight."
+    ],
+    cons: [
+      "Very punishable if engage and follow-up arrive at different times.",
+      "Can struggle into heavy disengage and point-click peel.",
+      "Needs flank setup rather than random mid-lane starts."
+    ],
+    phases: {
+      early: "Stabilize lanes and track enemy flashes. Nocturne should path toward lanes with setup while Camille avoids wasting health before level-six windows.",
+      mid: "Use side pressure to pull the enemy apart, then dive the exposed carry with Nocturne, Galio, Rakan, and Kai'Sa arriving together.",
+      late: "Do not start through the enemy frontline. Threaten fog and side angles, force defensive cooldowns, then commit only when the backline path is real."
+    },
+    rule: "Dive is a timing test: first entry, follow-up crowd control, and damage must land as one play.",
+    alternatives: [
+      { role: "Top", from: "Camille", to: "Malphite" },
+      { role: "ADC", from: "Kai'Sa", to: "Samira" }
+    ]
+  },
+  {
+    id: "one-three-one",
+    name: "1-3-1 Side Pressure",
+    category: "Split",
+    difficulty: "Advanced",
+    tier: "Best side-lane map comp",
+    summary: "Win through side-lane pressure, global collapses, and forcing the enemy to answer too many lanes.",
+    bestWhen: "Your side-laners win isolated lanes and the enemy team wants slow grouped fights.",
+    needs: "Strong wave discipline, map awareness, and no unnecessary 5v5s while side pressure is building.",
+    picks: { Top: "Fiora", Jungle: "Nocturne", Mid: "Twisted Fate", ADC: "Ezreal", Support: "Janna" },
+    pros: [
+      "Excellent side-lane threat with Fiora and Twisted Fate.",
+      "Nocturne turns split pressure into sudden numbers advantages.",
+      "Ezreal and Janna can safely hold mid while side lanes work."
+    ],
+    cons: [
+      "Weak if the team groups mid and ignores side-wave assignments.",
+      "Requires clean vision because isolated champions can be collapsed on.",
+      "Objective starts are risky if side waves are not already winning."
+    ],
+    phases: {
+      early: "Keep lanes healthy and collect safe farm. The goal is not constant fighting; it is reaching side-lane assignments with enough map tools online.",
+      mid: "Send Fiora and Twisted Fate to side lanes while Ezreal and Janna hold mid. Use Nocturne ultimate when the enemy overcommits to one side.",
+      late: "Pressure two lanes before Baron or Elder. If the enemy sends one answer, threaten the collapse; if they group, take towers and jungle camps."
+    },
+    rule: "Side pressure is only real when mid is safe and the side waves force expensive enemy answers.",
+    alternatives: [
+      { role: "Top", from: "Fiora", to: "Tryndamere" },
+      { role: "Support", from: "Janna", to: "Morgana" }
+    ]
+  },
+  {
+    id: "early-skirmish",
+    name: "Early Skirmish Snowball",
+    category: "Early",
+    difficulty: "Intermediate",
+    tier: "Best tempo snowball",
+    summary: "Win lanes and river fights early, then convert the lead before scaling comps stabilize.",
+    bestWhen: "Your team is confident fighting early and the enemy draft needs time to scale.",
+    needs: "Fast resets, river vision, and discipline to cash out kills into dragons, towers, and Herald.",
+    picks: { Top: "Renekton", Jungle: "Lee Sin", Mid: "Ahri", ADC: "Draven", Support: "Nautilus" },
+    pros: [
+      "Strong early lanes and river priority.",
+      "Many tools to start short skirmishes before the enemy is ready.",
+      "Can break the game open through bot lane and first objectives."
+    ],
+    cons: [
+      "Falls off if early kills do not become structures or objectives.",
+      "Can over-force when the enemy survives the first few plays.",
+      "Needs confident execution from the jungle and bot lane."
+    ],
+    phases: {
+      early: "Fight for level and wave advantages. Lee Sin should path toward lanes with crowd control, and bot lane should convert hooks into Draven cash-outs.",
+      mid: "Use the gold lead to invade, take towers, and force dragon fights while the enemy carries are still behind.",
+      late: "If the game slows down, play for picks and flanks rather than honest front-to-back fights into stronger scaling."
+    },
+    rule: "Kills are only good if they become tempo; spend the lead before the enemy reaches item breakpoints.",
+    alternatives: [
+      { role: "Top", from: "Renekton", to: "Darius" },
+      { role: "Jungle", from: "Lee Sin", to: "Xin Zhao" }
+    ]
+  },
+  {
+    id: "objective-zone",
+    name: "Objective Zone Control",
+    category: "Control",
+    difficulty: "Intermediate",
+    tier: "Best dragon and Baron setup",
+    summary: "Own the space around objectives with tanks, zone control, safe DPS, and layered counter-engage.",
+    bestWhen: "Your team can arrive first and the enemy has to walk through narrow entrances.",
+    needs: "Vision setup before spawn timers and patience to fight inside controlled terrain.",
+    picks: { Top: "Ornn", Jungle: "Maokai", Mid: "Viktor", ADC: "Xayah", Support: "Rakan" },
+    pros: [
+      "Excellent control of choke points and river entrances.",
+      "Xayah and Rakan give strong safety plus engage/counter-engage.",
+      "Ornn and Maokai make face-checking extremely dangerous."
+    ],
+    cons: [
+      "Less explosive if the team arrives late to objectives.",
+      "Can be split apart by strong side-lane pressure.",
+      "Needs carries to stay inside the controlled zone instead of chasing."
+    ],
+    phases: {
+      early: "Farm toward stable first items and protect vision around river. Do not trade too much health right before dragon spawns.",
+      mid: "Move first, place saplings and control wards, then make the enemy walk into Viktor, Maokai, Ornn, and Xayah feathers.",
+      late: "Set up Baron and Elder early. If the enemy face-checks, engage; if they wait, use zone control to secure the objective."
+    },
+    rule: "This comp wins the area before it wins the fight; arrive first or slow down.",
+    alternatives: [
+      { role: "Mid", from: "Viktor", to: "Orianna" },
+      { role: "ADC", from: "Xayah", to: "Jinx" }
     ]
   }
 ];

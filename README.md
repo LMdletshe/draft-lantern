@@ -42,14 +42,12 @@ built-in curated starter pool and initials automatically.
   complete synergy teams around them.
 - Produces balanced, teamfight, and safer-scaling variants, explaining each
   suggested lane pick and preserving the favorite core when a team is loaded.
-- Includes a dedicated library of premade team compositions covering beginner
-  engage, wombo combo, front-to-back, protect-the-carry, pick, poke, siege, and
-  anti-dive styles.
-- Includes a golden-rule comp builder that suggests full teams by strategic jobs
-  such as engage, poke, scaling, assassin threat, split pressure, peel,
-  waveclear, objective DPS, and pick tools.
-- Each premade team explains its pros, cons, golden rule, flexible champion
-  swaps, and separate early-, mid-, and late-game plans.
+- Includes a best-comp library covering beginner engage, wombo combo,
+  front-to-back, protect-the-carry, pick, poke, dive, split-pressure,
+  objective-control, early-skirmish, and anti-dive styles.
+- Each library comp explains what it offers, when to pick it, what it needs to
+  function, its golden rule, flexible champion swaps, and separate early-, mid-,
+  and late-game plans.
 - Loads any premade composition directly into the Team Builder for editing and
   deeper analysis.
 - Recommends the next pick based on the role, missing team needs, damage mix,
@@ -102,7 +100,6 @@ src/
     app.js
   features/
     learn.js
-    comp-builder.js
     riot-scout.js
     team-builder.js
     premade-comps.js
@@ -133,7 +130,7 @@ steps.
 ## Editing The Data
 
 Hand-curated champion entries live in the `champions` array in
-`src/data/champions.js`. Preset team comps and favorite-core profiles live in
+`src/data/champions.js`. Best-comp library entries and favorite-core profiles live in
 `src/data/compositions.js`. Generated full-roster entries are created from Riot Data
 Dragon at runtime.
 
