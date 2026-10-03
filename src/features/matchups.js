@@ -169,27 +169,7 @@ function getDamageNeed(team) {
   return null;
 }
 
-function getSeenCounters() {
-  try {
-    return JSON.parse(sessionStorage.getItem("draft-lantern-seen-counters") || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function rememberCounters(results) {
-  const seen = getSeenCounters();
-  results.forEach((result) => {
-    seen[result.candidate.name] = Math.min(6, (seen[result.candidate.name] || 0) + 1);
-  });
-  try {
-    sessionStorage.setItem("draft-lantern-seen-counters", JSON.stringify(seen));
-  } catch {
-    return;
-  }
-}
-
-function classifySmartCounter(result, enemy, role, team, seen) {
+function classifySmartCounter(result, enemy, role, team) {
   const candidate = result.candidate;
   const threats = getEnemyThreatProfile(enemy);
   const damageNeed = getDamageNeed(team);
@@ -239,12 +219,6 @@ function classifySmartCounter(result, enemy, role, team, seen) {
     }
   }
 
-  const repeatPenalty = Math.min(18, (seen[candidate.name] || 0) * 5);
-  smartScore -= repeatPenalty;
-  if (repeatPenalty) {
-    reasons.push(`${candidate.name} was shown recently, so it is weighted down unless the matchup is still strong.`);
-  }
-
   return {
     ...result,
     smartScore,
@@ -255,44 +229,24 @@ function classifySmartCounter(result, enemy, role, team, seen) {
   };
 }
 
-function pickDiverseCounters(items, limit, focus) {
-  const ordered = [...items].sort((a, b) => b.smartScore - a.smartScore || b.score - a.score || a.candidate.name.localeCompare(b.candidate.name));
-  if (focus === "all") return ordered.slice(0, limit);
-  if (focus === "hard") return ordered.filter((item) => ["hard", "strong", "favorable"].includes(item.tier.key) || item.smartScore >= 60).slice(0, limit);
-  if (focus === "strong") return ordered.filter((item) => item.smartScore >= 58).slice(0, limit);
+function pickBestHardCounters(items, limit) {
+  const tierRank = {
+    hard: 5,
+    strong: 4,
+    favorable: 3,
+    even: 2,
+    difficult: 1
+  };
 
-  const buckets = [
-    "hard",
-    "strong",
-    "answers dive/engage",
-    "answers poke/siege",
-    "answers pick pressure",
-    "answers frontline",
-    "answers scaling",
-    "damage fix",
-    "team fit",
-    "beginner safe",
-    "off-role option",
-    "favorable"
-  ];
-  const selected = [];
-  const used = new Set();
-  buckets.forEach((bucket) => {
-    if (selected.length >= limit) return;
-    const match = ordered.find((item) => !used.has(item.candidate.name) && (item.smartBucket === bucket || item.tier.key === bucket));
-    if (match) {
-      selected.push(match);
-      used.add(match.candidate.name);
-    }
-  });
-  ordered.forEach((item) => {
-    if (selected.length >= limit) return;
-    if (!used.has(item.candidate.name)) {
-      selected.push(item);
-      used.add(item.candidate.name);
-    }
-  });
-  return selected;
+  return [...items]
+    .sort((a, b) => {
+      const tierDelta = (tierRank[b.tier.key] || 0) - (tierRank[a.tier.key] || 0);
+      return tierDelta
+        || b.score - a.score
+        || b.smartScore - a.smartScore
+        || a.candidate.name.localeCompare(b.candidate.name);
+    })
+    .slice(0, limit);
 }
 
 function populateExplorerControls() {
@@ -889,18 +843,16 @@ function renderCounters() {
 
   const role = allyRole.value || enemyRole.value;
   const includeOffRole = Boolean(matchupOffRole?.checked);
-  const focus = counterFocus?.value || "diverse";
   const limit = Number.parseInt(counterCount?.value || "6", 10);
   const team = getSelectedTeamContext(role);
-  const seen = getSeenCounters();
   const threats = getEnemyThreatProfile(enemy);
   const smartPool = champions
     .filter((champion) => champion.name !== enemy.name)
     .filter((champion) => champion.roles.includes(role) || includeOffRole)
-    .map((champion) => classifySmartCounter(scoreCounter(enemy, champion, role), enemy, role, team, seen))
+    .map((champion) => classifySmartCounter(scoreCounter(enemy, champion, role), enemy, role, team))
     .sort((a, b) => b.smartScore - a.smartScore || b.score - a.score || a.candidate.name.localeCompare(b.candidate.name));
 
-  const candidates = pickDiverseCounters(smartPool, limit, focus);
+  const candidates = pickBestHardCounters(smartPool, limit);
   const hardCount = smartPool.filter((result) => result.tier.key === "hard").length;
   const strongCount = smartPool.filter((result) => result.tier.key === "strong").length;
   const threatText = threats.map((threat) => threat.label).join(", ");
@@ -918,12 +870,12 @@ function renderCounters() {
       <span><strong>Threat profile:</strong> ${escapeHtml(threatText)}</span>
       <span><strong>Attack:</strong> ${escapeHtml(threats.map((threat) => threat.note).join(" "))}</span>
       <span><strong>Data:</strong> ${escapeHtml(dataSourceLabel)}</span>
-      <span><strong>Smart pool:</strong> ${hardCount} hard and ${strongCount} strong answers found. Suggestions are diversified and recent repeats are weighted down${includeOffRole ? ", including off-role options" : ""}.</span>
+      <span><strong>Hard-counter pool:</strong> ${hardCount} hard and ${strongCount} strong answers found. Suggestions always show the highest ranked hard-counter candidates from the current patch roster model${includeOffRole ? ", including off-role options" : ""}.</span>
     </div>
   `;
 
   if (!candidates.length) {
-    counterResults.innerHTML = `<p class="empty-state">No reliable counter was found for these filters. Try enabling off-role counters or switch to all ranked options.</p>`;
+    counterResults.innerHTML = `<p class="empty-state">No reliable hard counter was found for these filters. Try enabling off-role counters or changing the role.</p>`;
     return;
   }
 
@@ -941,7 +893,7 @@ function renderCounters() {
           <div class="counter-card__top">
             ${getChampionIconMarkup(result.candidate, "small")}
             <div>
-              <span class="counter-card__rank">${escapeHtml(result.smartLabel)} ${index + 1}</span>
+              <span class="counter-card__rank">${escapeHtml(difficulty.label)} ${index + 1}</span>
               <h3>${escapeHtml(result.candidate.name)}</h3>
               <small>${escapeHtml(result.candidate.roles.join(" / "))}</small>
             </div>
@@ -961,7 +913,6 @@ function renderCounters() {
       `;
     })
     .join("");
-  rememberCounters(candidates);
 }
 
 function showChampionDetails(name) {

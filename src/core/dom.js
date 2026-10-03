@@ -8,7 +8,6 @@ const dataStatus = document.querySelector("#dataStatus");
 const enemyRole = document.querySelector("#enemyRole");
 const enemyPick = document.querySelector("#enemyPick");
 const allyRole = document.querySelector("#allyRole");
-const counterFocus = document.querySelector("#counterFocus");
 const counterCount = document.querySelector("#counterCount");
 const matchupOffRole = document.querySelector("#matchupOffRole");
 const counterResults = document.querySelector("#counterResults");
