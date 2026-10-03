@@ -390,6 +390,201 @@ const premadeComps = [
   }
 ];
 
+const premadeCompVariants = {
+  "wombo-combo": [
+    {
+      id: "jarvan-ball-delivery",
+      name: "Jarvan Ball Delivery",
+      summary: "A faster engage version that starts fights earlier and traps enemies for Orianna and Miss Fortune.",
+      bestWhen: "Pick it when your jungler wants early agency and the enemy backline has limited dashes.",
+      picks: { Top: "Malphite", Jungle: "Jarvan IV", Mid: "Orianna", ADC: "Miss Fortune", Support: "Nautilus" }
+    },
+    {
+      id: "double-mage-layer",
+      name: "Double Mage Layer",
+      summary: "Trades some hard lock-down for more zone damage and safer objective control.",
+      bestWhen: "Pick it when your mid prefers Viktor or the enemy must walk through narrow river entrances.",
+      picks: { Top: "Ornn", Jungle: "Amumu", Mid: "Viktor", ADC: "Miss Fortune", Support: "Leona" }
+    }
+  ],
+  "protect-jinx": [
+    {
+      id: "maximum-peel",
+      name: "Maximum Peel",
+      summary: "Adds more disengage and shielding so Jinx survives heavy dive attempts.",
+      bestWhen: "Pick it into assassins, divers, and teams that must reach Jinx to win.",
+      picks: { Top: "Shen", Jungle: "Sejuani", Mid: "Orianna", ADC: "Jinx", Support: "Janna" }
+    },
+    {
+      id: "kog-lulu-scaling",
+      name: "Kog'Maw Scaling Shell",
+      summary: "A pure late-game damage version built around range, shields, and front-to-back patience.",
+      bestWhen: "Pick it when your ADC plays hypercarries and lanes can survive without forcing early fights.",
+      picks: { Top: "Ornn", Jungle: "Maokai", Mid: "Orianna", ADC: "Kog'Maw", Support: "Lulu" }
+    }
+  ],
+  "global-pick": [
+    {
+      id: "long-range-catch",
+      name: "Long-Range Catch",
+      summary: "Keeps the global pressure but adds more pick threat from fog with Varus and Leona.",
+      bestWhen: "Pick it when the enemy has fragile carries and poor cleanse or spell-shield options.",
+      picks: { Top: "Shen", Jungle: "Nocturne", Mid: "Twisted Fate", ADC: "Varus", Support: "Leona" }
+    },
+    {
+      id: "assassin-collapse",
+      name: "Assassin Collapse",
+      summary: "Turns the pick comp into a higher-damage collapse pattern around Nocturne and Ahri.",
+      bestWhen: "Pick it when your group can track side waves and delete one target before a 5v5 starts.",
+      picks: { Top: "Camille", Jungle: "Nocturne", Mid: "Ahri", ADC: "Ashe", Support: "Nautilus" }
+    }
+  ],
+  "siege-net": [
+    {
+      id: "double-poke",
+      name: "Double Poke Siege",
+      summary: "More range and poke damage for teams that want to win before the enemy can hard engage.",
+      bestWhen: "Pick it when your carries are comfortable spacing and your team can arrive first.",
+      picks: { Top: "Ornn", Jungle: "Maokai", Mid: "Lux", ADC: "Ezreal", Support: "Karma" }
+    },
+    {
+      id: "trap-lane-pressure",
+      name: "Trap Lane Pressure",
+      summary: "Maxes out bot-lane tower pressure with Caitlyn plus Lux and a stable frontline.",
+      bestWhen: "Pick it when bot lane can win push and your team wants plates into dragon control.",
+      picks: { Top: "K'Sante", Jungle: "Jarvan IV", Mid: "Orianna", ADC: "Caitlyn", Support: "Lux" }
+    }
+  ],
+  "simple-engage": [
+    {
+      id: "extra-forgiving-frontline",
+      name: "Extra Forgiving Frontline",
+      summary: "Keeps simple buttons but adds more tankiness for newer groups learning grouped fights.",
+      bestWhen: "Pick it when your team tends to overstep and needs durability to survive mistakes.",
+      picks: { Top: "Malphite", Jungle: "Sejuani", Mid: "Annie", ADC: "Ashe", Support: "Nautilus" }
+    },
+    {
+      id: "beginner-reset-carry",
+      name: "Beginner Reset Carry",
+      summary: "Swaps Ashe control for Jinx cleanup so one good engage can snowball the whole fight.",
+      bestWhen: "Pick it when your ADC is comfortable farming safely and following crowd control.",
+      picks: { Top: "Garen", Jungle: "Amumu", Mid: "Annie", ADC: "Jinx", Support: "Leona" }
+    }
+  ],
+  "front-to-back": [
+    {
+      id: "aphelios-fortress",
+      name: "Aphelios Fortress",
+      summary: "A harder-scaling front-to-back setup with more late-game carry ceiling.",
+      bestWhen: "Pick it when your ADC can pilot Aphelios and the team will protect formation.",
+      picks: { Top: "Ornn", Jungle: "Sejuani", Mid: "Viktor", ADC: "Aphelios", Support: "Lulu" }
+    },
+    {
+      id: "xayah-counter-engage",
+      name: "Xayah Counter-Engage",
+      summary: "Adds safer self-peel and stronger punish against enemy dive attempts.",
+      bestWhen: "Pick it when the enemy has divers but still needs to fight through your frontline.",
+      picks: { Top: "K'Sante", Jungle: "Maokai", Mid: "Orianna", ADC: "Xayah", Support: "Rakan" }
+    }
+  ],
+  "anti-dive": [
+    {
+      id: "anti-assassin-hypercarry",
+      name: "Anti-Assassin Hypercarry",
+      summary: "Turns the shelter into a stronger late-game carry shell if your ADC can scale safely.",
+      bestWhen: "Pick it when the enemy has burst threats but not enough sustained damage to kill tanks twice.",
+      picks: { Top: "Shen", Jungle: "Sejuani", Mid: "Lissandra", ADC: "Jinx", Support: "Lulu" }
+    },
+    {
+      id: "disengage-poke",
+      name: "Disengage Poke",
+      summary: "Kites dive with range, slows, and disengage instead of trying to hard force fights.",
+      bestWhen: "Pick it when the enemy engage is predictable and your team can play patiently around cooldowns.",
+      picks: { Top: "Gragas", Jungle: "Maokai", Mid: "Lux", ADC: "Ezreal", Support: "Janna" }
+    }
+  ],
+  "catch-reset": [
+    {
+      id: "samira-chain-cc",
+      name: "Samira Chain CC",
+      summary: "A more explosive version that turns one hook or knock-up into a fast all-in.",
+      bestWhen: "Pick it when bot lane wants to fight early and your support can start decisively.",
+      picks: { Top: "Darius", Jungle: "Jarvan IV", Mid: "Ahri", ADC: "Samira", Support: "Nautilus" }
+    },
+    {
+      id: "vi-caitlyn-pick",
+      name: "Vi Caitlyn Pick",
+      summary: "Point-click engage plus trap follow-up makes priority targets easier to lock down.",
+      bestWhen: "Pick it when one enemy carry is the whole game plan and must be removed first.",
+      picks: { Top: "Camille", Jungle: "Vi", Mid: "Ahri", ADC: "Caitlyn", Support: "Morgana" }
+    }
+  ],
+  "dive-reset": [
+    {
+      id: "yasuo-dive",
+      name: "Knock-Up Dive",
+      summary: "A Yasuo version that stacks knock-ups and turns one entry into a full backline wipe.",
+      bestWhen: "Pick it when your mid likes Yasuo and top or support can reliably start the airborne chain.",
+      picks: { Top: "Malphite", Jungle: "Nocturne", Mid: "Yasuo", ADC: "Kai'Sa", Support: "Rakan" }
+    },
+    {
+      id: "vi-galio-lock",
+      name: "Vi Galio Lock",
+      summary: "More direct point-click dive for deleting one carry without needing a perfect flank.",
+      bestWhen: "Pick it when the enemy carry has mobility but cannot survive layered single-target engage.",
+      picks: { Top: "Camille", Jungle: "Vi", Mid: "Galio", ADC: "Samira", Support: "Rakan" }
+    }
+  ],
+  "one-three-one": [
+    {
+      id: "tryndamere-side-pressure",
+      name: "Tryndamere Side Pressure",
+      summary: "A simpler side-lane version that wins through towers, rotations, and forced answers.",
+      bestWhen: "Pick it when your top wants pure side pressure and the team can avoid random mid fights.",
+      picks: { Top: "Tryndamere", Jungle: "Nocturne", Mid: "Twisted Fate", ADC: "Ezreal", Support: "Janna" }
+    },
+    {
+      id: "camille-pick-sides",
+      name: "Camille Pick Sides",
+      summary: "Adds stronger lockdown from side lane so split pressure turns into guaranteed catches.",
+      bestWhen: "Pick it when the enemy sends one squishy answer to side lanes or lacks cleanse tools.",
+      picks: { Top: "Camille", Jungle: "Nocturne", Mid: "Ahri", ADC: "Ashe", Support: "Morgana" }
+    }
+  ],
+  "early-skirmish": [
+    {
+      id: "xin-draven-tempo",
+      name: "Xin Draven Tempo",
+      summary: "A lower-complexity early brawl setup with direct fights and strong river control.",
+      bestWhen: "Pick it when your jungler wants simple dueling and bot lane can convert early kills.",
+      picks: { Top: "Darius", Jungle: "Xin Zhao", Mid: "Annie", ADC: "Draven", Support: "Nautilus" }
+    },
+    {
+      id: "elise-dive-snowball",
+      name: "Elise Dive Snowball",
+      summary: "A sharper tower-dive version for ending lanes early before scaling comps stabilize.",
+      bestWhen: "Pick it when your group can coordinate stacked waves, dives, and quick resets.",
+      picks: { Top: "Renekton", Jungle: "Elise", Mid: "Ahri", ADC: "Caitlyn", Support: "Leona" }
+    }
+  ],
+  "objective-zone": [
+    {
+      id: "azir-xayah-zone",
+      name: "Azir Xayah Zone",
+      summary: "More late-game zone control with Azir soldiers and Xayah feathers around objectives.",
+      bestWhen: "Pick it when your team can scale and the enemy must walk into river to contest.",
+      picks: { Top: "Ornn", Jungle: "Maokai", Mid: "Azir", ADC: "Xayah", Support: "Rakan" }
+    },
+    {
+      id: "anivia-choke-control",
+      name: "Anivia Choke Control",
+      summary: "Locks down narrow entrances with walls, saplings, and layered area denial.",
+      bestWhen: "Pick it when the enemy lacks side pressure and must approach through predictable paths.",
+      picks: { Top: "K'Sante", Jungle: "Maokai", Mid: "Anivia", ADC: "Varus", Support: "Braum" }
+    }
+  ]
+};
+
 const favoriteCompProfiles = [
   {
     id: "balanced",

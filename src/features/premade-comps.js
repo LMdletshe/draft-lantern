@@ -2,6 +2,10 @@ function getPremadeTeam(comp) {
   return roles.map((role) => getChampion(comp.picks[role])).filter(Boolean);
 }
 
+function getPremadeVariants(comp) {
+  return premadeCompVariants[comp.id] || [];
+}
+
 function getPremadeOfferItems(comp, team) {
   const scores = calculateScores(team);
   const strongestScores = scoreKeys
@@ -31,6 +35,19 @@ function renderPremadeScoreSnapshot(team) {
       <div class="premade-score">
         <div><span>${escapeHtml(label)}</span><strong>${scores[key]}%</strong></div>
         <div class="premade-score__track"><span style="width: ${scores[key]}%"></span></div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderVariantRoster(picks) {
+  return roles.map((role) => {
+    const champion = getChampion(picks[role]);
+    return `
+      <div>
+        ${champion ? getChampionIconMarkup(champion, "small") : `<span class="champion-icon champion-icon--small" aria-hidden="true">${escapeHtml(role.slice(0, 2).toUpperCase())}</span>`}
+        <span>${escapeHtml(role)}</span>
+        <strong>${escapeHtml(champion?.name || picks[role])}</strong>
       </div>
     `;
   }).join("");
@@ -82,6 +99,7 @@ function renderPremadeComps() {
   const archetypes = getCompArchetypes(scores);
   const warnings = getDraftWarnings(team).filter((warning) => warning.severity !== "info");
   const offerItems = getPremadeOfferItems(comp, team);
+  const variants = getPremadeVariants(comp);
 
   premadeDetails.innerHTML = `
     <header class="premade-details__header">
@@ -129,6 +147,30 @@ function renderPremadeComps() {
         <p>${escapeHtml(comp.needs || comp.rule)}</p>
       </section>
     </div>
+
+    ${variants.length ? `
+      <section class="premade-variations-section">
+        <div class="comparison-subheading"><span>Template variations</span><strong>Same idea, different rosters</strong></div>
+        <div class="premade-variation-grid">
+          ${variants.map((variant) => `
+            <article class="premade-variation-card">
+              <header>
+                <div>
+                  <span>Variation</span>
+                  <h3>${escapeHtml(variant.name)}</h3>
+                </div>
+                <button class="text-button" type="button" data-load-premade="${escapeHtml(comp.id)}" data-load-variant="${escapeHtml(variant.id)}">Load variation</button>
+              </header>
+              <p>${escapeHtml(variant.summary)}</p>
+              <small>${escapeHtml(variant.bestWhen)}</small>
+              <div class="premade-variation-roster">
+                ${renderVariantRoster(variant.picks)}
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
 
     <div class="premade-overview-grid">
       <section class="premade-strengths">
@@ -187,16 +229,19 @@ function renderPremadeComps() {
   `;
 }
 
-function loadPremadeComp(id) {
+function loadPremadeComp(id, variantId) {
   const comp = premadeComps.find((item) => item.id === id);
   if (!comp) return;
 
+  const variant = getPremadeVariants(comp).find((item) => item.id === variantId);
+  const picks = variant?.picks || comp.picks;
+
   clearFavoriteCore();
   roles.forEach((role) => {
-    roleState[role] = getChampion(comp.picks[role]) ? comp.picks[role] : null;
+    roleState[role] = getChampion(picks[role]) ? picks[role] : null;
   });
   if (recommendRole) recommendRole.value = "Top";
   switchView("builderView");
   renderAll();
-  setSaveStatus(`${comp.name} loaded.`);
+  setSaveStatus(`${variant?.name || comp.name} loaded.`);
 }

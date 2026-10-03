@@ -156,7 +156,7 @@ premadeList.addEventListener("click", (event) => {
 });
 premadeDetails.addEventListener("click", (event) => {
   const button = event.target.closest("[data-load-premade]");
-  if (button) loadPremadeComp(button.dataset.loadPremade);
+  if (button) loadPremadeComp(button.dataset.loadPremade, button.dataset.loadVariant);
 });
 
 document.querySelector("#saveDraft").addEventListener("click", saveCurrentTeam);

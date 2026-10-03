@@ -132,6 +132,10 @@
     grid-template-columns: 1fr;
   }
 
+  .premade-variation-grid {
+    grid-template-columns: 1fr;
+  }
+
   .phase-playbook__grid {
     grid-template-columns: 1fr;
   }
@@ -449,8 +453,18 @@
   .premade-roster,
   .premade-pros-cons,
   .premade-offer-grid,
+  .premade-variation-grid,
   .premade-footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .premade-variation-card header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .premade-variation-card .text-button {
+    width: 100%;
   }
 
   .premade-list-item {

@@ -46,10 +46,10 @@ built-in curated starter pool and initials automatically.
   front-to-back, protect-the-carry, pick, poke, dive, split-pressure,
   objective-control, early-skirmish, and anti-dive styles.
 - Each library comp explains what it offers, when to pick it, what it needs to
-  function, its golden rule, flexible champion swaps, and separate early-, mid-,
-  and late-game plans.
-- Loads any premade composition directly into the Team Builder for editing and
-  deeper analysis.
+  function, its golden rule, playable roster variations, flexible champion
+  swaps, and separate early-, mid-, and late-game plans.
+- Loads any premade template or named variation directly into the Team Builder
+  for editing and deeper analysis.
 - Recommends the next pick based on the role, missing team needs, damage mix,
   beginner difficulty, and known pair synergies.
 - Scores general comp traits like engage, frontline, damage, pick tools, poke,
@@ -130,9 +130,9 @@ steps.
 ## Editing The Data
 
 Hand-curated champion entries live in the `champions` array in
-`src/data/champions.js`. Best-comp library entries and favorite-core profiles live in
-`src/data/compositions.js`. Generated full-roster entries are created from Riot Data
-Dragon at runtime.
+`src/data/champions.js`. Best-comp library templates, their named variations,
+and favorite-core profiles live in `src/data/compositions.js`. Generated
+full-roster entries are created from Riot Data Dragon at runtime.
 
 Useful fields:
 

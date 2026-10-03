@@ -250,6 +250,94 @@
   line-height: 1.45;
 }
 
+.premade-variations-section {
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+}
+
+.premade-variation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.premade-variation-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 11px;
+}
+
+.premade-variation-card header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.premade-variation-card header span {
+  color: var(--blue);
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.premade-variation-card h3 {
+  margin: 3px 0 0;
+  font-size: 0.9rem;
+}
+
+.premade-variation-card .text-button {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.premade-variation-card p,
+.premade-variation-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.premade-variation-card p {
+  margin: 9px 0 7px;
+}
+
+.premade-variation-card small {
+  color: #c7d5df;
+}
+
+.premade-variation-roster {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.premade-variation-roster > div {
+  display: grid;
+  grid-template-columns: 34px minmax(58px, 0.35fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.premade-variation-roster span {
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.premade-variation-roster strong {
+  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+}
+
 .premade-overview-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
