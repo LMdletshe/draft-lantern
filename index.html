@@ -27,15 +27,15 @@
       </section>
 
       <nav class="view-tabs" aria-label="App views">
-        <button class="view-tab is-active" type="button" data-view="builderView">Team Builder</button>
-        <button class="view-tab" type="button" data-view="premadeView">Premade Comps</button>
-        <button class="view-tab" type="button" data-view="championExplorerView">Champions</button>
+        <button class="view-tab is-active" type="button" data-view="championExplorerView">Champions</button>
         <button class="view-tab" type="button" data-view="matchupView">Matchups</button>
-        <button class="view-tab" type="button" data-view="learnView">How to Play</button>
+        <button class="view-tab" type="button" data-view="builderView">Team Builder</button>
+        <button class="view-tab" type="button" data-view="premadeView">Premade Comps</button>
         <button class="view-tab" type="button" data-view="draftRoomView">Draft Room</button>
+        <button class="view-tab" type="button" data-view="learnView">How to Play</button>
       </nav>
 
-      <section id="builderView" class="app-view" aria-label="Team builder">
+      <section id="builderView" class="app-view is-hidden" aria-label="Team builder">
         <div class="workspace">
         <aside class="panel roster-panel">
           <div class="panel__header">
@@ -217,7 +217,7 @@
         </div>
       </section>
 
-      <section id="championExplorerView" class="app-view is-hidden champion-explorer-view" aria-label="Champion explorer and hard counters">
+      <section id="championExplorerView" class="app-view champion-explorer-view" aria-label="Champion explorer and hard counters">
         <div class="panel champion-explorer-panel">
           <div class="panel__header">
             <div>
