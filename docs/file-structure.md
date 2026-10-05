@@ -16,7 +16,7 @@ src/
   core/
     state.js               # Mutable app state
     dom.js                 # Shared DOM references
-    utils.js               # Escaping, champion hydration, Data Dragon loading, profile helpers
+    utils.js               # Escaping, champion hydration, Data Dragon roster/kit loading, profile helpers
     app.js                 # Bootstrap, view switching, event listeners, initial render calls
   features/
     team-builder.js        # Champion grid, draft slots, role selection, reset/select/clear actions
@@ -24,7 +24,7 @@ src/
     recommendations.js     # Next-pick scoring and recommendation rendering
     favorite-builder.js    # Favorite-core controls and generated team variants
     premade-comps.js       # Premade comp list/detail rendering and loading
-    matchups.js            # Matchup finder, champion explorer, counter scoring, champion dialog
+    matchups.js            # Hard-counter finder, champion explorer, counter scoring, champion dialog
     riot-scout.js          # Browser UI for the server-side Riot player scout
     persistence.js         # Saved drafts and share links
     draft-room.js          # Guided two-team draft room and comparison view
@@ -68,7 +68,7 @@ Do not convert files to ES modules unless the deployment model is changed delibe
 - Put static role, trait, matchup, and scoring config in `src/data/app-config.js`.
 - Put hand-curated champion entries in `src/data/champions.js`.
 - Put best-comp templates, variations, and pair/favorite composition data in `src/data/compositions.js`.
-- Put shared helpers and Data Dragon hydration in `src/core/utils.js`.
+- Put shared helpers and Data Dragon roster/kit hydration in `src/core/utils.js`.
 - Put feature-specific rendering and behavior in the matching `src/features` file.
 - Keep `src/core/app.js` small. It should wire events, switch views, and start the app.
 - Put static guide content in `src/guides`; each guide should render only its own role or topic.

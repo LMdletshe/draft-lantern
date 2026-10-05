@@ -45,7 +45,7 @@ function setDataStatus(status, detail = "") {
 
   if (status === "ready") {
     dataStatus.textContent = `Riot roster ${detail}`;
-    dataStatus.title = `Official champion roster, icons, and combat attributes loaded from Riot Data Dragon ${riotData.version}. Every champion receives a complete modeled profile; curated entries keep additional hand-tuned advice.`;
+    dataStatus.title = `Official champion roster, icons, combat attributes, and ${riotData.detailedChampions || 0} spell kits loaded from Riot Data Dragon ${riotData.version}. Every champion receives a complete modeled profile; curated entries keep additional hand-tuned advice.`;
     return;
   }
 
@@ -81,8 +81,81 @@ function getRoleFromRiotPosition(position) {
 
 function getRiotDataSourceLabel() {
   return riotData.status === "ready"
-    ? `Latest Riot Data Dragon ${riotData.version}`
+    ? `Latest Riot Data Dragon ${riotData.version}${riotData.detailedChampions ? " + spell kits" : ""}`
     : "Offline modeled roster";
+}
+
+function stripRiotText(value) {
+  return String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getOfficialKitText(official, detail = null) {
+  const record = detail || official;
+  return [
+    official?.blurb,
+    record?.passive?.name,
+    record?.passive?.description,
+    ...(record?.spells || []).flatMap((spell) => [spell.name, spell.description, spell.tooltip])
+  ]
+    .map(stripRiotText)
+    .filter(Boolean)
+    .join(" ");
+}
+
+function getKitKeywordTraitsFromText(text) {
+  const normalized = String(text || "").toLowerCase();
+  const traits = new Set();
+  const has = (pattern) => pattern.test(normalized);
+
+  if (has(/\b(stun|root|snare|knock(?:ed)?\s?up|airborne|suppress|charm|fear|taunt|sleep|silence|polymorph)\b/)) {
+    traits.add("lockdown");
+    traits.add("crowd-control");
+  }
+  if (has(/\b(suppress|point[- ]and[- ]click|targeted)\b/)) traits.add("point-click");
+  if (has(/\b(dash|blink|leap|vault|recast|teleport|charge|lunges?)\b/)) {
+    traits.add("mobility");
+    traits.add("dash");
+  }
+  if (has(/\b(shield|barrier|spell shield|blocks? the next|immune|unstoppable|untargetable|invulnerable)\b/)) {
+    traits.add("safe");
+    traits.add("peel");
+  }
+  if (has(/\bspell shield\b/)) traits.add("spell-shield");
+  if (has(/\bunstoppable\b/)) traits.add("unstoppable");
+  if (has(/\buntargetable|invulnerable\b/)) traits.add("untargetable");
+  if (has(/\b(heal|heals|healing|omnivamp|lifesteal|life steal|regenerat)\b/)) traits.add("sustain");
+  if (has(/\b(execute|missing health|burst)\b/)) traits.add("burst");
+  if (has(/\b(slow|cripple)\b/)) traits.add("kite");
+  if (has(/\b(maximum health|max health|percent health|% health|true damage|armor penetration|magic penetration)\b/)) {
+    traits.add("frontline-check");
+    traits.add("high-dps");
+  }
+  if (has(/\b(stealth|camouflage|invisible|reveals?|vision)\b/)) traits.add("pick");
+  if (has(/\b(trap|zone|terrain|wall|grounded)\b/)) traits.add("zone-control");
+  if (has(/\b(resets?|cooldown is refunded|refreshes)\b/)) traits.add("reset");
+  if (has(/\b(long range|from range|ranged|projectile|missile)\b/)) traits.add("range");
+
+  return [...traits];
+}
+
+function getOfficialKitTraits(official, detail = null) {
+  return getKitKeywordTraitsFromText(getOfficialKitText(official, detail));
+}
+
+async function fetchChampionDetail(official, version) {
+  const detailResponse = await fetch(`${DDRAGON_BASE_URL}/cdn/${version}/data/en_US/champion/${official.id}.json`);
+  if (!detailResponse.ok) {
+    throw new Error(`Champion detail failed for ${official.name}: ${detailResponse.status}`);
+  }
+  const payload = await detailResponse.json();
+  return payload.data?.[official.id] || null;
 }
 
 function getDamageType(champion) {
@@ -196,6 +269,7 @@ function getChampionSearchHaystack(champion) {
     champion.beginner,
     champion.official?.title || "",
     champion.official?.blurb || "",
+    champion.official?.kitText || "",
     champion.profile?.powerCurve || "",
     champion.profile?.fightPattern || "",
     ...champion.roles,
@@ -203,6 +277,7 @@ function getChampionSearchHaystack(champion) {
     ...(champion.profile?.strengths || []),
     ...(champion.profile?.weaknesses || []),
     ...(champion.official?.tags || []),
+    ...(champion.official?.kitTraits || []),
     ...champion.goodInto,
     ...champion.weakInto
   ]
@@ -245,7 +320,8 @@ function getChampionCombatTraits(champion) {
   const traits = new Set([
     ...champion.tags,
     ...champion.goodInto,
-    ...(champion.official?.tags || []).map((tag) => tag.toLowerCase())
+    ...(champion.official?.tags || []).map((tag) => tag.toLowerCase()),
+    ...(champion.official?.kitTraits || [])
   ]);
   const scores = champion.scores || {};
 
@@ -304,6 +380,7 @@ function getChampionProfileSignals(champion) {
   const info = getChampionInfo(champion);
   const damageType = getDamageType(champion);
   const tags = champion.tags || [];
+  const kitTraits = champion.official?.kitTraits || [];
   const rolesForChampion = champion.roles || [];
   const scoreValues = champion.scores || {};
 
@@ -321,6 +398,7 @@ function getChampionProfileSignals(champion) {
   addTraitIf(traits, traits.has("marksman") && !traits.has("mobility"), "fragile-carry");
   addTraitIf(traits, tags.includes("safe") || traits.has("mobility"), "kite");
   addTraitIf(traits, tags.includes("mobility"), "dash");
+  kitTraits.forEach((trait) => traits.add(trait));
 
   const pointClickControl = new Set([
     "Annie", "Lissandra", "Malzahar", "Pantheon", "Poppy", "Rammus", "Renekton",
@@ -441,7 +519,10 @@ function getDefaultOfficialInfo(official) {
   };
 }
 
-function getOfficialRecord(official, version) {
+function getOfficialRecord(official, version, detail = null) {
+  const kitText = getOfficialKitText(official, detail);
+  const kitTraits = getKitKeywordTraitsFromText(kitText);
+
   return {
     id: official.id,
     key: official.key,
@@ -450,6 +531,17 @@ function getOfficialRecord(official, version) {
     blurb: official.blurb || "",
     info: { ...getDefaultOfficialInfo(official), ...(official.info || {}) },
     partype: official.partype || "",
+    kitText,
+    kitTraits,
+    passive: detail?.passive ? {
+      name: detail.passive.name,
+      description: stripRiotText(detail.passive.description)
+    } : null,
+    spells: (detail?.spells || []).map((spell) => ({
+      id: spell.id,
+      name: spell.name,
+      description: stripRiotText(spell.description || spell.tooltip)
+    })),
     iconUrl: `${DDRAGON_BASE_URL}/cdn/${version}/img/champion/${official.image.full}`
   };
 }
@@ -469,7 +561,7 @@ function getRolesForOfficialChampion(official) {
   return ["Mid"];
 }
 
-function getGeneratedTags(official, rolesForChampion) {
+function getGeneratedTags(official, rolesForChampion, detail = null) {
   const officialTags = official.tags || [];
   const info = { ...getDefaultOfficialInfo(official), ...(official.info || {}) };
   const tags = [];
@@ -490,8 +582,9 @@ function getGeneratedTags(official, rolesForChampion) {
   if (info.defense >= 8) tags.push("frontline");
   if (info.magic >= 8 && !officialTags.includes("Tank")) tags.push("burst");
   tags.push(...getSpecificChampionTraits(official.name));
+  tags.push(...getOfficialKitTraits(official, detail));
 
-  return uniqueList(tags).slice(0, 9);
+  return uniqueList(tags).slice(0, 12);
 }
 
 function getGeneratedScores(official, tags) {
@@ -536,12 +629,20 @@ function getGeneratedScores(official, tags) {
   }
 
   if (tags.includes("engage")) scores.engage += 1;
+  if (tags.includes("lockdown") || tags.includes("crowd-control")) {
+    scores.engage += 1;
+    scores.pick += 1;
+  }
   if (tags.includes("range")) scores.poke += 1;
   if (tags.includes("mobility")) scores.pick += 1;
   if (tags.includes("vision")) scores.peel += 1;
   if (tags.includes("wombo")) scores.engage += 1;
   if (tags.includes("anti-dive")) scores.peel += 2;
   if (tags.includes("siege")) scores.poke += 1;
+  if (tags.includes("zone-control")) scores.poke += 1;
+  if (tags.includes("frontline-check") || tags.includes("high-dps")) scores.damage += 1;
+  if (tags.includes("kite")) scores.peel += 1;
+  if (tags.includes("reset")) scores.scaling += 1;
   if (tags.includes("early")) scores.pick += 1;
   if (tags.includes("scaling")) scores.scaling += 1;
   if (tags.includes("split-push")) scores.damage += 1;
@@ -576,9 +677,24 @@ function getGeneratedMatchups(tags, rolesForChampion = []) {
     weakInto.push("frontline", "peel", "tank");
   }
 
-  if (tags.includes("peel") || tags.includes("utility")) {
+  if (tags.includes("lockdown") || tags.includes("point-click") || tags.includes("crowd-control")) {
+    goodInto.push("mobility", "assassin", "dive");
+    weakInto.push("range", "poke");
+  }
+
+  if (tags.includes("peel") || tags.includes("utility") || tags.includes("safe")) {
     goodInto.push("dive", "assassin", "burst");
     weakInto.push("poke", "range", "hard-engage");
+  }
+
+  if (tags.includes("frontline-check") || tags.includes("high-dps")) {
+    goodInto.push("frontline", "tank", "sustain");
+    weakInto.push("dive", "pick");
+  }
+
+  if (tags.includes("zone-control") || tags.includes("kite")) {
+    goodInto.push("low-range", "engage", "frontline");
+    weakInto.push("mobility", "global");
   }
 
   if (tags.includes("early")) {
@@ -682,6 +798,7 @@ function getGeneratedPowerCurve(tags) {
 
 function getGeneratedFightPattern(tags) {
   if (tags.includes("poke") || tags.includes("siege")) return "Damage enemies from range before committing to a full fight.";
+  if (tags.includes("zone-control")) return "Own choke points and make enemies cross controlled space before they can fight.";
   if (tags.includes("engage") || tags.includes("wombo")) return "Create the opening, then layer allied damage and crowd control.";
   if (tags.includes("peel") || tags.includes("anti-dive")) return "Protect the backline and punish enemies after they commit forward.";
   if (tags.includes("split-push")) return "Create side-lane pressure and join only when the map state favors it.";
@@ -702,6 +819,9 @@ function createGeneratedProfile(official, rolesForChampion, tags, scores, matchu
   if (tags.includes("sustain")) strengths.push("Sustain in extended trades");
   if (tags.includes("global")) strengths.push("Cross-map influence");
   if (tags.includes("split-push")) strengths.push("Side-lane pressure");
+  if (tags.includes("lockdown") || tags.includes("point-click")) strengths.push("Reliable lockdown");
+  if (tags.includes("frontline-check")) strengths.push("Tank and frontline damage");
+  if (tags.includes("zone-control")) strengths.push("Zone control");
   matchups.goodInto.slice(0, 2).forEach((item) => {
     strengths.push(`Strong into ${item.replaceAll("-", " ")}`);
   });
@@ -744,7 +864,11 @@ function getPseudoOfficialChampion(champion) {
 
 function hydrateChampionProfile(champion, official = null) {
   const source = official || getPseudoOfficialChampion(champion);
-  champion.tags = uniqueList([...champion.tags, ...getSpecificChampionTraits(champion.name)]);
+  champion.tags = uniqueList([
+    ...champion.tags,
+    ...getSpecificChampionTraits(champion.name),
+    ...(champion.official?.kitTraits || [])
+  ]);
   champion.profile = createGeneratedProfile(
     source,
     champion.roles,
@@ -760,9 +884,9 @@ function hydrateBuiltInChampionProfiles() {
   champions.forEach((champion) => hydrateChampionProfile(champion));
 }
 
-function createGeneratedChampion(official, version) {
+function createGeneratedChampion(official, version, detail = null) {
   const rolesForChampion = getRolesForOfficialChampion(official);
-  const tags = getGeneratedTags(official, rolesForChampion);
+  const tags = getGeneratedTags(official, rolesForChampion, detail);
   const scores = getGeneratedScores(official, tags);
   const matchups = getGeneratedMatchups(tags, rolesForChampion);
 
@@ -778,7 +902,7 @@ function createGeneratedChampion(official, version) {
     profile: createGeneratedProfile(official, rolesForChampion, tags, scores, matchups),
     generated: true,
     dataLevel: "modeled",
-    official: getOfficialRecord(official, version)
+    official: getOfficialRecord(official, version, detail)
   };
 }
 
@@ -805,19 +929,30 @@ async function loadRiotDataDragon() {
     const payload = await championsResponse.json();
     const officialChampions = Object.values(payload.data || {});
     const curatedByName = new Map(champions.map((champion) => [normalizeChampionName(champion.name), champion]));
+    const detailEntries = await Promise.allSettled(
+      officialChampions.map((official) => fetchChampionDetail(official, version))
+    );
+    const detailsById = new Map();
+    detailEntries.forEach((entry) => {
+      if (entry.status === "fulfilled" && entry.value?.id) {
+        detailsById.set(entry.value.id, entry.value);
+      }
+    });
 
     const expandedChampions = officialChampions
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((official) => {
+        const detail = detailsById.get(official.id) || null;
         const curatedChampion = curatedByName.get(normalizeChampionName(official.name));
         if (!curatedChampion) {
-          return createGeneratedChampion(official, version);
+          return createGeneratedChampion(official, version, detail);
         }
 
-        curatedChampion.official = getOfficialRecord(official, version);
+        curatedChampion.official = getOfficialRecord(official, version, detail);
         curatedChampion.tags = uniqueList([
           ...curatedChampion.tags,
-          ...getSpecificChampionTraits(official.name)
+          ...getSpecificChampionTraits(official.name),
+          ...(curatedChampion.official.kitTraits || [])
         ]);
         hydrateChampionProfile(curatedChampion, official);
         return curatedChampion;
@@ -829,13 +964,15 @@ async function loadRiotDataDragon() {
     riotData.status = "ready";
     riotData.version = version;
     riotData.matchedChampions = champions.filter((champion) => champion.official).length;
-    setDataStatus("ready", `${champions.length} champs`);
+    riotData.detailedChampions = detailsById.size;
+    setDataStatus("ready", `${champions.length} champs${detailsById.size ? " + kits" : ""}`);
     populateMatchupControls();
     renderAll();
   } catch (error) {
     riotData.status = "offline";
     riotData.version = null;
     riotData.matchedChampions = 0;
+    riotData.detailedChampions = 0;
     setDataStatus("offline", "Riot Data Dragon could not be reached, so the app is using built-in data.");
   }
 }

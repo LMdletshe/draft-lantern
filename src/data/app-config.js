@@ -4,7 +4,8 @@ const DDRAGON_BASE_URL = "https://ddragon.leagueoflegends.com";
 const riotData = {
   status: "offline",
   version: null,
-  matchedChampions: 0
+  matchedChampions: 0,
+  detailedChampions: 0
 };
 
 const riotTeamPositionRoles = {

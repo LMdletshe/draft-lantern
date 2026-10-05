@@ -772,6 +772,40 @@
   font-weight: 900;
 }
 
+.counter-proof {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 10px;
+  border: 1px solid rgba(215, 172, 85, 0.28);
+  border-radius: 8px;
+  background: rgba(215, 172, 85, 0.07);
+  padding: 8px 9px;
+}
+
+.counter-proof span,
+.counter-proof strong {
+  display: block;
+}
+
+.counter-proof span {
+  color: var(--gold);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.counter-proof strong {
+  color: #f3cf85;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.counter-proof--compact {
+  margin-top: 8px;
+}
+
 .counter-card h3 {
   margin: 2px 0 0;
   font-size: 1.1rem;

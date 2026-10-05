@@ -22,9 +22,10 @@ views use touch-sized controls, a swipeable view navigation bar, single-column
 champion and analysis cards, compact draft slots, and a full-screen champion
 detail dialog.
 
-The app loads the full official champion roster, icons, and metadata from
-Riot's public Data Dragon CDN. If that request fails, it falls back to the
-built-in curated starter pool and initials automatically.
+The app loads the full official champion roster, icons, metadata, and
+passive/spell kit text from Riot's public Data Dragon CDN. If that request
+fails, it falls back to the built-in curated starter pool and initials
+automatically.
 
 ## What It Does
 
@@ -36,8 +37,9 @@ built-in curated starter pool and initials automatically.
   plausible off-role picks separated from natural-role picks.
 - Adds Riot Data Dragon attributes and optional Riot Scout mastery/recent-game
   signals directly into champion evaluations.
-- Filters the champions a selected pick counters by opponent role and matchup
-  strength, with reasons and simple matchup plans.
+- Revamps Matchups around hard counters first: direct curated counters, latest
+  patch kit evidence, role-native fit, threat profile, and team context all feed
+  the counter ranking.
 - Locks one or more favorite champions into their preferred roles and generates
   complete synergy teams around them.
 - Produces balanced, teamfight, and safer-scaling variants, explaining each
@@ -59,8 +61,8 @@ built-in curated starter pool and initials automatically.
 - Flags composition risks such as one-sided damage, missing frontline, weak
   initiation, exposed carries, weak wave clear, slow early pressure, and short
   range. Open roles receive suggested fixes.
-- Suggests general counter-pick ideas with matchup difficulty, reasons, and lane
-  advice.
+- Suggests hard counter picks with evidence labels, proof confidence, reasons,
+  and lane advice instead of generic repeated recommendations.
 - Uses a server-side Riot API scout, when `RIOT_API_KEY` is configured, to look
   up a Riot ID, ranked profile, champion mastery, and recent match patterns
   without exposing the API key to the browser.
@@ -77,8 +79,9 @@ built-in curated starter pool and initials automatically.
 - Saves teams in the browser and creates shareable team links.
 - Shows all Riot Data Dragon champions when the CDN is reachable.
 - Builds a complete modeled profile for every Riot-loaded champion, including
-  combat attributes, power curve, fight pattern, strengths, weaknesses, plans,
-  matchup traits, contribution scores, and ranked counter targets.
+  combat attributes, passive/spell kit traits, power curve, fight pattern,
+  strengths, weaknesses, plans, matchup traits, contribution scores, and ranked
+  counter targets.
 - Marks modeled profiles separately while preserving richer hand-curated
   advice for champions that have it.
 
@@ -149,10 +152,12 @@ Pair combos live in `pairSynergies`. Common role assignments live in
 ## Riot Data Layer
 
 The app uses public Data Dragon endpoints for the full champion roster,
-champion visuals, and official metadata. Data Dragon does not require a Riot API
-key and can run directly in the browser. The original curated champions keep
-richer matchup advice; the rest receive complete modeled profiles from Riot
-combat attributes, champion class, role, and champion-specific archetype traits.
+champion visuals, official metadata, and champion detail files containing
+passive/spell descriptions. Data Dragon does not require a Riot API key and can
+run directly in the browser. The original curated champions keep richer matchup
+advice; the rest receive complete modeled profiles from Riot combat attributes,
+champion class, role, spell-kit keywords, and champion-specific archetype
+traits.
 
 Account lookup, match history, ranked data, and champion mastery use the
 server-side Vercel function in `api/riot-player.js`. Set `RIOT_API_KEY` in the
@@ -163,8 +168,10 @@ development, personal, or production key.
 The frontend never receives the Riot key. It only calls `/api/riot-player`,
 which forwards requests to Riot with `X-Riot-Token` from the server environment.
 The recommendations remain matchup-theory-first, with Riot player data used as
-extra scouting context. The S-to-D Champion Tier view is a Draft Lantern model
-based on current Data Dragon roster attributes, local role-fit and matchup
-rules, and optional player-specific Scout data. Riot does not provide a free
-global champion tier-list endpoint, so the app labels this as model-based
-rather than live global win-rate data.
+extra scouting context. The hard-counter model prioritizes curated direct
+counter rules, latest Data Dragon spell-kit evidence, role fit, champion
+attributes, and local matchup rules. The S-to-D Champion Tier view is a Draft
+Lantern model based on current Data Dragon roster attributes, local role-fit and
+matchup rules, and optional player-specific Scout data. Riot does not provide a
+free global champion tier-list or champion-vs-champion win-rate endpoint, so the
+app labels these as model-based rather than live global win-rate data.
