@@ -244,6 +244,16 @@
 
           <div id="explorerSearchResults" class="explorer-search-results"></div>
           <div id="explorerProfile" class="explorer-profile"></div>
+          <details class="explorer-counter-disclosure">
+            <summary>
+              <span>
+                <span class="eyebrow">Counter Matchups</span>
+                <strong>Who this champion counters</strong>
+              </span>
+              <span class="disclosure-hint">Open</span>
+            </summary>
+            <div id="explorerCounterResults" class="explorer-counter-results" aria-live="polite"></div>
+          </details>
           <section class="champion-tier-section" aria-label="Current patch champion tier model">
             <div class="champion-tier-section__header">
               <div>
@@ -263,7 +273,6 @@
             </div>
             <div id="tierList" class="tier-list" aria-live="polite"></div>
           </section>
-          <div id="explorerCounterResults" class="explorer-counter-results" aria-live="polite"></div>
         </div>
       </section>
 
@@ -275,55 +284,6 @@
               <h2>Exact hard counters</h2>
             </div>
           </div>
-
-          <section class="riot-scout" aria-label="Riot player scout">
-            <div class="riot-scout__heading">
-              <div>
-                <p class="eyebrow">Riot API Scout</p>
-                <h3>Use real player patterns</h3>
-              </div>
-              <span id="riotScoutStatus" class="data-status">Server key required</span>
-            </div>
-            <div class="riot-scout__controls">
-              <label>
-                <span>Game name</span>
-                <input id="riotGameName" type="text" placeholder="Faker" autocomplete="off" />
-              </label>
-              <label>
-                <span>Tag</span>
-                <input id="riotTagLine" type="text" placeholder="KR1" autocomplete="off" />
-              </label>
-              <label>
-                <span>Platform</span>
-                <select id="riotPlatform">
-                  <option value="euw1" selected>EUW</option>
-                  <option value="eun1">EUNE</option>
-                  <option value="na1">NA</option>
-                  <option value="kr">KR</option>
-                  <option value="br1">BR</option>
-                  <option value="jp1">JP</option>
-                  <option value="oc1">OCE</option>
-                  <option value="tr1">TR</option>
-                  <option value="la1">LAN</option>
-                  <option value="la2">LAS</option>
-                  <option value="sg2">SG</option>
-                  <option value="tw2">TW</option>
-                  <option value="vn2">VN</option>
-                </select>
-              </label>
-              <label>
-                <span>Region</span>
-                <select id="riotRegion">
-                  <option value="europe" selected>Europe</option>
-                  <option value="americas">Americas</option>
-                  <option value="asia">Asia</option>
-                  <option value="sea">SEA</option>
-                </select>
-              </label>
-              <button id="riotScoutButton" class="text-button" type="button">Scout</button>
-            </div>
-            <div id="riotScoutResults" class="riot-scout__results" aria-live="polite"></div>
-          </section>
 
           <div class="matchup-controls">
             <label>
@@ -456,7 +416,6 @@
     <script src="src/features/favorite-builder.js"></script>
     <script src="src/features/premade-comps.js?v=20261003-premade-variants"></script>
     <script src="src/features/matchups.js?v=20261005-matchup-hard-counters"></script>
-    <script src="src/features/riot-scout.js"></script>
     <script src="src/features/persistence.js"></script>
     <script src="src/features/draft-room.js"></script>
     <script src="src/core/app.js"></script>

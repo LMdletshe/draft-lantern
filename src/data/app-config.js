@@ -8,19 +8,6 @@ const riotData = {
   detailedChampions: 0
 };
 
-const riotTeamPositionRoles = {
-  TOP: "Top",
-  JUNGLE: "Jungle",
-  MIDDLE: "Mid",
-  BOTTOM: "ADC",
-  UTILITY: "Support"
-};
-
-const riotChampionAliases = {
-  FiddleSticks: "Fiddlesticks",
-  MonkeyKing: "Wukong"
-};
-
 const roleOverrides = {
   Aatrox: ["Top"],
   Ahri: ["Mid"],

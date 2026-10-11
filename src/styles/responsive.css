@@ -57,10 +57,8 @@
 
   .draft-slots,
   .analysis-grid,
-  .riot-scout__controls,
   .matchup-controls,
-  .counter-results,
-  .riot-scout__summary {
+  .counter-results {
     grid-template-columns: 1fr;
   }
 
@@ -172,6 +170,11 @@
 
   .explorer-profile-facts {
     grid-template-columns: 1fr;
+  }
+
+  .explorer-counter-disclosure > summary {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .recommendation-controls {
@@ -292,15 +295,6 @@
   .header-actions {
     width: 100%;
     flex-wrap: wrap;
-  }
-
-  .riot-scout__heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .riot-scout__controls .text-button {
-    width: 100%;
   }
 
   .draft-panel > .panel__header .header-actions {

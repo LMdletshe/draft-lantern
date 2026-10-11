@@ -400,69 +400,6 @@ function populateTierControls() {
   tierRole.innerHTML = optionList(["All", ...roles], currentRole);
 }
 
-function getChampionRecentScoutMatches(champion) {
-  const scout = riotScoutProfile || window.riotScoutProfile;
-  const matches = scout?.recent?.matches || [];
-  return matches.filter((match) => getChampionByRiotApiName(match.championName)?.name === champion.name);
-}
-
-function getScoutChampionContext(champion, role = "") {
-  const scout = riotScoutProfile || window.riotScoutProfile;
-  if (!scout?.ok) {
-    return {
-      score: 0,
-      label: "No Riot Scout lookup loaded",
-      detail: "Scout a Riot ID to add mastery and recent-match signals.",
-      reasons: []
-    };
-  }
-
-  const mastery = (scout.mastery || [])
-    .map((entry, index) => ({ ...entry, index }))
-    .find((entry) => getChampionByRiotChampionId(entry.championId)?.name === champion.name);
-  const recentMatches = getChampionRecentScoutMatches(champion);
-  const roleMatches = role ? recentMatches.filter((match) => getRoleFromRiotPosition(match.teamPosition) === role) : recentMatches;
-  const wins = recentMatches.filter((match) => match.win).length;
-  const winRate = recentMatches.length ? Math.round((wins / recentMatches.length) * 100) : 0;
-  const reasons = [];
-  let score = 0;
-
-  if (mastery) {
-    const masteryRankBonus = Math.max(0, 8 - mastery.index * 2);
-    const levelBonus = Math.min(5, Math.floor((mastery.championLevel || 0) / 2));
-    score += masteryRankBonus + levelBonus;
-    reasons.push(`Mastery level ${mastery.championLevel || "?"} with ${(mastery.championPoints || 0).toLocaleString()} points.`);
-  }
-
-  if (recentMatches.length) {
-    score += Math.min(8, recentMatches.length * 2);
-    if (winRate >= 60) score += 4;
-    if (winRate <= 35) score -= 3;
-    reasons.push(`${recentMatches.length} recent game${recentMatches.length === 1 ? "" : "s"} at ${winRate}% WR.`);
-  }
-
-  if (role && roleMatches.length) {
-    score += Math.min(4, roleMatches.length * 2);
-    reasons.push(`${roleMatches.length} recent ${role} game${roleMatches.length === 1 ? "" : "s"}.`);
-  }
-
-  if (!reasons.length) {
-    return {
-      score: 0,
-      label: "No player-specific signal",
-      detail: "The champion was not visible in recent games or top mastery.",
-      reasons: []
-    };
-  }
-
-  return {
-    score: Math.max(-5, Math.min(16, score)),
-    label: recentMatches.length ? `${recentMatches.length} recent, ${winRate}% WR` : "Mastery signal",
-    detail: reasons.join(" "),
-    reasons
-  };
-}
-
 function getRoleTierWeights(role) {
   const weights = {
     Top: { engage: 0.7, frontline: 1.1, damage: 1.1, pick: 0.65, poke: 0.55, peel: 0.45, scaling: 0.95 },
@@ -519,7 +456,6 @@ function getChampionTierScore(champion, role = champion.roles[0]) {
   const info = getChampionInfo(champion);
   const roleFit = getRoleFit(champion, role);
   const weights = getRoleTierWeights(role);
-  const scout = getScoutChampionContext(champion, role);
   const traits = getChampionProfileSignals(champion);
   const scoreTotal = scoreKeys.reduce((total, [key]) => total + ((scores[key] || 0) * (weights[key] || 1)), 0);
   const scoreMax = scoreKeys.reduce((total, [key]) => total + (5 * (weights[key] || 1)), 0);
@@ -529,7 +465,6 @@ function getChampionTierScore(champion, role = champion.roles[0]) {
   score += roleFit.offRole ? (roleFit.score - 0.58) * 18 : roleFit.score * 5;
   score += getRoleTraitBonus(champion, role);
   score += Math.min(4, (info.attack || 0) * 0.24 + (info.defense || 0) * 0.16 + (info.magic || 0) * 0.16);
-  score += scout.score;
 
   if (traits.has("early") && traits.has("scaling")) {
     score += 3.5;
@@ -551,9 +486,6 @@ function getChampionTierScore(champion, role = champion.roles[0]) {
   } else {
     reasons.push(`Natural ${role} profile.`);
   }
-  if (scout.reasons.length) {
-    reasons.push(scout.detail);
-  }
 
   const finalScore = Math.max(1, Math.min(99, Math.round(score)));
   return {
@@ -562,7 +494,6 @@ function getChampionTierScore(champion, role = champion.roles[0]) {
     score: finalScore,
     tier: getChampionTier(finalScore),
     roleFit,
-    scout,
     reasons: uniqueList(reasons).slice(0, 4)
   };
 }
@@ -610,15 +541,11 @@ function renderChampionTierList() {
   const includeOffRole = Boolean(tierIncludeOffRole?.checked);
   const rows = getChampionTierRows(role, includeOffRole);
   const dataSourceLabel = getRiotDataSourceLabel();
-  const scoutLabel = (riotScoutProfile || window.riotScoutProfile)?.ok
-    ? "Riot Scout mastery and recent games are included."
-    : "Scout a Riot ID to personalize mastery and recent-pick weighting.";
 
   tierList.innerHTML = `
     <div class="tier-list__note">
       <strong>${escapeHtml(dataSourceLabel)}</strong>
-      <span>Model-based S to D ranking from Riot champion attributes, role fit, archetype value, matchup rules, and optional Scout data. This is not a live global win-rate feed.</span>
-      <span>${escapeHtml(scoutLabel)}</span>
+      <span>Model-based S to D ranking from Riot champion attributes, role fit, archetype value, and matchup rules. This is not a live global win-rate feed.</span>
     </div>
     ${["S", "A", "B", "C", "D"].map((tierKey) => {
       const items = rows[tierKey] || [];
@@ -636,7 +563,7 @@ function renderChampionTierList() {
                       ${getChampionIconMarkup(item.champion, "small")}
                       <span>
                         <strong>${escapeHtml(item.champion.name)}</strong>
-                        <small>${escapeHtml(item.role)}${item.roleFit.offRole ? " off-role" : ""} &middot; ${item.score}/100${item.scout.score ? " &middot; Scout +" + item.scout.score : ""}</small>
+                        <small>${escapeHtml(item.role)}${item.roleFit.offRole ? " off-role" : ""} &middot; ${item.score}/100</small>
                       </span>
                     </button>
                   `).join("")
@@ -870,7 +797,6 @@ function renderChampionExplorer() {
     <div class="explorer-profile-facts">
       <div><span>Patch tier model</span><strong>${escapeHtml(tierEval.tier.label)} as ${escapeHtml(evalRole)} (${tierEval.score}/100)</strong></div>
       <div><span>Role fit</span><strong>${escapeHtml(tierEval.roleFit.label)}${tierEval.roleFit.offRole ? ` for ${escapeHtml(evalRole)}` : ""}</strong></div>
-      <div><span>Riot Scout signal</span><strong>${escapeHtml(tierEval.scout.label)}</strong></div>
       <div><span>Power curve</span><strong>${escapeHtml(champion.profile?.powerCurve || "Most reliable in the mid game")}</strong></div>
       <div><span>Fight pattern</span><strong>${escapeHtml(champion.profile?.fightPattern || getTeamfightPlan(champion))}</strong></div>
       <div><span>Riot attributes</span><strong>Attack ${info.attack || 0}/10, defense ${info.defense || 0}/10, magic ${info.magic || 0}/10, complexity ${info.difficulty || 0}/10</strong></div>

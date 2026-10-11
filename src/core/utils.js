@@ -57,28 +57,6 @@ function getChampion(name) {
   return champions.find((champion) => champion.name === name);
 }
 
-function getChampionByRiotApiName(name) {
-  const target = riotChampionAliases[name] || name;
-  const direct = getChampion(target);
-  if (direct) return direct;
-
-  const normalized = normalizeChampionName(target);
-  return champions.find((champion) => {
-    return normalizeChampionName(champion.name) === normalized
-      || normalizeChampionName(champion.official?.id || "") === normalized;
-  }) || null;
-}
-
-function getChampionByRiotChampionId(championId) {
-  const id = String(championId || "");
-  if (!id) return null;
-  return champions.find((champion) => String(champion.official?.key || "") === id) || null;
-}
-
-function getRoleFromRiotPosition(position) {
-  return riotTeamPositionRoles[position] || "";
-}
-
 function getRiotDataSourceLabel() {
   return riotData.status === "ready"
     ? `Latest Riot Data Dragon ${riotData.version}${riotData.detailedChampions ? " + spell kits" : ""}`

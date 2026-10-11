@@ -7,7 +7,7 @@ Draft Lantern is a static browser app. Files are grouped by runtime responsibili
 ```text
 index.html
 api/
-  riot-player.js          # Server-side Riot API proxy for account/ranked/match scouting
+  riot-player.js          # Optional server-side Riot API proxy, not exposed in the current UI
 src/
   data/
     app-config.js          # Roles, scoring keys, trait groups, role overrides, recommendation config
@@ -25,7 +25,6 @@ src/
     favorite-builder.js    # Favorite-core controls and generated team variants
     premade-comps.js       # Premade comp list/detail rendering and loading
     matchups.js            # Hard-counter finder, champion explorer, counter scoring, champion dialog
-    riot-scout.js          # Browser UI for the server-side Riot player scout
     persistence.js         # Saved drafts and share links
     draft-room.js          # Guided two-team draft room and comparison view
     learn.js               # How-to-play tab controller
@@ -39,7 +38,7 @@ src/
   styles/
     styles.css             # Global shell, team builder, recommendations, warnings
     premade.css            # Premade comp styles
-    matchups.css           # Champion explorer, matchups, Riot scout, champion dialog
+    matchups.css           # Champion explorer, matchups, and champion dialog
     draft-room.css         # Two-team draft room and comparison styles
     learn.css              # How-to-play styles
     responsive.css         # Shared breakpoints and mobile overrides
