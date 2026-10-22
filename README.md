@@ -1,6 +1,6 @@
 # Draft Lantern
 
-An AI-assisted, beginner-friendly, patch-agnostic League-inspired champion comp builder.
+An AI-assisted, beginner-friendly League of Legends draft and matchup planner.
 
 This started as a self-directed experiment to test how well AI could help turn
 a personal idea into a usable app. I chose a competitive gaming context because
@@ -23,22 +23,21 @@ detail dialog.
 
 The app loads the full official champion roster, icons, metadata, and
 passive/spell kit text from Riot's public Data Dragon CDN. If that request
-fails, it falls back to the built-in curated starter pool and initials
-automatically.
+fails, it keeps the complete dated 173-champion roster snapshot. Counter and
+rune plans remain available with offline labels, and failed icons use initials.
 
 ## What It Does
 
 - Builds a five-role team draft.
 - Includes a searchable Champion Explorer for the full loaded roster.
 - Shows champion roles, damage type, difficulty, attributes, strengths,
-  weaknesses, team contribution scores, and general hard-counter targets.
+  weaknesses, team contribution scores, and researched counter matchups.
 - Shows a current-patch S-to-D Champion Tier model, filterable by role, with
   plausible off-role picks separated from natural-role picks.
 - Adds Riot Data Dragon attributes and spell-kit traits directly into champion
   evaluations.
-- Revamps Matchups around hard counters first: direct curated counters, latest
-  patch kit evidence, role-native fit, threat profile, and team context all feed
-  the counter ranking.
+- Finds champion-specific counters using named ability interactions, the roles
+  of both champions, an execution plan, and explicit failure conditions.
 - Locks one or more favorite champions into their preferred roles and generates
   complete synergy teams around them.
 - Produces balanced, teamfight, and safer-scaling variants, explaining each
@@ -60,16 +59,16 @@ automatically.
 - Flags composition risks such as one-sided damage, missing frontline, weak
   initiation, exposed carries, weak wave clear, slow early pressure, and short
   range. Open roles receive suggested fixes.
-- Suggests hard counter picks with evidence labels, proof confidence, reasons,
-  and lane advice instead of generic repeated recommendations.
-- Suggests a complete rune page for each counter matchup: keystone, three
-  primary runes, two secondary runes, and three stat shards, with matchup
-  reasoning. Expand **Suggested runes** in Matchups or the Champion Explorer's
-  counter cards. Champion presets and archetype fallbacks adapt to role, poke,
-  burst, and frontline threats; they are starting points, not win-rate rankings.
+- Shares the same researched counter entries between Matchups and Champion
+  Explorer. Direct mechanical counters and conditional lane answers have
+  separate labels; broad trait scores cannot create counter entries.
+- Gives each researched matchup a complete rune plan: keystone, three primary
+  runes, two secondary runes, and three stat shards. Expand **Matchup rune plan**
+  for the opponent-specific reasoning, current rune effects, and any researched
+  alternative. Unsupported pairs show a coverage gap instead of a generic page.
 - Highlights curated champion-pair synergies.
 - Opens a champion guide with strengths, weaknesses, lane advice, teamfight
-  advice, partners, and general answers.
+  advice, partners, and researched answers.
 - Includes a guided two-team draft room with five bans and five role picks per
   side.
 - Compares both drafted teams across early, mid, and late game; engage,
@@ -82,7 +81,7 @@ automatically.
 - Builds a complete modeled profile for every Riot-loaded champion, including
   combat attributes, passive/spell kit traits, power curve, fight pattern,
   strengths, weaknesses, plans, matchup traits, contribution scores, and ranked
-  counter targets.
+  counter entries where research is available.
 - Marks modeled profiles separately while preserving richer hand-curated
   advice for champions that have it.
 
@@ -96,8 +95,12 @@ src/
   data/
     app-config.js
     champions.js
+    roster-snapshot.js
     compositions.js
     runes.js
+    counter-matchups.js
+    counter-roster.js
+    ability-evidence.js
   core/
     dom.js
     state.js
@@ -108,6 +111,7 @@ src/
     team-builder.js
     premade-comps.js
     matchups.js
+    counter-evidence.js
     runes.js
     persistence.js
     draft-room.js
@@ -127,6 +131,10 @@ src/
     responsive.css
 docs/
   file-structure.md
+  counter-research.md
+  counter-coverage.md
+scripts/
+  check-counter-coverage.cjs
 ```
 
 See `docs/file-structure.md` for ownership rules and the next safe cleanup
@@ -151,18 +159,44 @@ Useful fields:
 Pair combos live in `pairSynergies`. Common role assignments live in
 `roleOverrides`.
 
-## Matchup Runes
+## Counter Research And Matchup Runes
 
-`src/data/runes.js` contains a Riot Data Dragon catalogue snapshot for offline
-use. `src/features/runes.js` owns champion presets, matchup adjustments, legal
-page validation, and rendering. Rune names and icons refresh from the same Data
-Dragon version selected for champion loading. When the catalogue cannot load,
-the UI identifies the bundled snapshot's patch. If a planned rune is removed or
-moved to an incompatible slot, that page asks for review rather than showing an
-illegal selection. Recommendation rules and stat-shard choices remain authored
-locally and require review after balance changes. No rune API key is needed.
+The purpose of Matchups is to identify specific counter interactions and choose
+runes that help execute them. The reviewed library contains **454 directed
+entries covering all 173 champions and all 263 supported champion-role
+combinations** on patch **16.21.1**. Every supported lane has a native same-role
+answer with legal runes, and every champion has an outgoing Explorer plan.
+The coverage badge is calculated from usable entries and drops when evidence
+changes or a new champion has no reviewed answer. Results are ordered by
+authored interaction type and priority, not measured win rates or synthetic
+confidence. [The coverage audit](docs/counter-coverage.md) lists every role.
+
+Full-roster coverage means each champion has researched answers. It does not
+assign a rune page to every arbitrary champion pair, off-role matchup, or
+future patch. Only explicitly researched directed pairings receive a plan.
+
+`src/data/counter-matchups.js` and `src/data/counter-roster.js` own the exact
+pairings and rune plans.
+`src/data/ability-evidence.js` records the official ability text and source URLs
+used in review. `src/features/counter-evidence.js` checks the loaded kit text
+against that reference and supplies both counter views. A changed referenced
+ability withholds that entry pending review. Missing live kit data is labelled
+as a dated reference. Matching descriptions do not certify balance strength;
+numbers and gameplay changes still require manual patch review.
+
+`src/data/runes.js` contains the reviewed Riot rune catalogue snapshot.
+`src/features/runes.js` refreshes names, icons, slots, and effects from the same
+Data Dragon version as the roster. A removed, relocated, or changed-effect rune
+withholds its page pending review. Offline pages identify their bundled patch.
+The tactical plans and stat shards are authored analysis, not statistically
+validated optimal pages. No rune API key is needed. See
+[`docs/counter-research.md`](docs/counter-research.md) for the review process.
 
 Run the offline recommendation checks with `node --test tests/runes.test.cjs`.
+Audit against the current official roster and rune catalogue with
+`node scripts/check-counter-coverage.cjs --live`. Add `--write-report` to
+refresh the coverage table after a successful audit. The audit never rewrites
+matchup decisions or reviewed ability evidence.
 
 ## Riot Data Layer
 
@@ -174,10 +208,9 @@ advice; the rest receive complete modeled profiles from Riot combat attributes,
 champion class, role, spell-kit keywords, and champion-specific archetype
 traits.
 
-The hard-counter model prioritizes curated direct counter rules, latest Data
-Dragon spell-kit evidence, role fit, champion attributes, and local matchup
-rules. The S-to-D Champion Tier view is a Draft Lantern model based on current
-Data Dragon roster attributes, local role-fit, and matchup rules. Riot does not
-provide a free global champion tier-list or champion-vs-champion win-rate
-endpoint, so the app labels these as model-based rather than live global
-win-rate data.
+The counter library uses manually reviewed named interactions; Data Dragon
+supplies ability facts, not a matchup ranking. The separate S-to-D Champion
+Tier view, team scores, and draft comparisons remain Draft Lantern models based
+on roster attributes, role fit, and local rules. They do not establish that a
+champion is an exact counter. This app does not ingest champion matchup or rune
+win-rate datasets.

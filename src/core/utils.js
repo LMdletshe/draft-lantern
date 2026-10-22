@@ -25,10 +25,18 @@ function getChampionIconMarkup(champion, size = "default") {
   const label = `${champion.name} icon`;
 
   if (champion.official?.iconUrl) {
-    return `<img class="champion-icon${sizeClass}" src="${escapeHtml(champion.official.iconUrl)}" alt="${escapeHtml(label)}" loading="lazy" />`;
+    return `<img class="champion-icon${sizeClass}" src="${escapeHtml(champion.official.iconUrl)}" alt="${escapeHtml(label)}" data-initials="${escapeHtml(getInitials(champion.name))}" loading="lazy" onerror="this.replaceWith(createChampionIconFallback(this.dataset.initials, this.className))" />`;
   }
 
   return `<span class="champion-icon${sizeClass}" aria-hidden="true">${escapeHtml(getInitials(champion.name))}</span>`;
+}
+
+function createChampionIconFallback(initials, className) {
+  const fallback = document.createElement("span");
+  fallback.className = className;
+  fallback.textContent = initials;
+  fallback.setAttribute("aria-hidden", "true");
+  return fallback;
 }
 
 function setDataStatus(status, detail = "") {
@@ -49,7 +57,7 @@ function setDataStatus(status, detail = "") {
     return;
   }
 
-  dataStatus.textContent = "Curated offline data";
+  dataStatus.textContent = `Offline roster ${champions.length} champs`;
   dataStatus.title = detail || "Using the built-in champion pool and fallback initials.";
 }
 
@@ -60,7 +68,7 @@ function getChampion(name) {
 function getRiotDataSourceLabel() {
   return riotData.status === "ready"
     ? `Latest Riot Data Dragon ${riotData.version}${riotData.detailedChampions ? " + spell kits" : ""}`
-    : "Offline modeled roster";
+    : `Bundled Riot roster ${bundledChampionRoster.version} · offline snapshot`;
 }
 
 function stripRiotText(value) {
@@ -859,7 +867,16 @@ function hydrateChampionProfile(champion, official = null) {
 }
 
 function hydrateBuiltInChampionProfiles() {
-  champions.forEach((champion) => hydrateChampionProfile(champion));
+  const curated = new Map(champions.map((champion) => [normalizeChampionName(champion.name), champion]));
+  const expanded = bundledChampionRoster.champions.map((official) => {
+    const champion = curated.get(normalizeChampionName(official.name));
+    if (!champion) return createGeneratedChampion(official, bundledChampionRoster.version, official);
+    champion.roles = getRolesForOfficialChampion(official);
+    champion.official = getOfficialRecord(official, bundledChampionRoster.version, official);
+    return hydrateChampionProfile(champion, official);
+  });
+  champions.length = 0;
+  champions.push(...expanded);
 }
 
 function createGeneratedChampion(official, version, detail = null) {
@@ -911,7 +928,7 @@ async function loadRiotDataDragon() {
 
     const payload = await championsResponse.json();
     const officialChampions = Object.values(payload.data || {});
-    const curatedByName = new Map(champions.map((champion) => [normalizeChampionName(champion.name), champion]));
+    const curatedByName = new Map(champions.filter((champion) => !champion.generated).map((champion) => [normalizeChampionName(champion.name), champion]));
     const detailEntries = await Promise.allSettled(
       officialChampions.map((official) => fetchChampionDetail(official, version))
     );
@@ -931,6 +948,7 @@ async function loadRiotDataDragon() {
           return createGeneratedChampion(official, version, detail);
         }
 
+        curatedChampion.roles = getRolesForOfficialChampion(official);
         curatedChampion.official = getOfficialRecord(official, version, detail);
         curatedChampion.tags = uniqueList([
           ...curatedChampion.tags,
@@ -956,6 +974,6 @@ async function loadRiotDataDragon() {
     riotData.version = null;
     riotData.matchedChampions = 0;
     riotData.detailedChampions = 0;
-    setDataStatus("offline", "Riot Data Dragon could not be reached, so the app is using built-in data.");
+    setDataStatus("offline", `Riot Data Dragon could not be reached. Using the complete ${bundledChampionRoster.version} roster snapshot with dated counter and rune research.`);
   }
 }

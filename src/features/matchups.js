@@ -78,7 +78,6 @@ function scoreCounter(enemy, candidate, role = candidate.roles[0]) {
   }
 
   const finalScore = Math.max(5, Math.min(97, Math.round(score)));
-  const proof = getCounterProof(enemy, candidate, finalScore, evidence, Boolean(override), roleFit, kitRead, smartRead);
 
   return {
     candidate,
@@ -86,30 +85,18 @@ function scoreCounter(enemy, candidate, role = candidate.roles[0]) {
     reasons: uniqueList(reasons).slice(0, 3),
     evidence,
     roleFit,
-    proof,
     kitFactors: kitRead.positives.slice(0, 3),
     smartFactors: uniqueList([...kitRead.positives, ...smartRead.positives]).slice(0, 4),
     smartRisks: smartRead.negatives.slice(0, 2),
-    tier: getEvidenceBackedDifficulty(finalScore, evidence, Boolean(override), roleFit, proof)
+    tier: getEvidenceBackedDifficulty(finalScore)
   };
 }
 
-function getEvidenceBackedDifficulty(score, evidence = 0, hasOverride = false, roleFit = null, proof = null) {
-  if (hasOverride) return { key: "hard", label: "Hard counter", className: "is-hard" };
-
-  const kitCount = proof?.kitCount || 0;
-  const isOffRole = Boolean(roleFit?.offRole);
-  const primaryRoleFit = !roleFit || (!isOffRole && roleFit.score >= 0.99);
-  if (primaryRoleFit && score >= 96 && evidence >= 9 && kitCount >= 3) {
-    return { key: "hard", label: "Hard counter", className: "is-hard" };
-  }
-  if (primaryRoleFit && score >= 94 && evidence >= 10 && kitCount >= 4) {
-    return { key: "hard", label: "Hard counter", className: "is-hard" };
-  }
-  if (score >= 80 && evidence >= 3) return { key: "strong", label: "Strong counter", className: "is-favorable" };
-  if (score >= 64 && evidence >= 2) return { key: "favorable", label: "Favorable", className: "is-edge" };
-  if (score >= 48) return { key: "even", label: "Even", className: "is-even" };
-  return { key: "difficult", label: "Difficult", className: "is-difficult" };
+function getEvidenceBackedDifficulty(score) {
+  // Draft Room model scores cannot certify an exact counter.
+  if (score >= 64) return { key: "modeled", label: "Modeled edge", className: "is-edge" };
+  if (score >= 48) return { key: "even", label: "Modeled even", className: "is-even" };
+  return { key: "difficult", label: "Modeled difficult", className: "is-difficult" };
 }
 
 function getKitCounterFactors(enemy, candidate) {
@@ -185,210 +172,15 @@ function getKitCounterFactors(enemy, candidate) {
   };
 }
 
-function getCounterEvidenceLabel(enemy, candidate, hasOverride, kitFactors, smartFactors) {
-  if (hasOverride) return "Curated direct counter";
-  if (candidate.official?.spells?.length && kitFactors.length >= 2) return "Latest spell-kit counter";
-  if (candidate.official?.spells?.length && kitFactors.length) return "Latest patch kit edge";
-  if (smartFactors.length >= 2) return "Archetype counter";
-  if (enemy.official && candidate.official) return "Latest roster model";
-  return "Curated fallback model";
-}
-
-function getCounterConfidence(score, evidence, hasOverride, candidate, roleFit, kitFactors, smartFactors) {
-  let confidence = Math.round(score * 0.62 + evidence * 7);
-  if (hasOverride) confidence += 18;
-  if (candidate.official?.spells?.length) confidence += 6;
-  if (kitFactors.length >= 2) confidence += 8;
-  if (smartFactors.length >= 2) confidence += 4;
-  if (roleFit?.offRole) confidence -= 8;
-  return Math.max(1, Math.min(99, confidence));
-}
-
-function getCounterProof(enemy, candidate, score, evidence, hasOverride, roleFit, kitRead, smartRead) {
-  const kitFactors = kitRead.positives || [];
-  const smartFactors = smartRead.positives || [];
-  return {
-    label: getCounterEvidenceLabel(enemy, candidate, hasOverride, kitFactors, smartFactors),
-    confidence: getCounterConfidence(score, evidence, hasOverride, candidate, roleFit, kitFactors, smartFactors),
-    evidence,
-    kitCount: kitFactors.length,
-    data: candidate.official?.spells?.length ? "latest-kit" : candidate.official ? "latest-roster" : "offline"
-  };
-}
-
-function getMatchupAdvice(enemy, candidate) {
-  const tips = [];
-  const enemyTraits = getChampionProfileSignals(enemy);
-  const candidateTraits = getChampionProfileSignals(candidate);
-
-  if ((candidateTraits.has("poke") || candidateTraits.has("range")) && enemyTraits.has("low-range")) {
-    tips.push(`Keep ${enemy.name} at the edge of your range and avoid giving them a clean all-in.`);
-  }
-  if (["engage", "burst", "assassin"].some((tag) => enemyTraits.has(tag))) {
-    tips.push(`Track ${enemy.name}'s main engage cooldown; trade more confidently while it is unavailable.`);
-  }
-  if (candidateTraits.has("scaling") && ["early", "snowball"].some((tag) => enemyTraits.has(tag))) {
-    tips.push("A quiet lane is a win. Give up risky farm rather than feeding their early snowball.");
-  }
-  if (candidateTraits.has("sustain")) {
-    tips.push("Take short trades, recover, and repeat instead of committing to one long fight.");
-  }
-  if (candidateTraits.has("pick") || candidateTraits.has("lockdown")) {
-    tips.push("Hold crowd control until the enemy uses their movement tool or walks away from the wave.");
-  }
-  if (candidateTraits.has("wave-clear") && enemyTraits.has("split-push")) {
-    tips.push("Clear waves first, then move while their side-lane pressure is temporarily neutralized.");
-  }
-  if (candidateTraits.has("frontline-check") && enemyTraits.has("frontline")) {
-    tips.push("Hit the closest durable target safely; your sustained damage matters more than chasing carries.");
-  }
-
-  return uniqueList(tips).slice(0, 2);
-}
-
-function championHasAnyTag(champion, tags) {
-  const traits = typeof getChampionProfileSignals === "function"
-    ? getChampionProfileSignals(champion)
-    : new Set(champion.tags || []);
-  return tags.some((tag) => traits.has(tag));
-}
-
-function getEnemyThreatProfile(enemy) {
-  const scores = enemy.scores || {};
-  const profile = [];
-  if ((scores.engage || 0) >= 4 || championHasAnyTag(enemy, ["dive", "engage", "lockdown"])) {
-    profile.push({ key: "dive", label: "dive/engage", answerTags: ["peel", "safe", "kite", "disengage"], note: "deny the first engage and punish the overextension" });
-  }
-  if ((scores.poke || 0) >= 4 || championHasAnyTag(enemy, ["poke", "siege", "range"])) {
-    profile.push({ key: "poke", label: "poke/siege", answerTags: ["engage", "dive", "sustain", "pick"], note: "force commitment before repeated poke wins space" });
-  }
-  if ((scores.pick || 0) >= 4 || championHasAnyTag(enemy, ["pick", "global", "burst"])) {
-    profile.push({ key: "pick", label: "pick pressure", answerTags: ["safe", "peel", "frontline", "vision"], note: "move with vision and avoid isolated paths" });
-  }
-  if ((scores.frontline || 0) >= 4 || championHasAnyTag(enemy, ["frontline", "tank", "sustain"])) {
-    profile.push({ key: "frontline", label: "frontline", answerTags: ["damage", "scaling", "poke", "marksman"], note: "bring sustained damage or range to cut through the front" });
-  }
-  if ((scores.scaling || 0) >= 4 || championHasAnyTag(enemy, ["scaling", "reset"])) {
-    profile.push({ key: "scaling", label: "scaling", answerTags: ["early", "pick", "engage", "snowball"], note: "attack before item breakpoints and convert early leads" });
-  }
-  return profile.length
-    ? profile
-    : [{ key: "general", label: "general threat", answerTags: ["safe", "pick", "damage", "frontline"], note: "choose a reliable lane pattern and play around cooldowns" }];
-}
-
-function getSelectedTeamContext(role) {
-  return Object.entries(roleState)
-    .filter(([teamRole, name]) => name && teamRole !== role)
-    .map(([, name]) => getChampion(name))
-    .filter(Boolean);
-}
-
-function getDamageNeed(team) {
-  if (!team.length) return null;
-  const physical = team.filter((champion) => getDamageType(champion) === "Physical").length;
-  const magic = team.filter((champion) => getDamageType(champion) === "Magic").length;
-  if (physical >= 3 && magic === 0) return "Magic";
-  if (magic >= 3 && physical === 0) return "Physical";
-  return null;
-}
-
-function classifySmartCounter(result, enemy, role, team) {
-  const candidate = result.candidate;
-  const threats = getEnemyThreatProfile(enemy);
-  const damageNeed = getDamageNeed(team);
-  const matchedThreats = threats.filter((threat) => championHasAnyTag(candidate, threat.answerTags));
-  const reasons = [...result.reasons];
-  let smartScore = result.score;
-  let label = result.tier.label;
-  let bucket = result.tier.key;
-
-  if (matchedThreats.length) {
-    smartScore += matchedThreats.length * 8;
-    bucket = `answers ${matchedThreats[0].label}`;
-    label = `Answers ${matchedThreats[0].label}`;
-    reasons.unshift(`${candidate.name} has tools to ${matchedThreats[0].note}.`);
-  }
-
-  if (damageNeed && getDamageType(candidate) === damageNeed) {
-    smartScore += 7;
-    bucket = "damage fix";
-    label = `${damageNeed} damage fix`;
-    reasons.unshift(`${candidate.name} helps balance your team's ${damageNeed.toLowerCase()} damage profile.`);
-  }
-
-  if (team.length) {
-    const compFit = scoreRecommendation(candidate, team, role, "balanced");
-    smartScore += Math.max(-6, Math.min(12, (compFit.score - 60) * 0.22));
-    if (compFit.reasons?.[0]) reasons.push(compFit.reasons[0]);
-    if (compFit.score >= 72 && bucket === result.tier.key) {
-      bucket = "team fit";
-      label = "Best for your team";
-    }
-  }
-
-  if (getDifficulty(candidate) === "Beginner") {
-    smartScore += 4;
-    if (["hard", "strong", "favorable"].includes(result.tier.key) && bucket === result.tier.key) {
-      bucket = "beginner safe";
-      label = "Beginner-safe answer";
-    }
-  }
-
-  if (result.roleFit?.offRole) {
-    smartScore -= 8;
-    if (smartScore >= 58) {
-      bucket = "off-role option";
-      label = "Off-role option";
-    }
-  }
-
-  return {
-    ...result,
-    smartScore,
-    smartLabel: label,
-    smartBucket: bucket,
-    smartReasons: uniqueList(reasons).slice(0, 4),
-    matchedThreats
-  };
-}
-
-function pickBestHardCounters(items, limit) {
-  const tierRank = {
-    hard: 5,
-    strong: 4,
-    favorable: 3,
-    even: 2,
-    difficult: 1
-  };
-  const hardPool = items.filter((item) => item.tier.key === "hard");
-  const strongPool = items.filter((item) => item.tier.key === "strong");
-  const fallbackPool = items.filter((item) => item.tier.key === "favorable" && (item.proof?.evidence || 0) >= 2);
-  const pool = hardPool.length >= limit
-    ? hardPool
-    : [...hardPool, ...strongPool, ...fallbackPool];
-
-  return [...(pool.length ? pool : items)]
-    .sort((a, b) => {
-      const tierDelta = (tierRank[b.tier.key] || 0) - (tierRank[a.tier.key] || 0);
-      return tierDelta
-        || b.score - a.score
-        || (b.proof?.confidence || 0) - (a.proof?.confidence || 0)
-        || b.smartScore - a.smartScore
-        || a.candidate.name.localeCompare(b.candidate.name);
-    })
-    .slice(0, limit);
-}
-
 function populateExplorerControls() {
   const currentRole = explorerRole.value || "All";
   explorerRole.innerHTML = optionList(["All", ...roles], currentRole);
 
   const strengthOptions = [
-    ["hard", "Hard counters"],
-    ["favored", "All favorable"],
-    ["all", "All matchups"]
+    ["all", "All researched answers"],
+    ["hard", "Direct counters"]
   ];
-  const currentStrength = explorerStrength.value || "hard";
+  const currentStrength = explorerStrength.value || "all";
   explorerStrength.innerHTML = strengthOptions
     .map(([value, label]) => `<option value="${value}" ${value === currentStrength ? "selected" : ""}>${label}</option>`)
     .join("");
@@ -576,141 +368,20 @@ function renderChampionTierList() {
   `;
 }
 
-function scoreChampionIntoOpponent(champion, opponent) {
-  let score = 50;
-  const reasons = [];
-  const championSignals = getChampionProfileSignals(champion);
-  const opponentSignals = getChampionProfileSignals(opponent);
-  const smartRead = getSmartMatchupFactors(opponent, champion);
-  const kitRead = getKitCounterFactors(opponent, champion);
-  let positiveMatches = 0;
-  let negativeMatches = 0;
-
-  champion.goodInto.forEach((trait) => {
-    if (opponentSignals.has(trait)) {
-      score += 8;
-      positiveMatches += 1;
-      reasons.push(`${champion.name} naturally performs well into ${trait.replaceAll("-", " ")} champions like ${opponent.name}.`);
-    } else if (opponent.weakInto.includes(trait)) {
-      score += 5;
-      positiveMatches += 1;
-      reasons.push(`${opponent.name} tends to struggle with ${trait.replaceAll("-", " ")} pressure.`);
-    }
-  });
-
-  championSignals.forEach((trait) => {
-    if (opponent.weakInto.includes(trait)) {
-      score += 6;
-      positiveMatches += 1;
-      reasons.push(`${champion.name}'s ${trait.replaceAll("-", " ")} tools attack a known weakness in ${opponent.name}'s pattern.`);
-    }
-  });
-
-  opponent.goodInto.forEach((trait) => {
-    if (championSignals.has(trait)) {
-      score -= 6;
-      negativeMatches += 1;
-    }
-  });
-
-  score += smartRead.scoreDelta;
-  positiveMatches += smartRead.positiveEvidence;
-  negativeMatches += smartRead.negatives.length;
-  reasons.push(...smartRead.positives.map((factor) => factor.reason));
-
-  score += kitRead.scoreDelta;
-  positiveMatches += kitRead.evidence;
-  reasons.push(...kitRead.positives.map((factor) => factor.reason));
-
-  if (positiveMatches > 3) score -= (positiveMatches - 3) * 3;
-  if (negativeMatches > 2) score += (negativeMatches - 2) * 2;
-
-  if (championSignals.has("early") && opponentSignals.has("scaling")) {
-    score += 7;
-    reasons.push(`${champion.name} can pressure ${opponent.name} before their scaling plan is ready.`);
-  }
-  if (championSignals.has("duel") && ["assassin", "scaling", "low-range"].some((tag) => opponentSignals.has(tag))) {
-    score += 5;
-    reasons.push(`${champion.name} is comfortable forcing direct skirmishes against this pattern.`);
-  }
-  if (championSignals.has("engage") && opponentSignals.has("immobile")) {
-    score += 6;
-    reasons.push(`${opponent.name} has limited ways to avoid ${champion.name}'s engage.`);
-  }
-  if (championSignals.has("peel") && ["dive", "assassin", "burst"].some((tag) => opponentSignals.has(tag))) {
-    score += 6;
-    reasons.push(`${champion.name}'s defensive tools reduce ${opponent.name}'s main way of reaching carries.`);
-  }
-  if (championSignals.has("poke") && opponentSignals.has("low-range")) {
-    score += 6;
-    reasons.push(`${champion.name} can apply pressure before ${opponent.name} reaches effective range.`);
-  }
-
-  const override = explorerCounterOverrides[champion.name]?.[opponent.name];
-  if (override) {
-    score += override.bonus;
-    reasons.unshift(override.reason);
-  }
-
-  const sharesRole = champion.roles.some((role) => opponent.roles.includes(role));
-  if (!sharesRole) {
-    score = Math.min(score, 75);
-  }
-
-  const finalScore = Math.max(5, Math.min(95, Math.round(score)));
-  const proof = getCounterProof(opponent, champion, finalScore, positiveMatches, Boolean(override), null, kitRead, smartRead);
-  if (!reasons.length) {
-    const strongest = scoreKeys
-      .map(([key, label]) => ({ label, value: champion.scores[key] || 0 }))
-      .sort((a, b) => b.value - a.value)[0]?.label.toLowerCase();
-    reasons.push(`${champion.name}'s ${strongest || "core"} strengths give it a workable general plan into ${opponent.name}.`);
-  }
-
-  return {
-    opponent,
-    score: finalScore,
-    tier: getEvidenceBackedDifficulty(finalScore, positiveMatches, Boolean(override), null, proof),
-    reasons: uniqueList(reasons).slice(0, 3),
-    proof,
-    kitFactors: kitRead.positives.slice(0, 3),
-    smartFactors: uniqueList([...kitRead.positives, ...smartRead.positives]).slice(0, 4),
-    smartRisks: smartRead.negatives.slice(0, 2)
-  };
-}
-
 function getRankedExplorerMatchups(champion, role = "All") {
-  const results = champions
-    .filter((opponent) => opponent.name !== champion.name)
-    .filter((opponent) => role === "All" || opponent.roles.includes(role))
-    .map((opponent) => scoreChampionIntoOpponent(champion, opponent))
-    .sort((a, b) => b.score - a.score || a.opponent.name.localeCompare(b.opponent.name));
-
-  return results;
+  return getResearchedExplorerMatchups(champion, role);
 }
 
 function getExplorerMatchups(champion) {
-  const role = explorerRole.value || "All";
-  const strength = explorerStrength.value || "hard";
-
-  return getRankedExplorerMatchups(champion, role)
-    .filter((result) => {
-      if (strength === "hard") return result.tier.key === "hard";
-      if (strength === "favored") return result.score >= 55;
-      return true;
-    });
+  const strength = explorerStrength.value || "all";
+  return getRankedExplorerMatchups(champion, explorerRole.value || "All")
+    .filter((result) => strength !== "hard" || result.rule.kind === "direct");
 }
 
 function getExplorerOpponentPlan(champion, opponent) {
-  const advice = getMatchupAdvice(opponent, champion);
-  if (advice.length) return advice.join(" ");
-  if (champion.tags.includes("early") && opponent.tags.includes("scaling")) {
-    return "Contest early space and objectives before the opponent reaches comfortable item breakpoints.";
-  }
-  if (champion.tags.includes("frontline") && opponent.tags.includes("burst")) {
-    return "Absorb the first burst window, then continue the fight while their main cooldowns are unavailable.";
-  }
-  return getLanePlan(champion);
+  return getResearchedCounterRule(champion, opponent)?.play || "No researched plan for this pairing yet.";
 }
+
 
 function renderExplorerSearchResults() {
   const query = explorerSearch.value.trim().toLowerCase();
@@ -775,8 +446,7 @@ function renderChampionExplorer() {
       : champion.roles[0];
   const tierEval = getChampionTierScore(champion, evalRole);
   const matchups = getExplorerMatchups(champion);
-  const hardCount = getRankedExplorerMatchups(champion)
-    .filter((result) => result.tier.key === "hard").length;
+  const researchedCount = getRankedExplorerMatchups(champion).length;
   const dataSourceLabel = getRiotDataSourceLabel();
 
   explorerProfile.innerHTML = `
@@ -789,7 +459,7 @@ function renderChampionExplorer() {
         <p>${escapeHtml(champion.beginner)}</p>
       </div>
       <div class="explorer-profile__actions">
-        <span>${hardCount} general hard counter${hardCount === 1 ? "" : "s"}</span>
+        <span>${researchedCount} researched counter plan${researchedCount === 1 ? "" : "s"}</span>
         ${champion.roles.map((role) => `<button class="text-button" type="button" data-explorer-pick="${escapeHtml(champion.name)}" data-role="${escapeHtml(role)}">Add as ${escapeHtml(role)}</button>`).join("")}
       </div>
     </div>
@@ -843,126 +513,63 @@ function renderChampionExplorer() {
     </div>
   `;
 
-  const filterLabel = explorerStrength.options?.[explorerStrength.selectedIndex]?.text || "matchups";
   explorerCounterResults.innerHTML = `
     <div class="explorer-counter-heading">
-      <div>
-        <p class="eyebrow">Who ${escapeHtml(champion.name)} Counters</p>
-        <h2>${matchups.length} ${escapeHtml(filterLabel.toLowerCase())}${explorerRole.value === "All" ? "" : ` in ${escapeHtml(explorerRole.value)}`}</h2>
-      </div>
-      <p>${escapeHtml(dataSourceLabel)} + kit/archetype analysis, not live patch win-rate data.</p>
+      <div><p class="eyebrow">Who ${escapeHtml(champion.name)} counters</p><h2>${matchups.length} researched answer${matchups.length === 1 ? "" : "s"}</h2></div>
+      <p>Named ability interactions and role-specific plans. Review ${escapeHtml(counterMatchupReview.patch)}; no matchup win-rate feed. ${getCounterCoverage().championsCovered}/${champions.length} loaded champions have researched answers in every supported role.</p>
     </div>
-    ${
-      matchups.length
-        ? `<div class="explorer-matchup-grid">${matchups.map((result) => `
-            <article class="explorer-matchup-card">
-              <div class="explorer-matchup-card__heading">
-                ${getChampionIconMarkup(result.opponent, "small")}
-                <div><h3>${escapeHtml(result.opponent.name)}</h3><span>${escapeHtml(result.opponent.roles.join(" / "))}</span></div>
-                <span class="explorer-tier ${result.tier.className}">${escapeHtml(result.tier.label)}</span>
-              </div>
-              <div class="explorer-advantage"><span>General advantage</span><strong>${result.score}%</strong></div>
-              <div class="counter-proof counter-proof--compact">
-                <span>${escapeHtml(result.proof?.label || "Modeled counter")}</span>
-                <strong>${escapeHtml(String(result.proof?.confidence || result.score))}% proof</strong>
-              </div>
-              <p>${escapeHtml(result.reasons.join(" ") || `${champion.name}'s general game plan matches well into ${result.opponent.name}.`)}</p>
-              ${result.smartFactors?.length ? `<div class="smart-read">${result.smartFactors.map((factor) => `<span>${escapeHtml(factor.label)}</span>`).join("")}</div>` : ""}
-              <div class="explorer-plan"><strong>How to play it:</strong> ${escapeHtml(getExplorerOpponentPlan(champion, result.opponent))}</div>
-              ${renderMatchupRunes(champion, result.opponent)}
-              <button class="text-button" type="button" data-details="${escapeHtml(result.opponent.name)}">View ${escapeHtml(result.opponent.name)}</button>
-            </article>
-          `).join("")}</div>`
-        : `<p class="empty-state">No matchups meet these filters. Try "All favorable" or another opponent role.</p>`
-    }
+    ${matchups.length
+      ? `<div class="explorer-matchup-grid">${matchups.map((result, index) => renderResearchedCounterCard(result, index, true)).join("")}</div>`
+      : `<p class="empty-state">No researched ${explorerStrength.value === "hard" ? "direct counter" : "answer"} entry for ${escapeHtml(champion.name)} with these opponent-role filters yet. The library covers ${new Set(counterMatchupRules.map((rule) => rule.enemy)).size} opponents; an empty result means research is missing, not that no counter exists.</p>`}
   `;
+}
+
+
+function renderResearchedCounterCard(result, index, explorer = false) {
+  const shownChampion = explorer ? result.opponent : result.candidate;
+  return `<article class="${explorer ? "explorer-matchup-card" : "counter-card"}">
+    <div class="counter-card__top">
+      ${getChampionIconMarkup(shownChampion, "small")}
+      <div><span class="counter-card__rank">Researched answer ${index + 1}</span><h3>${escapeHtml(shownChampion.name)}</h3><small>${escapeHtml(result.rule.role)} vs ${escapeHtml(result.rule.enemyRole)}</small></div>
+    </div>
+    <span class="difficulty-pill ${result.tier.className}">${escapeHtml(result.tier.label)}</span>
+    ${renderCounterInteraction(result)}
+    ${renderMatchupRunes(result.candidate, result.opponent, result.rule.role, result.rule)}
+    <div class="counter-card__actions">
+      ${explorer
+        ? `<button class="text-button" type="button" data-details="${escapeHtml(result.opponent.name)}">View ${escapeHtml(result.opponent.name)}</button>`
+        : `<button class="text-button" type="button" data-counter-pick="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(result.rule.role)}">Use in team</button><button class="icon-button icon-button--small" type="button" data-details="${escapeHtml(result.candidate.name)}" aria-label="View ${escapeHtml(result.candidate.name)} details">i</button>`}
+    </div>
+  </article>`;
 }
 
 function renderCounters() {
   const enemy = getChampion(enemyPick.value);
   if (!enemy) {
     matchupOverview.innerHTML = "";
-    counterResults.innerHTML = `<p class="empty-state">Choose an enemy champion to see current-patch hard-counter picks.</p>`;
+    counterResults.innerHTML = '<p class="empty-state">Choose an enemy champion to see researched counter interactions.</p>';
     return;
   }
-
   const role = allyRole.value || enemyRole.value;
-  const includeOffRole = Boolean(matchupOffRole?.checked);
   const limit = Number.parseInt(counterCount?.value || "6", 10);
-  const team = getSelectedTeamContext(role);
-  const threats = getEnemyThreatProfile(enemy);
-  const smartPool = champions
-    .filter((champion) => champion.name !== enemy.name)
-    .filter((champion) => champion.roles.includes(role) || includeOffRole)
-    .map((champion) => classifySmartCounter(scoreCounter(enemy, champion, role), enemy, role, team))
-    .sort((a, b) => b.smartScore - a.smartScore || b.score - a.score || a.candidate.name.localeCompare(b.candidate.name));
-
-  const candidates = pickBestHardCounters(smartPool, limit);
-  const threatText = threats.map((threat) => threat.label).join(", ");
-  const dataSourceLabel = getRiotDataSourceLabel();
-
+  const candidates = getResearchedCounters(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked)).slice(0, limit);
+  const coverage = getCounterCoverage();
+  const waitingReview = counterMatchupRules.filter((rule) => rule.enemy === enemy.name && rule.role === role && rule.enemyRole === enemyRole.value && !inspectCounterRule(rule).usable).length;
   matchupOverview.innerHTML = `
     <div class="matchup-overview__enemy">
-      ${getChampionIconMarkup(enemy, "small")}
-      <div>
-        <span>Facing ${escapeHtml(enemy.name)}</span>
-        <strong>${escapeHtml(enemy.style)}</strong>
-      </div>
+      ${getChampionIconMarkup(enemy, "small")}<div><span>Facing ${escapeHtml(enemy.name)} as enemy ${escapeHtml(enemyRole.value)}</span><strong>${escapeHtml(enemy.style)}</strong></div>
     </div>
     <div class="matchup-overview__notes">
-      <span><strong>Threat profile:</strong> ${escapeHtml(threatText)}</span>
-      <span><strong>Attack:</strong> ${escapeHtml(threats.map((threat) => threat.note).join(" "))}</span>
-      <span><strong>Data:</strong> ${escapeHtml(dataSourceLabel)}</span>
-      <span><strong>Model:</strong> Direct matchup rules first, then latest spell-kit evidence, role-native fit, and team context. Riot Data Dragon supplies champion data, not official win-rate counters.</span>
-      <span><strong>Showing:</strong> Top ${candidates.length} evidence-ranked answer${candidates.length === 1 ? "" : "s"} from the current patch kit model${includeOffRole ? ", with off-role picks capped below exact hard-counter status" : ""}.</span>
-    </div>
-  `;
-
-  if (!candidates.length) {
-    counterResults.innerHTML = `<p class="empty-state">No reliable hard counter was found for these filters. Try enabling off-role counters or changing the role.</p>`;
-    return;
-  }
-
-  counterResults.innerHTML = candidates
-    .map((result, index) => {
-      const difficulty = result.tier;
-      const laneAdvice = getMatchupAdvice(enemy, result.candidate);
-      const reasons = result.smartReasons.length
-        ? result.smartReasons.join(" ")
-        : `${result.candidate.name} has a reasonable pattern into ${enemy.name}, but execution and wave state still matter.`;
-      const confidence = result.proof?.confidence || Math.max(1, Math.min(99, Math.round(result.smartScore)));
-
-      return `
-        <article class="counter-card">
-          <div class="counter-card__top">
-            ${getChampionIconMarkup(result.candidate, "small")}
-            <div>
-              <span class="counter-card__rank">${escapeHtml(difficulty.label)} ${index + 1}</span>
-              <h3>${escapeHtml(result.candidate.name)}</h3>
-              <small>${escapeHtml(result.candidate.roles.join(" / "))}</small>
-            </div>
-            <span class="difficulty-pill ${difficulty.className}">${difficulty.label}</span>
-          </div>
-          <div class="counter-proof">
-            <span>${escapeHtml(result.proof?.label || "Modeled counter")}</span>
-            <strong>${escapeHtml(String(result.proof?.confidence || confidence))}% proof</strong>
-          </div>
-          ${result.roleFit.offRole ? `<span class="off-role-note">${escapeHtml(result.roleFit.label)} ${escapeHtml(role)}</span>` : ""}
-          <p>${escapeHtml(reasons)}</p>
-          ${result.smartFactors?.length ? `<div class="smart-read">${result.smartFactors.map((factor) => `<span>${escapeHtml(factor.label)}</span>`).join("")}</div>` : ""}
-          ${result.smartRisks?.length ? `<div class="counter-risk"><strong>Watch:</strong> ${escapeHtml(result.smartRisks.map((factor) => factor.label.toLowerCase()).join(", "))}</div>` : ""}
-          <div class="lane-tip"><strong>How to win:</strong> ${escapeHtml(laneAdvice.join(" ") || getLanePlan(result.candidate))}</div>
-          ${renderMatchupRunes(result.candidate, enemy, role)}
-          <div class="meter"><span>Hard-counter confidence</span><span>${confidence}%</span></div>
-          <div class="counter-card__actions">
-            <button class="text-button" type="button" data-counter-pick="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(role)}">Use in team</button>
-            <button class="icon-button icon-button--small" type="button" data-details="${escapeHtml(result.candidate.name)}" aria-label="View ${escapeHtml(result.candidate.name)} details">i</button>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+      <span><strong>Showing:</strong> ${candidates.length} researched ${escapeHtml(role)} answer${candidates.length === 1 ? "" : "s"}.</span>
+      <span><strong>Basis:</strong> Specific champion abilities, execution windows, and failure conditions. Direct mechanic denial is listed before conditional lane pressure; this is not a measured win-rate ranking.</span>
+      <span><strong>Coverage:</strong> ${coverage.championsCovered}/${coverage.championsTotal} champions · ${coverage.rolesCovered}/${coverage.rolesTotal} supported roles · ${coverage.entries} usable directed entries. Tactical review ${escapeHtml(counterMatchupReview.patch)}.</span>
+      <span><strong>Loaded data:</strong> ${escapeHtml(getRiotDataSourceLabel())}.</span>
+    </div>`;
+  counterResults.innerHTML = candidates.length
+    ? candidates.map((result, index) => renderResearchedCounterCard(result, index)).join("")
+    : `<p class="empty-state">${waitingReview ? "The ability evidence changed and these entries need review." : "No researched counter entry is available for this champion and role combination yet. Choose your matching lane role for the researched lane answers."} This does not mean the champion has no counters. ${riotData.status !== "ready" ? `Using the dated ${escapeHtml(bundledChampionRoster.version)} full-roster snapshot.` : ""}</p>`;
 }
+
 
 function showChampionDetails(name) {
   const champion = getChampion(name);
@@ -976,11 +583,9 @@ function showChampionDetails(name) {
     .map(([a, b, reason]) => ({ partner: a === champion.name ? b : a, reason }))
     .filter((item) => getChampion(item.partner))
     .slice(0, 3);
-  const sameRoleCounters = champions
-    .filter((candidate) => candidate.name !== champion.name && candidate.roles.some((role) => champion.roles.includes(role)))
-    .map((candidate) => scoreCounter(champion, candidate))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+  const sameRoleCounters = sortResearchedCounters(counterMatchupRules
+    .filter((rule) => rule.enemy === champion.name && rule.role === rule.enemyRole)
+    .map(makeResearchedCounterResult)).slice(0, 3);
 
   championDetails.innerHTML = `
     <div class="detail-hero">
@@ -1023,9 +628,9 @@ function showChampionDetails(name) {
       }
     </div>
     <div class="detail-section">
-      <h3>General answers</h3>
+      <h3>Researched answers</h3>
       <div class="detail-answer-row">
-        ${sameRoleCounters.map((item) => `<span>${escapeHtml(item.candidate.name)} <small>${item.score}% fit</small></span>`).join("")}
+        ${sameRoleCounters.length ? sameRoleCounters.map((item) => `<span>${escapeHtml(item.candidate.name)} <small>${escapeHtml(item.rule.role)} · ${escapeHtml(item.tier.label)}</small></span>`).join("") : "<p>No researched same-role entry yet.</p>"}
       </div>
     </div>
     <div class="dialog-actions">
