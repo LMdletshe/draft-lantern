@@ -516,7 +516,7 @@ function renderChampionExplorer() {
   explorerCounterResults.innerHTML = `
     <div class="explorer-counter-heading">
       <div><p class="eyebrow">Who ${escapeHtml(champion.name)} counters</p><h2>${matchups.length} researched answer${matchups.length === 1 ? "" : "s"}</h2></div>
-      <p>Named ability interactions and role-specific plans. Review ${escapeHtml(counterMatchupReview.patch)}; no matchup win-rate feed. ${getCounterCoverage().championsCovered}/${champions.length} loaded champions have researched answers in every supported role.</p>
+      <p>Named ability interactions and role-specific plans. Review ${escapeHtml(counterMatchupReview.patch)}; no matchup win-rate feed. ${getCounterCoverage().championsCovered}/${champions.length} loaded champions have at least ${counterMatchupReview.minimumPicks} researched picks against them in every supported role.</p>
     </div>
     ${matchups.length
       ? `<div class="explorer-matchup-grid">${matchups.map((result, index) => renderResearchedCounterCard(result, index, true)).join("")}</div>`
@@ -551,7 +551,7 @@ function renderCounters() {
     return;
   }
   const role = allyRole.value || enemyRole.value;
-  const limit = Number.parseInt(counterCount?.value || "6", 10);
+  const limit = Number.parseInt(counterCount?.value || "3", 10);
   const candidates = getResearchedCounters(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked)).slice(0, limit);
   const coverage = getCounterCoverage();
   const waitingReview = counterMatchupRules.filter((rule) => rule.enemy === enemy.name && rule.role === role && rule.enemyRole === enemyRole.value && !inspectCounterRule(rule).usable).length;
@@ -562,11 +562,11 @@ function renderCounters() {
     <div class="matchup-overview__notes">
       <span><strong>Showing:</strong> ${candidates.length} researched ${escapeHtml(role)} answer${candidates.length === 1 ? "" : "s"}.</span>
       <span><strong>Basis:</strong> Specific champion abilities, execution windows, and failure conditions. Direct mechanic denial is listed before conditional lane pressure; this is not a measured win-rate ranking.</span>
-      <span><strong>Coverage:</strong> ${coverage.championsCovered}/${coverage.championsTotal} champions · ${coverage.rolesCovered}/${coverage.rolesTotal} supported roles · ${coverage.entries} usable directed entries. Tactical review ${escapeHtml(counterMatchupReview.patch)}.</span>
+      <span><strong>Coverage:</strong> ${coverage.championsCovered}/${coverage.championsTotal} champions · ${coverage.rolesCovered}/${coverage.rolesTotal} supported roles with ${coverage.minimumPicks}+ distinct picks · ${coverage.entries} usable directed entries. Tactical review ${escapeHtml(counterMatchupReview.patch)}.</span>
       <span><strong>Loaded data:</strong> ${escapeHtml(getRiotDataSourceLabel())}.</span>
     </div>`;
   counterResults.innerHTML = candidates.length
-    ? candidates.map((result, index) => renderResearchedCounterCard(result, index)).join("")
+    ? `${role === enemyRole.value && candidates.length < coverage.minimumPicks ? `<p class="empty-state">Only ${candidates.length} of the ${coverage.minimumPicks} reviewed picks are currently usable. Changed ability or rune evidence is withheld pending review.</p>` : ""}${candidates.map((result, index) => renderResearchedCounterCard(result, index)).join("")}`
     : `<p class="empty-state">${waitingReview ? "The ability evidence changed and these entries need review." : "No researched counter entry is available for this champion and role combination yet. Choose your matching lane role for the researched lane answers."} This does not mean the champion has no counters. ${riotData.status !== "ready" ? `Using the dated ${escapeHtml(bundledChampionRoster.version)} full-roster snapshot.` : ""}</p>`;
 }
 

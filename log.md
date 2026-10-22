@@ -107,3 +107,9 @@ Automated daily check-ins will appear below.
 - 2026-10-20 12:44:03 UTC daily check-in
 - 2026-10-21 12:56:46 UTC daily check-in
 - 2026-10-22 12:58:46 UTC daily check-in
+
+## 2026-10-22 - Three counter picks per supported lane
+
+- Expanded the authored library from 454 to 855 directed entries. All 173 champions and 263 supported champion-role combinations now have at least three distinct native same-role picks, each with an interaction, execution window, failure condition and legal rune page.
+- The finder defaults to three picks. Coverage requires three usable choices; changed ability or rune evidence is withheld, and shortages are shown rather than filled with generic picks.
+- Verified against live Riot Data Dragon 16.21.1, with 495 referenced abilities and 180 page configurations. All 17 regression tests pass. Browser checks covered all five roles, adding the third pick to its team slot, and a 390px offline view with all three choices and dated rune references.

@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, "..");
 
 function setup() {
   const context = vm.createContext({ console });
-  ["src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/counter-roster.js", "src/data/ability-evidence.js", "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"]
+  ["src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/ability-evidence.js", "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"]
     .forEach((file) => vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, { filename: file }));
   // Exercise the actual production offline roster and role assignments. The
   // fixture does not invent champion identities or infer roles from the rules.
@@ -51,6 +51,9 @@ test("every researched direction, role and alternative has references and a lega
   for (const rule of api.counterMatchupRules) {
     assert.ok(!ids.has(rule.id), rule.id); ids.add(rule.id);
     assert.ok(api.roles.includes(rule.role) && api.roles.includes(rule.enemyRole));
+    assert.notEqual(rule.candidate, rule.enemy, rule.id);
+    assert.ok(api.getChampion(rule.candidate)?.roles.includes(rule.role), rule.id);
+    assert.ok(api.getChampion(rule.enemy)?.roles.includes(rule.enemyRole), rule.id);
     assert.equal(api.inspectCounterRule(rule).status, "current-kit", rule.id);
     assert.ok(rule.refs.length >= 2 && rule.why && rule.play && rule.risk && rule.runeWhy);
     const page = api.getMatchupRunePage(api.getChampion(rule.candidate), api.getChampion(rule.enemy), rule.role, rule);
@@ -60,7 +63,7 @@ test("every researched direction, role and alternative has references and a lega
   assert.equal(usedPlans.size, Object.keys(api.counterRunePlans).length);
 });
 
-test("every bundled champion and supported role has a native researched answer and legal runes", () => {
+test("every bundled champion and supported role has at least three distinct native picks and legal runes", () => {
   const api = setup();
   assert.equal(api.champions.length, api.bundledChampionRoster.champions.length);
   assert.equal(api.champions.length, 173);
@@ -68,7 +71,7 @@ test("every bundled champion and supported role has a native researched answer a
     assert.ok(api.getResearchedExplorerMatchups(enemy).length, `${enemy.name} needs an Explorer plan`);
     for (const role of enemy.roles) {
       const answers = api.getResearchedCounters(enemy, role, role, false);
-      assert.ok(answers.length, `${enemy.name} as ${role} needs a native counter`);
+      assert.ok(new Set(answers.map(answer => answer.candidate.name)).size >= 3, `${enemy.name} as ${role} needs three distinct native picks`);
       for (const answer of answers) validatePage(api.getMatchupRunePage(answer.candidate, enemy, role, answer.rule), api.runeIndex);
     }
   }
@@ -77,6 +80,7 @@ test("every bundled champion and supported role has a native researched answer a
   assert.equal(coverage.rolesTotal, 263);
   assert.equal(coverage.rolesCovered, coverage.rolesTotal);
   assert.equal(coverage.entries, api.counterMatchupRules.length);
+  assert.equal(coverage.minimumPicks, 3);
 });
 
 test("offline startup retains every champion and marks the kit as a dated reference", () => {
@@ -90,10 +94,12 @@ test("offline startup retains every champion and marks the kit as a dated refere
   assert.doesNotMatch(api.renderResearchedCounterCard(row, 0), /Kit checked/);
 });
 
-test("coverage drops honestly when a unique answer changes or a new champion appears", () => {
+test("coverage drops when a lane has fewer than three usable picks or a new champion appears", () => {
   const api = setup();
   api.getChampion("Milio").official.spells[3].description = "A changed ability without the reviewed cleanse.";
-  assert.equal(api.getResearchedCounters(api.getChampion("Renata Glasc"), "Support", "Support").length, 0);
+  const remaining = api.getResearchedCounters(api.getChampion("Renata Glasc"), "Support", "Support");
+  assert.ok(remaining.length < 3);
+  assert.ok(!remaining.some(answer => answer.candidate.name === "Milio"));
   assert.ok(api.getCounterCoverage().rolesCovered < 263);
   const coverage = api.getCounterCoverage();
   api.champions.push({ name: "Future unreviewed champion", roles: ["Support"], tags: [], scores: {} });
@@ -128,7 +134,9 @@ test("role and cross-role context are enforced", () => {
   const ashe = api.getChampion("Ashe");
   assert.ok(api.getResearchedCounters(ashe, "Support", "ADC").some((result) => result.candidate.name === "Braum"));
   assert.ok(!api.getResearchedCounters(ashe, "ADC", "ADC").some((result) => result.candidate.name === "Braum"));
-  assert.ok(api.getResearchedCounters(ashe, "Support", "Support").every((row) => row.rule.enemyRole === "Support" && row.candidate.name !== "Braum"));
+  const sameRole = api.getResearchedCounters(ashe, "Support", "Support");
+  assert.ok(sameRole.every((row) => row.rule.enemyRole === "Support" && row.rule.role === "Support"));
+  assert.ok(sameRole.some((row) => row.rule.id === "Braum:Ashe:Support:Support"));
 });
 
 test("Explorer uses the same researched pairing and rune page", () => {
@@ -207,6 +215,9 @@ test("live rune effects are loaded and changed effects require review", async ()
   const page = api.getMatchupRunePage(api.getChampion("Sylas"), api.getChampion("Malphite"), "Top");
   assert.equal(page.available, false);
   assert.match(page.reviewReason, /effect changed/);
+  const answers = api.getResearchedCounters(api.getChampion("Malphite"), "Top", "Top");
+  assert.ok(!answers.some(answer => answer.candidate.name === "Sylas"));
+  assert.ok(api.getCounterCoverage().rolesCovered < api.getCounterCoverage().rolesTotal);
 });
 
 test("removed and relocated runes suppress incompatible pages", async () => {

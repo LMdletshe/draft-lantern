@@ -1,6 +1,6 @@
 // Directed, role-specific matchup research. Shared pages are selected by a researched
 // interaction, never inferred as a hard counter from class tags or a high model score.
-const counterMatchupReview = { patch: "16.21.1", date: "2026-10-22" };
+const counterMatchupReview = { patch: "16.21.1", date: "2026-10-22", minimumPicks: 3 };
 const counterRunePlans = {
   xinCatch: [[9923, 8143, 8140, 8106], [9111, 8014], ["Attack speed", "Adaptive force", "Scaling health"]],
   xinDuel: [[8010, 9111, 9104, 8299], [8304, 8347], ["Attack speed", "Adaptive force", "Scaling health"]],

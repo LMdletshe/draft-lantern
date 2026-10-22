@@ -9,7 +9,7 @@ const context = vm.createContext({ console, fetch });
 const files = [
   "src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js",
   "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js",
-  "src/data/counter-roster.js", "src/data/ability-evidence.js",
+  "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/ability-evidence.js",
   "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"
 ];
 for (const file of files) vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, { filename: file });
@@ -68,7 +68,7 @@ async function main() {
       if (!getResearchedExplorerMatchups(enemy).length) errors.push({id:enemy.name, reason:'No outgoing Explorer plan'});
       for (const role of enemy.roles) {
         const answers = getResearchedCounters(enemy, role, role);
-        if (!answers.length) errors.push({id:enemy.name+':'+role, reason:'No native same-role answer'});
+        if (new Set(answers.map(answer => answer.candidate.name)).size < counterMatchupReview.minimumPicks) errors.push({id:enemy.name+':'+role, reason:'Fewer than '+counterMatchupReview.minimumPicks+' distinct native same-role picks'});
         rows.push({enemy:enemy.name, role, answers:answers.map(a=>({champion:a.candidate.name, type:a.rule.kind, plan:a.rule.runePlan}))});
       }
     }
@@ -81,7 +81,7 @@ async function main() {
     const lines = ["# Counter coverage audit", "",
       `Research patch: **${audit.reviewPatch}**. Validated with **${audit.source} ${audit.loadedPatch}**.`, "",
       `Coverage: **${audit.coverage.championsCovered}/${audit.coverage.championsTotal} champions**, **${audit.coverage.rolesCovered}/${audit.coverage.rolesTotal} supported role combinations**, **${audit.coverage.entries} directed entries**, **${audit.runePlans} full rune plans**, and **${audit.abilityReferences} referenced official abilities**.`, "",
-      "Every row has a native same-role answer with a legal rune page. Both mechanical counters and conditional lane plans are included. The order reflects authored interaction type and priority, not measured win rates. Cross-role team-context entries are additional to this table.", "",
+      "Every row has at least three distinct native same-role picks, each with a legal rune page. Both mechanical counters and conditional lane plans are included. The order reflects authored interaction type and priority, not measured win rates. Cross-role team-context entries are additional to this table.", "",
       "Only explicitly researched pairings receive pages. Coverage of every champion does not mean every arbitrary champion pair, off-role matchup, or future patch has been reviewed.", "",
       "Reproduce with `node scripts/check-counter-coverage.cjs --live --write-report`. The command reports drift and never rewrites ability evidence or matchup decisions.", "",
       "| Enemy | Role | Researched answers |", "| --- | --- | --- |",

@@ -26,14 +26,23 @@ function inspectCounterRule(rule) {
 function getCounterCoverage() {
   const usable = counterMatchupRules.filter((rule) => getChampion(rule.candidate) && getChampion(rule.enemy)
     && inspectCounterRule(rule).usable && buildResearchedRunePage(rule.runePlan, rule)?.available);
-  const covered = new Set(usable.filter((rule) => rule.role === rule.enemyRole && !getRoleFit(getChampion(rule.candidate), rule.role).offRole)
-    .map((rule) => `${rule.enemy}:${rule.enemyRole}`));
+  const answers = new Map();
+  for (const rule of usable) {
+    if (rule.role !== rule.enemyRole || !getChampion(rule.candidate).roles.includes(rule.role)
+      || !getChampion(rule.enemy).roles.includes(rule.enemyRole)) continue;
+    const key = `${rule.enemy}:${rule.enemyRole}`;
+    if (!answers.has(key)) answers.set(key, new Set());
+    answers.get(key).add(rule.candidate);
+  }
+  const minimumPicks = counterMatchupReview.minimumPicks;
+  const covered = new Set([...answers].filter(([, picks]) => picks.size >= minimumPicks).map(([key]) => key));
   return {
     championsTotal: champions.length,
     championsCovered: champions.filter((champion) => champion.roles.every((role) => covered.has(`${champion.name}:${role}`))).length,
     rolesTotal: champions.reduce((count, champion) => count + champion.roles.length, 0),
     rolesCovered: champions.reduce((count, champion) => count + champion.roles.filter((role) => covered.has(`${champion.name}:${role}`)).length, 0),
-    entries: usable.length
+    entries: usable.length,
+    minimumPicks
   };
 }
 
@@ -52,7 +61,7 @@ function makeResearchedCounterResult(rule) {
   const candidate = getChampion(rule.candidate);
   const opponent = getChampion(rule.enemy);
   const inspection = inspectCounterRule(rule);
-  if (!candidate || !opponent || !inspection.usable) return null;
+  if (!candidate || !opponent || !inspection.usable || !buildResearchedRunePage(rule.runePlan, rule)?.available) return null;
   return {
     candidate, opponent, rule, inspection,
     roleFit: getRoleFit(candidate, rule.role),
