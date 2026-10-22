@@ -869,6 +869,7 @@ function renderChampionExplorer() {
               <p>${escapeHtml(result.reasons.join(" ") || `${champion.name}'s general game plan matches well into ${result.opponent.name}.`)}</p>
               ${result.smartFactors?.length ? `<div class="smart-read">${result.smartFactors.map((factor) => `<span>${escapeHtml(factor.label)}</span>`).join("")}</div>` : ""}
               <div class="explorer-plan"><strong>How to play it:</strong> ${escapeHtml(getExplorerOpponentPlan(champion, result.opponent))}</div>
+              ${renderMatchupRunes(champion, result.opponent)}
               <button class="text-button" type="button" data-details="${escapeHtml(result.opponent.name)}">View ${escapeHtml(result.opponent.name)}</button>
             </article>
           `).join("")}</div>`
@@ -951,6 +952,7 @@ function renderCounters() {
           ${result.smartFactors?.length ? `<div class="smart-read">${result.smartFactors.map((factor) => `<span>${escapeHtml(factor.label)}</span>`).join("")}</div>` : ""}
           ${result.smartRisks?.length ? `<div class="counter-risk"><strong>Watch:</strong> ${escapeHtml(result.smartRisks.map((factor) => factor.label.toLowerCase()).join(", "))}</div>` : ""}
           <div class="lane-tip"><strong>How to win:</strong> ${escapeHtml(laneAdvice.join(" ") || getLanePlan(result.candidate))}</div>
+          ${renderMatchupRunes(result.candidate, enemy, role)}
           <div class="meter"><span>Hard-counter confidence</span><span>${confidence}%</span></div>
           <div class="counter-card__actions">
             <button class="text-button" type="button" data-counter-pick="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(role)}">Use in team</button>

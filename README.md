@@ -62,6 +62,11 @@ automatically.
   range. Open roles receive suggested fixes.
 - Suggests hard counter picks with evidence labels, proof confidence, reasons,
   and lane advice instead of generic repeated recommendations.
+- Suggests a complete rune page for each counter matchup: keystone, three
+  primary runes, two secondary runes, and three stat shards, with matchup
+  reasoning. Expand **Suggested runes** in Matchups or the Champion Explorer's
+  counter cards. Champion presets and archetype fallbacks adapt to role, poke,
+  burst, and frontline threats; they are starting points, not win-rate rankings.
 - Highlights curated champion-pair synergies.
 - Opens a champion guide with strengths, weaknesses, lane advice, teamfight
   advice, partners, and general answers.
@@ -92,6 +97,7 @@ src/
     app-config.js
     champions.js
     compositions.js
+    runes.js
   core/
     dom.js
     state.js
@@ -102,6 +108,7 @@ src/
     team-builder.js
     premade-comps.js
     matchups.js
+    runes.js
     persistence.js
     draft-room.js
   guides/
@@ -143,6 +150,19 @@ Useful fields:
 
 Pair combos live in `pairSynergies`. Common role assignments live in
 `roleOverrides`.
+
+## Matchup Runes
+
+`src/data/runes.js` contains a Riot Data Dragon catalogue snapshot for offline
+use. `src/features/runes.js` owns champion presets, matchup adjustments, legal
+page validation, and rendering. Rune names and icons refresh from the same Data
+Dragon version selected for champion loading. When the catalogue cannot load,
+the UI identifies the bundled snapshot's patch. If a planned rune is removed or
+moved to an incompatible slot, that page asks for review rather than showing an
+illegal selection. Recommendation rules and stat-shard choices remain authored
+locally and require review after balance changes. No rune API key is needed.
+
+Run the offline recommendation checks with `node --test tests/runes.test.cjs`.
 
 ## Riot Data Layer
 
