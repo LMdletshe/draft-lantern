@@ -18,8 +18,22 @@ function inspectCounterRule(rule) {
   }
   return {
     usable: changed.length === 0,
-    status: changed.length ? "needs-review" : current === rule.refs.length ? "current-kit" : "reviewed-snapshot",
+    status: changed.length ? "needs-review" : current === rule.refs.length && riotData.status === "ready" ? "current-kit" : "reviewed-snapshot",
     changed
+  };
+}
+
+function getCounterCoverage() {
+  const usable = counterMatchupRules.filter((rule) => getChampion(rule.candidate) && getChampion(rule.enemy)
+    && inspectCounterRule(rule).usable && buildResearchedRunePage(rule.runePlan, rule)?.available);
+  const covered = new Set(usable.filter((rule) => rule.role === rule.enemyRole && !getRoleFit(getChampion(rule.candidate), rule.role).offRole)
+    .map((rule) => `${rule.enemy}:${rule.enemyRole}`));
+  return {
+    championsTotal: champions.length,
+    championsCovered: champions.filter((champion) => champion.roles.every((role) => covered.has(`${champion.name}:${role}`))).length,
+    rolesTotal: champions.reduce((count, champion) => count + champion.roles.length, 0),
+    rolesCovered: champions.reduce((count, champion) => count + champion.roles.filter((role) => covered.has(`${champion.name}:${role}`)).length, 0),
+    entries: usable.length
   };
 }
 

@@ -7,30 +7,16 @@ const root = path.resolve(__dirname, "..");
 
 function setup() {
   const context = vm.createContext({ console });
-  ["src/data/app-config.js", "src/data/champions.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/ability-evidence.js", "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"]
+  ["src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/counter-roster.js", "src/data/ability-evidence.js", "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"]
     .forEach((file) => vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, { filename: file }));
-  // Populate test roster identities/roles from directed research, and real reviewed
-  // ability text from the checked-in Riot snapshot. No live network is required.
+  // Exercise the actual production offline roster and role assignments. The
+  // fixture does not invent champion identities or infer roles from the rules.
   vm.runInContext(`
-    for (const rule of counterMatchupRules) for (const [name, role] of [[rule.candidate, rule.role], [rule.enemy, rule.enemyRole]]) {
-      let champion = getChampion(name);
-      if (!champion) {
-        champion = { name, roles: [], tags: [], scores: Object.fromEntries(scoreKeys.map(([key]) => [key, 3])), goodInto: [], weakInto: [] };
-        champions.push(champion);
-      }
-      if (!champion.roles.includes(role)) champion.roles.push(role);
-    }
-    for (const ability of Object.values(reviewedAbilityEvidence.abilities)) {
-      const champion = getChampion(ability.champion);
-      champion.official ||= { spells: [], tags: [], info: { attack: 5, defense: 5, magic: 5, difficulty: 5 } };
-      const record = { id: ability.id, name: ability.name, description: ability.description };
-      if (ability.slot === 'P') champion.official.passive = record;
-      else champion.official.spells['QWER'.indexOf(ability.slot)] = record;
-    }
+    hydrateBuiltInChampionProfiles();
     riotData.version = counterMatchupReview.patch;
     riotData.status = 'ready';
   `, context);
-  return { context, ...vm.runInContext("({ champions, roles, runeIndex, bundledRuneCatalogue, counterMatchupRules, counterRunePlans, reviewedAbilityEvidence, getChampion, getMatchupRunePage, renderMatchupRunes, loadRuneCatalogue, inspectCounterRule, getResearchedCounters, getResearchedExplorerMatchups, getEvidenceBackedDifficulty, renderResearchedCounterCard })", context) };
+  return { context, ...vm.runInContext("({ champions, roles, runeIndex, bundledRuneCatalogue, bundledChampionRoster, counterMatchupRules, counterRunePlans, reviewedAbilityEvidence, getChampion, getMatchupRunePage, renderMatchupRunes, loadRuneCatalogue, inspectCounterRule, getResearchedCounters, getResearchedExplorerMatchups, getCounterCoverage, getEvidenceBackedDifficulty, renderResearchedCounterCard })", context) };
 }
 
 function validatePage(page, index) {
@@ -74,6 +60,48 @@ test("every researched direction, role and alternative has references and a lega
   assert.equal(usedPlans.size, Object.keys(api.counterRunePlans).length);
 });
 
+test("every bundled champion and supported role has a native researched answer and legal runes", () => {
+  const api = setup();
+  assert.equal(api.champions.length, api.bundledChampionRoster.champions.length);
+  assert.equal(api.champions.length, 173);
+  for (const enemy of api.champions) {
+    assert.ok(api.getResearchedExplorerMatchups(enemy).length, `${enemy.name} needs an Explorer plan`);
+    for (const role of enemy.roles) {
+      const answers = api.getResearchedCounters(enemy, role, role, false);
+      assert.ok(answers.length, `${enemy.name} as ${role} needs a native counter`);
+      for (const answer of answers) validatePage(api.getMatchupRunePage(answer.candidate, enemy, role, answer.rule), api.runeIndex);
+    }
+  }
+  const coverage = api.getCounterCoverage();
+  assert.equal(coverage.championsCovered, 173);
+  assert.equal(coverage.rolesTotal, 263);
+  assert.equal(coverage.rolesCovered, coverage.rolesTotal);
+  assert.equal(coverage.entries, api.counterMatchupRules.length);
+});
+
+test("offline startup retains every champion and marks the kit as a dated reference", () => {
+  const api = setup();
+  vm.runInContext("riotData.status='offline'; riotData.version=null;", api.context);
+  const coverage = api.getCounterCoverage();
+  assert.equal(coverage.championsCovered, api.champions.length);
+  const row = api.getResearchedCounters(api.getChampion("Locke"), "Jungle", "Jungle")[0];
+  assert.equal(row.inspection.status, "reviewed-snapshot");
+  assert.match(api.renderResearchedCounterCard(row, 0), /Dated reference/);
+  assert.doesNotMatch(api.renderResearchedCounterCard(row, 0), /Kit checked/);
+});
+
+test("coverage drops honestly when a unique answer changes or a new champion appears", () => {
+  const api = setup();
+  api.getChampion("Milio").official.spells[3].description = "A changed ability without the reviewed cleanse.";
+  assert.equal(api.getResearchedCounters(api.getChampion("Renata Glasc"), "Support", "Support").length, 0);
+  assert.ok(api.getCounterCoverage().rolesCovered < 263);
+  const coverage = api.getCounterCoverage();
+  api.champions.push({ name: "Future unreviewed champion", roles: ["Support"], tags: [], scores: {} });
+  assert.equal(api.getCounterCoverage().championsTotal, 174);
+  assert.equal(api.getCounterCoverage().championsCovered, coverage.championsCovered);
+  assert.equal(api.getResearchedCounters(api.getChampion("Future unreviewed champion"), "Support", "Support").length, 0);
+});
+
 test("Malphite results require a researched direction; high generic scores cannot add Aatrox", () => {
   const api = setup();
   const results = api.getResearchedCounters(api.getChampion("Malphite"), "Top", "Top", true);
@@ -100,7 +128,7 @@ test("role and cross-role context are enforced", () => {
   const ashe = api.getChampion("Ashe");
   assert.ok(api.getResearchedCounters(ashe, "Support", "ADC").some((result) => result.candidate.name === "Braum"));
   assert.ok(!api.getResearchedCounters(ashe, "ADC", "ADC").some((result) => result.candidate.name === "Braum"));
-  assert.equal(api.getResearchedCounters(ashe, "Support", "Support").length, 0);
+  assert.ok(api.getResearchedCounters(ashe, "Support", "Support").every((row) => row.rule.enemyRole === "Support" && row.candidate.name !== "Braum"));
 });
 
 test("Explorer uses the same researched pairing and rune page", () => {

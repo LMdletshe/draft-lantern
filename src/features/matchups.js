@@ -177,10 +177,10 @@ function populateExplorerControls() {
   explorerRole.innerHTML = optionList(["All", ...roles], currentRole);
 
   const strengthOptions = [
-    ["hard", "Direct counters"],
-    ["all", "All researched answers"]
+    ["all", "All researched answers"],
+    ["hard", "Direct counters"]
   ];
-  const currentStrength = explorerStrength.value || "hard";
+  const currentStrength = explorerStrength.value || "all";
   explorerStrength.innerHTML = strengthOptions
     .map(([value, label]) => `<option value="${value}" ${value === currentStrength ? "selected" : ""}>${label}</option>`)
     .join("");
@@ -373,7 +373,7 @@ function getRankedExplorerMatchups(champion, role = "All") {
 }
 
 function getExplorerMatchups(champion) {
-  const strength = explorerStrength.value || "hard";
+  const strength = explorerStrength.value || "all";
   return getRankedExplorerMatchups(champion, explorerRole.value || "All")
     .filter((result) => strength !== "hard" || result.rule.kind === "direct");
 }
@@ -446,8 +446,7 @@ function renderChampionExplorer() {
       : champion.roles[0];
   const tierEval = getChampionTierScore(champion, evalRole);
   const matchups = getExplorerMatchups(champion);
-  const hardCount = getRankedExplorerMatchups(champion)
-    .filter((result) => result.tier.key === "hard").length;
+  const researchedCount = getRankedExplorerMatchups(champion).length;
   const dataSourceLabel = getRiotDataSourceLabel();
 
   explorerProfile.innerHTML = `
@@ -460,7 +459,7 @@ function renderChampionExplorer() {
         <p>${escapeHtml(champion.beginner)}</p>
       </div>
       <div class="explorer-profile__actions">
-        <span>${hardCount} researched direct counter${hardCount === 1 ? "" : "s"}</span>
+        <span>${researchedCount} researched counter plan${researchedCount === 1 ? "" : "s"}</span>
         ${champion.roles.map((role) => `<button class="text-button" type="button" data-explorer-pick="${escapeHtml(champion.name)}" data-role="${escapeHtml(role)}">Add as ${escapeHtml(role)}</button>`).join("")}
       </div>
     </div>
@@ -517,7 +516,7 @@ function renderChampionExplorer() {
   explorerCounterResults.innerHTML = `
     <div class="explorer-counter-heading">
       <div><p class="eyebrow">Who ${escapeHtml(champion.name)} counters</p><h2>${matchups.length} researched answer${matchups.length === 1 ? "" : "s"}</h2></div>
-      <p>Named ability interactions and role-specific plans. Review ${escapeHtml(counterMatchupReview.patch)}; no matchup win-rate feed.</p>
+      <p>Named ability interactions and role-specific plans. Review ${escapeHtml(counterMatchupReview.patch)}; no matchup win-rate feed. ${getCounterCoverage().championsCovered}/${champions.length} loaded champions have researched answers in every supported role.</p>
     </div>
     ${matchups.length
       ? `<div class="explorer-matchup-grid">${matchups.map((result, index) => renderResearchedCounterCard(result, index, true)).join("")}</div>`
@@ -554,7 +553,7 @@ function renderCounters() {
   const role = allyRole.value || enemyRole.value;
   const limit = Number.parseInt(counterCount?.value || "6", 10);
   const candidates = getResearchedCounters(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked)).slice(0, limit);
-  const totalOpponents = new Set(counterMatchupRules.map((rule) => rule.enemy)).size;
+  const coverage = getCounterCoverage();
   const waitingReview = counterMatchupRules.filter((rule) => rule.enemy === enemy.name && rule.role === role && rule.enemyRole === enemyRole.value && !inspectCounterRule(rule).usable).length;
   matchupOverview.innerHTML = `
     <div class="matchup-overview__enemy">
@@ -563,12 +562,12 @@ function renderCounters() {
     <div class="matchup-overview__notes">
       <span><strong>Showing:</strong> ${candidates.length} researched ${escapeHtml(role)} answer${candidates.length === 1 ? "" : "s"}.</span>
       <span><strong>Basis:</strong> Specific champion abilities, execution windows, and failure conditions. Direct mechanic denial is listed before conditional lane pressure; this is not a measured win-rate ranking.</span>
-      <span><strong>Coverage:</strong> ${counterMatchupRules.length} directed role matchups against ${totalOpponents} opponents. Tactical review ${escapeHtml(counterMatchupReview.patch)}.</span>
+      <span><strong>Coverage:</strong> ${coverage.championsCovered}/${coverage.championsTotal} champions · ${coverage.rolesCovered}/${coverage.rolesTotal} supported roles · ${coverage.entries} usable directed entries. Tactical review ${escapeHtml(counterMatchupReview.patch)}.</span>
       <span><strong>Loaded data:</strong> ${escapeHtml(getRiotDataSourceLabel())}.</span>
     </div>`;
   counterResults.innerHTML = candidates.length
     ? candidates.map((result, index) => renderResearchedCounterCard(result, index)).join("")
-    : `<p class="empty-state">${waitingReview ? "The ability evidence changed and these entries need review." : "No researched counter entry is available for this champion and role combination yet."} This does not mean the champion has no counters. ${riotData.status !== "ready" ? "The full Riot roster is not loaded; the dated starter roster may also limit available picks." : ""}</p>`;
+    : `<p class="empty-state">${waitingReview ? "The ability evidence changed and these entries need review." : "No researched counter entry is available for this champion and role combination yet. Choose your matching lane role for the researched lane answers."} This does not mean the champion has no counters. ${riotData.status !== "ready" ? `Using the dated ${escapeHtml(bundledChampionRoster.version)} full-roster snapshot.` : ""}</p>`;
 }
 
 

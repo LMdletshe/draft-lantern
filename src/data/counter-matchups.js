@@ -187,7 +187,7 @@ const counterMatchupRules = [
     ["Bel'Veth", "Q", "Void Surge", "Bel'Veth has multiple directional charges and can wait outside W. Denying one entry does not deny all later movement."],
     ["Kayn", "Q", "Reaping Slash", "Kayn can use wall routes and his ultimate instead of committing Q into the aura."],
     ["Vi", "Q", "Vault Breaker", "W does not cancel Vi's unstoppable ultimate. Save a separate protection or escape plan for R."],
-    ["Hecarim", "E", "the Devastating Charge attack dash", "Do not spend W expecting it to stop the unstoppable movement in Onslaught of Shadows."],
+    ["Hecarim", "E", "the Devastating Charge attack dash", "Movement interruption is not a promise of immunity to the empowered attack damage. W also does not stop the unstoppable movement in Onslaught of Shadows."],
     ["Kha'Zix", "E", "Leap", "Kha'Zix can bait the aura and attack an isolated target later; stay close enough to the ally you are protecting."]
   ].map(([enemy, slot, threat, risk]) => researchedCounter("Poppy", enemy, "Jungle", "W", slot, "poppyJungle",
     `Steadfast Presence stops ${threat} when it crosses Poppy's aura, turning that named movement tool into a grounded commitment.`,

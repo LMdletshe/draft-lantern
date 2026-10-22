@@ -4,11 +4,17 @@ Matchups and the Champion Explorer counter cards exist to answer a concrete
 question: which champion ability answers this opponent's ability, and which
 runes help execute that plan in the selected role?
 
-The library has 72 directed role-specific entries against 45 opponents,
-reviewed on 2026-10-22 using Riot Data Dragon 16.21.1. It does not cover every
-champion or every role. A missing entry means research is missing. The app must
-not fill that gap using class tags, broad scores, reversed pairings, or generic
-champion rune presets.
+The library has 454 directed entries covering all 173 champions and all 263
+supported champion-role combinations, reviewed on 2026-10-22 using Riot Data
+Dragon 16.21.1. Every supported lane has a native same-role answer with a legal
+page, and every champion has a researched outgoing Explorer plan. The complete
+dated roster remains available offline. See [the audit](counter-coverage.md).
+
+Coverage does not mean every arbitrary champion pair or every possible
+off-role choice is recommended. Unsupported directed pairings still receive
+no automatic page. The app must not fill those gaps using class tags, broad
+scores, reversed pairings, or generic champion rune presets. The Explorer
+defaults to all researched answers, with a separate direct-counter filter.
 
 ## What an entry establishes
 
@@ -44,6 +50,9 @@ item win rates, so it cannot certify statistically optimal picks or pages.
   from Data Dragon summaries, item changes, and overall balance require manual
   review. Never update the review date or snapshots just to make a failing
   comparison pass.
+- Coverage counts use current usable entries and legal rune pages. An ability
+  change, rune change, new champion, or newly supported role can reduce the
+  displayed coverage. Offline source labels never claim a live kit check.
 
 ## Adding or reviewing a pairing
 
@@ -62,6 +71,9 @@ item win rates, so it cannot certify statistically optimal picks or pages.
    changes before updating a snapshot.
 6. Run `node --test tests/runes.test.cjs`. Check both views in a browser, the
    correct role combination, an unsupported pairing, and a narrow screen.
+7. Run `node scripts/check-counter-coverage.cjs --live --write-report`. This
+   checks the current official roster, references, role assignments, and pages;
+   it reports gaps and drift without updating the research to suppress errors.
 
 Examples of exceptions retained in the current research include Poppy W not
 stopping Vi's or Hecarim's unstoppable ultimates, Blitzcrank R removing shields,
