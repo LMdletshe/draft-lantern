@@ -17,6 +17,7 @@ src/
     runes.js               # Dated Riot rune catalogue fallback
     counter-matchups.js     # Directed role-specific counter research and full rune plans
     counter-roster.js       # Explicit full-roster research additions and shared page selections
+    counter-options.js      # Additional authored choices enforcing three native picks per lane
     ability-evidence.js     # Reviewed official ability descriptions and source URLs
   core/
     state.js               # Mutable app state
@@ -66,7 +67,7 @@ tests/
 1. `src/data/app-config.js`
 2. `src/data/champions.js` and `roster-snapshot.js`
 3. `src/data/compositions.js`
-4. `src/data/runes.js`, `counter-matchups.js`, `counter-roster.js`, and `ability-evidence.js`
+4. `src/data/runes.js`, `counter-matchups.js`, `counter-roster.js`, `counter-options.js`, and `ability-evidence.js`
 5. `src/core/state.js`, `dom.js`, and `utils.js`
 6. Feature modules, with `counter-evidence.js` before `runes.js` and `matchups.js`
 7. `src/core/app.js`
@@ -78,7 +79,7 @@ Do not convert files to ES modules unless the deployment model is changed delibe
 
 - Put static role, trait, and general scoring config in `src/data/app-config.js`.
 - Put researched champion-pair interactions and their rune plans in
-  `src/data/counter-matchups.js` and `counter-roster.js`; record reviewed ability facts in
+  `src/data/counter-matchups.js`, `counter-roster.js`, and `counter-options.js`; record reviewed ability facts in
   `src/data/ability-evidence.js`. Generic trait scores must not manufacture an
   exact-counter entry or rune page.
 - Put hand-curated champion entries in `src/data/champions.js`.

@@ -162,12 +162,14 @@ Pair combos live in `pairSynergies`. Common role assignments live in
 ## Counter Research And Matchup Runes
 
 The purpose of Matchups is to identify specific counter interactions and choose
-runes that help execute them. The reviewed library contains **454 directed
+runes that help execute them. The reviewed library contains **855 directed
 entries covering all 173 champions and all 263 supported champion-role
-combinations** on patch **16.21.1**. Every supported lane has a native same-role
-answer with legal runes, and every champion has an outgoing Explorer plan.
+combinations** on patch **16.21.1**. Every supported lane has at least **three
+distinct native same-role picks**, each with legal runes, and every champion
+has an outgoing Explorer plan. The finder defaults to three suggestions.
 The coverage badge is calculated from usable entries and drops when evidence
-changes or a new champion has no reviewed answer. Results are ordered by
+changes leave a lane with fewer than three usable picks, or a new champion
+has no reviewed answers. Results are ordered by
 authored interaction type and priority, not measured win rates or synthetic
 confidence. [The coverage audit](docs/counter-coverage.md) lists every role.
 
@@ -175,7 +177,8 @@ Full-roster coverage means each champion has researched answers. It does not
 assign a rune page to every arbitrary champion pair, off-role matchup, or
 future patch. Only explicitly researched directed pairings receive a plan.
 
-`src/data/counter-matchups.js` and `src/data/counter-roster.js` own the exact
+`src/data/counter-matchups.js`, `src/data/counter-roster.js`, and
+`src/data/counter-options.js` own the exact
 pairings and rune plans.
 `src/data/ability-evidence.js` records the official ability text and source URLs
 used in review. `src/features/counter-evidence.js` checks the loaded kit text

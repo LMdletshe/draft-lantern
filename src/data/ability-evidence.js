@@ -1,4 +1,4 @@
-// Official ability text used to review the directed matchup rules. Regenerate only after reviewing changed interactions.
+// Official ability text used to review the directed matchup rules. Extend only after reviewing changed interactions.
 const reviewedAbilityEvidence = {
   "patch": "16.21.1",
   "abilities": {
@@ -3465,6 +3465,502 @@ const reviewedAbilityEvidence = {
       "name": "Last Breath",
       "description": "Blinks to an Airborne enemy champion, dealing physical damage and holding all Airborne enemies in the area in the air. Grants maximum Flow but resets all stacks of Gathering Storm. For a moderate time afterwards, Yasuo's critical strikes gain significant Bonus Armor Penetration.",
       "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Yasuo.json"
+    },
+    "Akali:Q": {
+      "champion": "Akali",
+      "slot": "Q",
+      "id": "AkaliQ",
+      "name": "Five Point Strike",
+      "description": "Akali throws out five kunai, dealing damage based on her bonus Attack Damage and Ability Power and slowing.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Akali.json"
+    },
+    "Irelia:E": {
+      "champion": "Irelia",
+      "slot": "E",
+      "id": "IreliaE",
+      "name": "Flawless Duet",
+      "description": "Irelia sends out two blades which converge on each other. Enemies caught in between are damaged, stunned and Marked.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Irelia.json"
+    },
+    "Mordekaiser:E": {
+      "champion": "Mordekaiser",
+      "slot": "E",
+      "id": "MordekaiserE",
+      "name": "Death's Grasp",
+      "description": "Mordekaiser pulls all enemies in an area.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Mordekaiser.json"
+    },
+    "Rengar:E": {
+      "champion": "Rengar",
+      "slot": "E",
+      "id": "RengarE",
+      "name": "Bola Strike",
+      "description": "Rengar throws a bola, slowing the first target hit for a short duration. Ferocity effect: roots the target.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Rengar.json"
+    },
+    "Warwick:R": {
+      "champion": "Warwick",
+      "slot": "R",
+      "id": "WarwickR",
+      "name": "Infinite Duress",
+      "description": "Warwick leaps in a direction (scaling with his bonus Move Speed), suppressing the first champion he collides with for 1.5 seconds.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Warwick.json"
+    },
+    "Wukong:R": {
+      "champion": "Wukong",
+      "slot": "R",
+      "id": "MonkeyKingSpinToWin",
+      "name": "Cyclone",
+      "description": "Wukong's extends his staff and spins it around repeatedly, gaining Move Speed. Enemies struck take damage and are knocked up.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/MonkeyKing.json"
+    },
+    "Ekko:W": {
+      "champion": "Ekko",
+      "slot": "W",
+      "id": "EkkoW",
+      "name": "Parallel Convergence",
+      "description": "Ekko's basic attacks deal bonus magic damage to low health enemies. He can cast Parallel Convergence to split the timeline, creating an anomaly after a few seconds that slows enemies caught inside. If Ekko enters the anomaly, he gains shielding and stuns enemies by suspending them in time.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Ekko.json"
+    },
+    "Evelynn:W": {
+      "champion": "Evelynn",
+      "slot": "W",
+      "id": "EvelynnW",
+      "name": "Allure",
+      "description": "Evelynn curses her target, causing her next attack or spell after a delay to charm her target and reduce their magic resist.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Evelynn.json"
+    },
+    "Kayn:W": {
+      "champion": "Kayn",
+      "slot": "W",
+      "id": "KaynW",
+      "name": "Blade's Reach",
+      "description": "Kayn damages and slows targets in a line.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Kayn.json"
+    },
+    "Fiora:P": {
+      "champion": "Fiora",
+      "slot": "P",
+      "id": null,
+      "name": "Duelist's Dance",
+      "description": "Fiora has revealed a Vital on this Champion. If she hits the Vital , she restores Health and gains Move Speed .",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Fiora.json"
+    },
+    "Kha'Zix:W": {
+      "champion": "Kha'Zix",
+      "slot": "W",
+      "id": "KhazixW",
+      "name": "Void Spike",
+      "description": "Kha'Zix fires exploding spikes that deal physical damage to enemies hit. Kha'Zix is healed if he is also within the explosion radius. If he chooses to Evolve Spike Racks , Void Spike now fires three spikes in a cone, slow enemies hit, and reveals enemy champions hit for 2 seconds. Isolated targets are slowed for extra.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Khazix.json"
+    },
+    "Nidalee:Q": {
+      "champion": "Nidalee",
+      "slot": "Q",
+      "id": "JavelinToss",
+      "name": "Javelin Toss / Takedown",
+      "description": "In human form, Nidalee throws a spiked javelin at her target that gains damage as it flies. As a cougar, her next attack will attempt to fatally wound her target, dealing more damage the less life they have.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Nidalee.json"
+    },
+    "Poppy:R": {
+      "champion": "Poppy",
+      "slot": "R",
+      "id": "PoppyR",
+      "name": "Keeper's Verdict",
+      "description": "Poppy channels a hammer strike that knocks enemies very far away.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Poppy.json"
+    },
+    "Naafiri:E": {
+      "champion": "Naafiri",
+      "slot": "E",
+      "id": "NaafiriE",
+      "name": "Eviscerate",
+      "description": "Naafiri dashes and damages enemies in an area around her, recalling her packmates and fully healing them.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Naafiri.json"
+    },
+    "Tristana:W": {
+      "champion": "Tristana",
+      "slot": "W",
+      "id": "TristanaW",
+      "name": "Rocket Jump",
+      "description": "Tristana fires at the ground to propel her to a distant location, dealing damage and slowing surrounding units for a brief period where she lands.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Tristana.json"
+    },
+    "Vladimir:Q": {
+      "champion": "Vladimir",
+      "slot": "Q",
+      "id": "VladimirQ",
+      "name": "Transfusion",
+      "description": "Vladimir steals life from the target enemy. When Vladimir's resource is full, Transfusion will benefit from massively increased damage and healing for a brief time.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Vladimir.json"
+    },
+    "Ekko:P": {
+      "champion": "Ekko",
+      "slot": "P",
+      "id": null,
+      "name": "Z-Drive Resonance",
+      "description": "Every third attack or damaging spell on the same target deals bonus magic damage, and grants Ekko a burst of speed if the target is a champion.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Ekko.json"
+    },
+    "Malzahar:P": {
+      "champion": "Malzahar",
+      "slot": "P",
+      "id": null,
+      "name": "Void Shift",
+      "description": "When he hasn't recently taken damage or been crowd controlled, Malzahar gains massive damage reduction and crowd control immunity, lingering for a short period after taking damage.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Malzahar.json"
+    },
+    "Locke:R": {
+      "champion": "Locke",
+      "slot": "R",
+      "id": "LockeR",
+      "name": "Purgatory",
+      "description": "Locke throws a binding artifact that deals damage and potentially executes enemies hit. Locke gains additional power for sealing away enemy champions.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Locke.json"
+    },
+    "Ziggs:E": {
+      "champion": "Ziggs",
+      "slot": "E",
+      "id": "ZiggsE",
+      "name": "Hexplosive Minefield",
+      "description": "Ziggs scatters proximity mines that detonate on enemy contact, dealing magic damage and slowing. Successive mine detonations on the same target deal reduced damage.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Ziggs.json"
+    },
+    "Sivir:W": {
+      "champion": "Sivir",
+      "slot": "W",
+      "id": "SivirW",
+      "name": "Ricochet",
+      "description": "Sivir's next few basic attacks gain additional attack speed and bounce to nearby targets, dealing reduced damage while bouncing.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Sivir.json"
+    },
+    "Caitlyn:R": {
+      "champion": "Caitlyn",
+      "slot": "R",
+      "id": "CaitlynR",
+      "name": "Ace in the Hole",
+      "description": "Caitlyn takes time to line up the perfect shot, dealing massive damage to a single target at a huge range. Enemy champions can intercept the bullet for their ally.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Caitlyn.json"
+    },
+    "Ezreal:W": {
+      "champion": "Ezreal",
+      "slot": "W",
+      "id": "EzrealW",
+      "name": "Essence Flux",
+      "description": "Ezreal fires an orb that sticks to the first champion or objective hit. If Ezreal hits an enemy with the orb, it detonates and deals damage.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Ezreal.json"
+    },
+    "Kog'Maw:E": {
+      "champion": "Kog'Maw",
+      "slot": "E",
+      "id": "KogMawVoidOoze",
+      "name": "Void Ooze",
+      "description": "Kog'Maw launches a peculiar ooze which damages all enemies it passes through and leaves a trail which slows enemies who stand on it.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/KogMaw.json"
+    },
+    "Lucian:W": {
+      "champion": "Lucian",
+      "slot": "W",
+      "id": "LucianW",
+      "name": "Ardent Blaze",
+      "description": "Lucian shoots a missile that explodes in a star shape, marking and briefly revealing enemies. Lucian gains Move Speed for attacking marked enemies.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Lucian.json"
+    },
+    "Samira:Q": {
+      "champion": "Samira",
+      "slot": "Q",
+      "id": "SamiraQ",
+      "name": "Flair",
+      "description": "Samira fires a shot or swings her sword, dealing damage. If cast during Wild Rush, strike all enemies in her path upon completion.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Samira.json"
+    },
+    "Smolder:R": {
+      "champion": "Smolder",
+      "slot": "R",
+      "id": "SmolderR",
+      "name": "MMOOOMMMM!",
+      "description": "Smolder calls his mom to breath fire from above, dealing extra damage and slowing enemies in the center of her fire.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Smolder.json"
+    },
+    "Twitch:E": {
+      "champion": "Twitch",
+      "slot": "E",
+      "id": "TwitchExpunge",
+      "name": "Contaminate",
+      "description": "Twitch wreaks further havoc on poisoned enemies with a blast of his vile diseases.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Twitch.json"
+    },
+    "Yasuo:Q": {
+      "champion": "Yasuo",
+      "slot": "Q",
+      "id": "YasuoQ1Wrapper",
+      "name": "Steel Tempest",
+      "description": "Thrusts forward, damaging all enemies in a line. On hit, grants a stack of Gathering Storm for a few seconds. At 2 stacks, Steel Tempest fires a whirlwind that knocks Airborne . Steel Tempest is treated as a basic attack and scales with all the same things.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Yasuo.json"
+    },
+    "Zeri:W": {
+      "champion": "Zeri",
+      "slot": "W",
+      "id": "ZeriW",
+      "name": "Ultrashock Laser",
+      "description": "Zeri fires an electric pulse that slows and damages the first enemy hit. If the pulse hits a wall it expands into a long range laser.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Zeri.json"
+    },
+    "Jinx:R": {
+      "champion": "Jinx",
+      "slot": "R",
+      "id": "JinxR",
+      "name": "Super Mega Death Rocket!",
+      "description": "Jinx fires a super rocket across the map that gains damage as it travels. The rocket will explode upon colliding with an enemy champion, dealing damage to it and surrounding enemies based on their missing Health.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Jinx.json"
+    },
+    "Ziggs:R": {
+      "champion": "Ziggs",
+      "slot": "R",
+      "id": "ZiggsR",
+      "name": "Mega Inferno Bomb",
+      "description": "Ziggs deploys his ultimate creation, the Mega Inferno Bomb, hurling it an enormous distance. Enemies in the primary blast zone take more damage than those farther away.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Ziggs.json"
+    },
+    "Malzahar:E": {
+      "champion": "Malzahar",
+      "slot": "E",
+      "id": "MalzaharE",
+      "name": "Malefic Visions",
+      "description": "Malzahar infects his target's mind with cruel visions of their demise, dealing damage over time. Using Malzahar's other spells on the target will refresh the visions. If the target dies while afflicted by the visions, they pass on to a nearby enemy unit and Malzahar gains Mana. Malzahar's Voidlings are attracted to affected units.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Malzahar.json"
+    },
+    "Qiyana:W": {
+      "champion": "Qiyana",
+      "slot": "W",
+      "id": "QiyanaW",
+      "name": "Terrashape",
+      "description": "Qiyana dashes to a location and enchants her weapon with an element. Her attacks and abilities deal bonus damage while her weapon is enchanted.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Qiyana.json"
+    },
+    "Aurora:E": {
+      "champion": "Aurora",
+      "slot": "E",
+      "id": "AuroraE",
+      "name": "The Weirding",
+      "description": "Aurora converges the realms, sending out a blast of spirit magic that damages and slows enemies before Aurora hops backward to safety.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Aurora.json"
+    },
+    "Cassiopeia:R": {
+      "champion": "Cassiopeia",
+      "slot": "R",
+      "id": "CassiopeiaR",
+      "name": "Petrifying Gaze",
+      "description": "Cassiopeia releases a swirl of magical energy from her eyes, stunning any enemies in front of her that are facing her and slowing any others with their back turned.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Cassiopeia.json"
+    },
+    "Galio:E": {
+      "champion": "Galio",
+      "slot": "E",
+      "id": "GalioE",
+      "name": "Justice Punch",
+      "description": "Galio will briefly step back and charge, knocking up the first enemy champion he encounters.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Galio.json"
+    },
+    "Malzahar:Q": {
+      "champion": "Malzahar",
+      "slot": "Q",
+      "id": "MalzaharQ",
+      "name": "Call of the Void",
+      "description": "Malzahar opens up two portals to the Void. After a short delay, they fire projectiles that deal Magic Damage and silence enemy champions.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Malzahar.json"
+    },
+    "Braum:W": {
+      "champion": "Braum",
+      "slot": "W",
+      "id": "BraumW",
+      "name": "Stand Behind Me",
+      "description": "Braum leaps to a target allied champion or minion. On arrival, Braum and the ally gain Armor and Magic Resist for a few seconds.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Braum.json"
+    },
+    "Brand:R": {
+      "champion": "Brand",
+      "slot": "R",
+      "id": "BrandR",
+      "name": "Pyroclasm",
+      "description": "Brand unleashes a devastating torrent of fire that bounces up to 5 times off of Brand and nearby enemies, dealing magic damage to enemies each time bounce. Bounces prioritize stacking Blaze to max on Champions. If a target is ablaze, Pyroclasm will briefly slow them.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Brand.json"
+    },
+    "Shaco:E": {
+      "champion": "Shaco",
+      "slot": "E",
+      "id": "TwoShivPoison",
+      "name": "Two-Shiv Poison",
+      "description": "Shaco's Shivs passively poison targets on hit, slowing their Move Speed. He can throw his Shivs to deal damage and poison the target. The thrown Shiv deals bonus damage if the target is below 30% health.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Shaco.json"
+    },
+    "Aatrox:E": {
+      "champion": "Aatrox",
+      "slot": "E",
+      "id": "AatroxE",
+      "name": "Umbral Dash",
+      "description": "Passively, Aatrox heals when damaging enemy champions. On activation, he dashes in a direction.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Aatrox.json"
+    },
+    "Yorick:E": {
+      "champion": "Yorick",
+      "slot": "E",
+      "id": "YorickE",
+      "name": "Mourning Mist",
+      "description": "Yorick throws a globule of Black Mist that reduces armor, damages, slows and marks enemies. Summoned units gain move speed when moving towards marked targets.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Yorick.json"
+    },
+    "Gwen:P": {
+      "champion": "Gwen",
+      "slot": "P",
+      "id": null,
+      "name": "A Thousand Cuts",
+      "description": "Gwen's attacks deal bonus magic damage based on the targets health. She heals for a portion of the damage dealt to champions by this effect.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Gwen.json"
+    },
+    "Kayle:Q": {
+      "champion": "Kayle",
+      "slot": "Q",
+      "id": "KayleQ",
+      "name": "Radiant Blast",
+      "description": "Kayle conjures a portal, summoning a celestial sword that pierces through enemies, slowing, damaging, and reducing the resistances of all hit.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Kayle.json"
+    },
+    "Teemo:W": {
+      "champion": "Teemo",
+      "slot": "W",
+      "id": "TeemoW",
+      "name": "Move Quick",
+      "description": "Teemo scampers around, passively increasing his Move Speed until he is struck by an enemy champion or turret. Teemo can sprint to gain bonus Move Speed that isn't stopped by being struck for a short time.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Teemo.json"
+    },
+    "Riven:Q": {
+      "champion": "Riven",
+      "slot": "Q",
+      "id": "RivenTriCleave",
+      "name": "Broken Wings",
+      "description": "Riven lashes out in a series of strikes. This ability can be reactivated three times in a short time frame with the third hit knocking back nearby enemies.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Riven.json"
+    },
+    "Shyvana:P": {
+      "champion": "Shyvana",
+      "slot": "P",
+      "id": null,
+      "name": "Scalemail",
+      "description": "Takedowns on enemy champions, large minions, and large monsters grant Shyvana Scalemail stacks, improving her defenses.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Shyvana.json"
+    },
+    "Shyvana:W": {
+      "champion": "Shyvana",
+      "slot": "W",
+      "id": "ShyvanaW",
+      "name": "Inferno Aegis",
+      "description": "Shyvana gains a shield, movement speed, and after a short delay, the area around her detonates. While in Dragon Form, the explosion will heal her if it strikes an enemy champion.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Shyvana.json"
+    },
+    "Shyvana:E": {
+      "champion": "Shyvana",
+      "slot": "E",
+      "id": "ShyvanaE",
+      "name": "Molten Burst",
+      "description": "Shyvana launches a fireball that explodes upon striking a large target and slows them. In Dragon Form, it passes through and explodes upon striking large enemies, leaving behind a trail of fire.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Shyvana.json"
+    },
+    "Skarner:W": {
+      "champion": "Skarner",
+      "slot": "W",
+      "id": "SkarnerW",
+      "name": "Seismic Bastion",
+      "description": "Skarner gains a shield and creates an earthquake whose shockwave damages and slows foes.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Skarner.json"
+    },
+    "Urgot:W": {
+      "champion": "Urgot",
+      "slot": "W",
+      "id": "UrgotW",
+      "name": "Purge",
+      "description": "Urgot slows himself while he unloads his weapon on nearby enemies. Prioritizes enemy champions Urgot has recently struck with other abilities and triggers Echoing Flames.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Urgot.json"
+    },
+    "Vel'Koz:E": {
+      "champion": "Vel'Koz",
+      "slot": "E",
+      "id": "VelkozE",
+      "name": "Tectonic Disruption",
+      "description": "Vel'Koz causes an area to explode, knocking up enemies, and knocking close enemies slightly away.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Velkoz.json"
+    },
+    "Renata Glasc:E": {
+      "champion": "Renata Glasc",
+      "slot": "E",
+      "id": "RenataE",
+      "name": "Loyalty Program",
+      "description": "Renata sends out a pair of chemtech missiles, shielding allies and damaging and slowing enemies hit.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Renata.json"
+    },
+    "Senna:E": {
+      "champion": "Senna",
+      "slot": "E",
+      "id": "SennaE",
+      "name": "Curse of the Black Mist",
+      "description": "Senna draws the Mist she has stored in her weapon into a storm around her, embracing darkness and becoming a wraith within. Allies who enter the area are camouflaged and also appear as wraiths as the Mist shrouds them. Wraiths gain increased Move Speed, are unselectable, and hide their identities.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Senna.json"
+    },
+    "Pyke:Q": {
+      "champion": "Pyke",
+      "slot": "Q",
+      "id": "PykeQ",
+      "name": "Bone Skewer",
+      "description": "Pyke either stabs an enemy in front of him or pulls an enemy towards him.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Pyke.json"
+    },
+    "Veigar:R": {
+      "champion": "Veigar",
+      "slot": "R",
+      "id": "VeigarR",
+      "name": "Primordial Burst",
+      "description": "Blasts target enemy champion, dealing a large amount of magic damage, increasing based on the target's missing health.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Veigar.json"
+    },
+    "Rengar:W": {
+      "champion": "Rengar",
+      "slot": "W",
+      "id": "RengarW",
+      "name": "Battle Roar",
+      "description": "Rengar lets out a battle roar, damaging enemies and healing for some of the recent damage he has taken. Ferocity effect: additionally breaks crowd control effects.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Rengar.json"
+    },
+    "Graves:P": {
+      "champion": "Graves",
+      "slot": "P",
+      "id": null,
+      "name": "New Destiny",
+      "description": "Graves' shotgun has some unique properties. He must reload when he runs out of ammo. Attacks fire 4 bullets, which cannot pass through units. Non-champions struck by multiple bullets are knocked back.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Graves.json"
+    },
+    "Kindred:W": {
+      "champion": "Kindred",
+      "slot": "W",
+      "id": "KindredW",
+      "name": "Wolf's Frenzy",
+      "description": "Wolf enrages and attacks enemies around him. Lamb passively gains stacks by moving and attacking. When fully charged, Lamb's next attack restores health.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Kindred.json"
+    },
+    "Caitlyn:P": {
+      "champion": "Caitlyn",
+      "slot": "P",
+      "id": null,
+      "name": "Headshot",
+      "description": "Every few basic attacks, or against a target she has trapped or netted, Caitlyn will fire a headshot dealing bonus damage that scales with her critical strike chance. On trapped or netted targets, Caitlyn's Headshot attack range is doubled.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Caitlyn.json"
+    },
+    "Caitlyn:E": {
+      "champion": "Caitlyn",
+      "slot": "E",
+      "id": "CaitlynE",
+      "name": "90 Caliber Net",
+      "description": "Caitlyn fires a heavy net to slow her target. The recoil knocks Caitlyn back.",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.21.1/data/en_US/champion/Caitlyn.json"
     }
   }
 };
