@@ -13,6 +13,7 @@ src/
     app-config.js          # Roles, scoring keys, trait groups, role overrides, recommendation config
     champions.js           # Hand-curated champion starter pool
     compositions.js        # Pair synergies, best-comp templates, variations, favorite-core profiles
+    runes.js               # Dated Riot rune catalogue fallback
   core/
     state.js               # Mutable app state
     dom.js                 # Shared DOM references
@@ -25,6 +26,7 @@ src/
     favorite-builder.js    # Favorite-core controls and generated team variants
     premade-comps.js       # Premade comp list/detail rendering and loading
     matchups.js            # Hard-counter finder, champion explorer, counter scoring, champion dialog
+    runes.js               # Role/matchup rune pages, catalogue refresh, page validation
     persistence.js         # Saved drafts and share links
     draft-room.js          # Guided two-team draft room and comparison view
     learn.js               # How-to-play tab controller
@@ -44,6 +46,8 @@ src/
     responsive.css         # Shared breakpoints and mobile overrides
 docs/
   file-structure.md
+tests/
+  runes.test.cjs            # Rune legality, matchup adaptation, patch and offline cases
 ```
 
 ## Script order
@@ -69,6 +73,8 @@ Do not convert files to ES modules unless the deployment model is changed delibe
 - Put best-comp templates, variations, and pair/favorite composition data in `src/data/compositions.js`.
 - Put shared helpers and Data Dragon roster/kit hydration in `src/core/utils.js`.
 - Put feature-specific rendering and behavior in the matching `src/features` file.
+- Keep rune identities in `src/data/runes.js` and rune recommendation logic in
+  `src/features/runes.js`; Matchups and Champion Explorer share its renderer.
 - Keep `src/core/app.js` small. It should wire events, switch views, and start the app.
 - Put static guide content in `src/guides`; each guide should render only its own role or topic.
 - Keep general UI styles in `src/styles/styles.css`; feature-specific styles belong in their matching stylesheet.

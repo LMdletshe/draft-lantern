@@ -899,6 +899,11 @@ async function loadRiotDataDragon() {
       throw new Error("No Riot Data Dragon versions returned.");
     }
 
+    loadRuneCatalogue(version).then(() => {
+      renderCounters();
+      renderChampionExplorer();
+    });
+
     const championsResponse = await fetch(`${DDRAGON_BASE_URL}/cdn/${version}/data/en_US/champion.json`);
     if (!championsResponse.ok) {
       throw new Error(`Champion request failed: ${championsResponse.status}`);
