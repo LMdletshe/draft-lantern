@@ -7,7 +7,7 @@
     <title>Draft Lantern</title>
     <link rel="stylesheet" href="src/styles/styles.css" />
     <link rel="stylesheet" href="src/styles/premade.css?v=20261003-premade-variants" />
-    <link rel="stylesheet" href="src/styles/matchups.css?v=20261022-matchup-runes" />
+    <link rel="stylesheet" href="src/styles/matchups.css?v=20261022-exact-counters" />
     <link rel="stylesheet" href="src/styles/draft-room.css" />
     <link rel="stylesheet" href="src/styles/learn.css" />
     <link rel="stylesheet" href="src/styles/responsive.css?v=20261003-premade-variants" />
@@ -21,7 +21,7 @@
           <h1>Draft Lantern</h1>
           <p>
             Build a League-inspired team, spot simple synergy patterns, and find
-            hard-counter picks from current patch champion kits.
+            champion-specific counter interactions and matchup rune plans.
           </p>
         </div>
       </section>
@@ -281,7 +281,7 @@
           <div class="panel__header">
             <div>
               <p class="eyebrow">Matchup Finder</p>
-              <h2>Exact hard counters</h2>
+              <h2>Champion-specific counters</h2>
             </div>
           </div>
 
@@ -308,7 +308,7 @@
             </label>
             <label class="toggle-field toggle-field--control">
               <input id="matchupOffRole" type="checkbox" checked />
-              <span>Include off-role counters</span>
+              <span>Include researched off-role entries</span>
             </label>
           </div>
 
@@ -407,7 +407,9 @@
     <script src="src/data/app-config.js?v=20261005-matchup-hard-counters"></script>
     <script src="src/data/champions.js"></script>
     <script src="src/data/compositions.js?v=20261003-premade-variants"></script>
-    <script src="src/data/runes.js?v=20261022-matchup-runes"></script>
+    <script src="src/data/runes.js?v=20261022-exact-counters"></script>
+    <script src="src/data/counter-matchups.js?v=20261022-exact-counters"></script>
+    <script src="src/data/ability-evidence.js?v=20261022-exact-counters"></script>
     <script src="src/core/state.js"></script>
     <script src="src/core/dom.js"></script>
     <script src="src/core/utils.js?v=20261022-matchup-runes"></script>
@@ -416,8 +418,9 @@
     <script src="src/features/recommendations.js"></script>
     <script src="src/features/favorite-builder.js"></script>
     <script src="src/features/premade-comps.js?v=20261003-premade-variants"></script>
-    <script src="src/features/runes.js?v=20261022-matchup-runes"></script>
-    <script src="src/features/matchups.js?v=20261022-matchup-runes"></script>
+    <script src="src/features/counter-evidence.js?v=20261022-exact-counters"></script>
+    <script src="src/features/runes.js?v=20261022-exact-counters"></script>
+    <script src="src/features/matchups.js?v=20261022-exact-counters"></script>
     <script src="src/features/persistence.js"></script>
     <script src="src/features/draft-room.js"></script>
     <script src="src/core/app.js"></script>

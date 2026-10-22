@@ -14,6 +14,8 @@ src/
     champions.js           # Hand-curated champion starter pool
     compositions.js        # Pair synergies, best-comp templates, variations, favorite-core profiles
     runes.js               # Dated Riot rune catalogue fallback
+    counter-matchups.js     # Directed role-specific counter research and full rune plans
+    ability-evidence.js     # Reviewed official ability descriptions and source URLs
   core/
     state.js               # Mutable app state
     dom.js                 # Shared DOM references
@@ -25,8 +27,9 @@ src/
     recommendations.js     # Next-pick scoring and recommendation rendering
     favorite-builder.js    # Favorite-core controls and generated team variants
     premade-comps.js       # Premade comp list/detail rendering and loading
-    matchups.js            # Hard-counter finder, champion explorer, counter scoring, champion dialog
-    runes.js               # Role/matchup rune pages, catalogue refresh, page validation
+    matchups.js            # Counter finder, champion explorer, champion dialog, general draft scoring
+    counter-evidence.js    # Shared exact-pair queries, kit review checks, interaction rendering
+    runes.js               # Researched rune pages, catalogue refresh, legality/effect checks
     persistence.js         # Saved drafts and share links
     draft-room.js          # Guided two-team draft room and comparison view
     learn.js               # How-to-play tab controller
@@ -46,8 +49,9 @@ src/
     responsive.css         # Shared breakpoints and mobile overrides
 docs/
   file-structure.md
+  counter-research.md       # Evidence boundaries, coverage, and manual review workflow
 tests/
-  runes.test.cjs            # Rune legality, matchup adaptation, patch and offline cases
+  runes.test.cjs            # Directed pairing, role filtering, kit changes, rune legality/effects, offline cases
 ```
 
 ## Script order
@@ -57,24 +61,28 @@ tests/
 1. `src/data/app-config.js`
 2. `src/data/champions.js`
 3. `src/data/compositions.js`
-4. `src/core/state.js`
-5. `src/core/dom.js`
-6. `src/core/utils.js`
-7. Feature modules
-8. `src/core/app.js`
-9. Learning guide modules and optional feature extensions
+4. `src/data/runes.js`, `counter-matchups.js`, and `ability-evidence.js`
+5. `src/core/state.js`, `dom.js`, and `utils.js`
+6. Feature modules, with `counter-evidence.js` before `runes.js` and `matchups.js`
+7. `src/core/app.js`
+8. Learning guide modules and optional feature extensions
 
 Do not convert files to ES modules unless the deployment model is changed deliberately. The current app works as a no-build static site.
 
 ## Ownership rules
 
-- Put static role, trait, matchup, and scoring config in `src/data/app-config.js`.
+- Put static role, trait, and general scoring config in `src/data/app-config.js`.
+- Put researched champion-pair interactions and their rune plans in
+  `src/data/counter-matchups.js`; record reviewed ability facts in
+  `src/data/ability-evidence.js`. Generic trait scores must not manufacture an
+  exact-counter entry or rune page.
 - Put hand-curated champion entries in `src/data/champions.js`.
 - Put best-comp templates, variations, and pair/favorite composition data in `src/data/compositions.js`.
 - Put shared helpers and Data Dragon roster/kit hydration in `src/core/utils.js`.
 - Put feature-specific rendering and behavior in the matching `src/features` file.
-- Keep rune identities in `src/data/runes.js` and rune recommendation logic in
-  `src/features/runes.js`; Matchups and Champion Explorer share its renderer.
+- Keep reviewed rune identities/effects in `src/data/runes.js` and rune page
+  validation/rendering in `src/features/runes.js`. Both counter views must use
+  `src/features/counter-evidence.js` for the same directed pairing and role.
 - Keep `src/core/app.js` small. It should wire events, switch views, and start the app.
 - Put static guide content in `src/guides`; each guide should render only its own role or topic.
 - Keep general UI styles in `src/styles/styles.css`; feature-specific styles belong in their matching stylesheet.
