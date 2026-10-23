@@ -166,7 +166,8 @@ runes that help execute them. The reviewed library contains **855 directed
 entries covering all 173 champions and all 263 supported champion-role
 combinations** on patch **16.21.1**. Every supported lane has at least **three
 distinct native same-role picks**, each with legal runes, and every champion
-has an outgoing Explorer plan. The finder defaults to three suggestions.
+has an outgoing Explorer plan. The finder shows up to three suggestions without
+a result-count dropdown.
 The coverage badge is calculated from usable entries and drops when evidence
 changes leave a lane with fewer than three usable picks, or a new champion
 has no reviewed answers. Results are ordered by

@@ -551,8 +551,7 @@ function renderCounters() {
     return;
   }
   const role = allyRole.value || enemyRole.value;
-  const limit = Number.parseInt(counterCount?.value || "3", 10);
-  const candidates = getResearchedCounters(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked)).slice(0, limit);
+  const candidates = getResearchedCounters(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked)).slice(0, 3);
   const coverage = getCounterCoverage();
   const waitingReview = counterMatchupRules.filter((rule) => rule.enemy === enemy.name && rule.role === role && rule.enemyRole === enemyRole.value && !inspectCounterRule(rule).usable).length;
   matchupOverview.innerHTML = `

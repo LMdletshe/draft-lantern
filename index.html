@@ -7,10 +7,10 @@
     <title>Draft Lantern</title>
     <link rel="stylesheet" href="src/styles/styles.css" />
     <link rel="stylesheet" href="src/styles/premade.css?v=20261003-premade-variants" />
-    <link rel="stylesheet" href="src/styles/matchups.css?v=20261022-exact-counters" />
+    <link rel="stylesheet" href="src/styles/matchups.css?v=20261023-matchup-spacing" />
     <link rel="stylesheet" href="src/styles/draft-room.css" />
     <link rel="stylesheet" href="src/styles/learn.css" />
-    <link rel="stylesheet" href="src/styles/responsive.css?v=20261003-premade-variants" />
+    <link rel="stylesheet" href="src/styles/responsive.css?v=20261023-matchup-spacing" />
   </head>
   <body>
     <main class="app-shell">
@@ -298,14 +298,6 @@
               <span>Your role</span>
               <select id="allyRole"></select>
             </label>
-            <label>
-              <span>Results</span>
-              <select id="counterCount">
-                <option value="3" selected>3 picks</option>
-                <option value="6">6 picks</option>
-                <option value="9">9 picks</option>
-              </select>
-            </label>
             <label class="toggle-field toggle-field--control">
               <input id="matchupOffRole" type="checkbox" checked />
               <span>Include researched off-role entries</span>
@@ -414,7 +406,7 @@
     <script src="src/data/counter-options.js?v=20261022-three-picks"></script>
     <script src="src/data/ability-evidence.js?v=20261022-three-picks"></script>
     <script src="src/core/state.js"></script>
-    <script src="src/core/dom.js"></script>
+    <script src="src/core/dom.js?v=20261023-matchup-spacing"></script>
     <script src="src/core/utils.js?v=20261022-full-roster"></script>
     <script src="src/features/team-builder.js"></script>
     <script src="src/features/draft-analysis.js"></script>
@@ -423,10 +415,10 @@
     <script src="src/features/premade-comps.js?v=20261003-premade-variants"></script>
     <script src="src/features/counter-evidence.js?v=20261022-three-picks"></script>
     <script src="src/features/runes.js?v=20261022-exact-counters"></script>
-    <script src="src/features/matchups.js?v=20261022-three-picks"></script>
+    <script src="src/features/matchups.js?v=20261023-matchup-spacing"></script>
     <script src="src/features/persistence.js"></script>
     <script src="src/features/draft-room.js"></script>
-    <script src="src/core/app.js"></script>
+    <script src="src/core/app.js?v=20261023-matchup-spacing"></script>
     <script src="src/features/learn.js"></script>
     <script src="src/guides/top-lane-theory.js"></script>
     <script src="src/guides/jungle-theory.js"></script>

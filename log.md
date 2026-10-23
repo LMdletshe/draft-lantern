@@ -113,3 +113,9 @@ Automated daily check-ins will appear below.
 - Expanded the authored library from 454 to 855 directed entries. All 173 champions and 263 supported champion-role combinations now have at least three distinct native same-role picks, each with an interaction, execution window, failure condition and legal rune page.
 - The finder defaults to three picks. Coverage requires three usable choices; changed ability or rune evidence is withheld, and shortages are shown rather than filled with generic picks.
 - Verified against live Riot Data Dragon 16.21.1, with 495 referenced abilities and 180 page configurations. All 17 regression tests pass. Browser checks covered all five roles, adding the third pick to its team slot, and a 390px offline view with all three choices and dated rune references.
+
+## 2026-10-23 - Matchup controls and spacing
+
+- Removed the result-count dropdown and its DOM/event wiring. The finder presents up to three usable suggestions directly.
+- Fixed a measured 5px overlap between the counter label and evidence panel by giving the label its own layout box and 12px bottom spacing. Fixed the off-role checkbox's inherited grid layout, added safe text wrapping, and made rune columns and tablet cards adapt to the available width.
+- Verified Matchups and shared Explorer cards in the browser at desktop, 1024px, 768px, 390px and 320px widths, including expanded evidence and rune panels. All 17 existing regression tests and changed JavaScript syntax checks pass.

@@ -56,7 +56,6 @@ enemyRole.addEventListener("change", () => {
 
 enemyPick.addEventListener("change", renderCounters);
 allyRole.addEventListener("change", renderCounters);
-counterCount.addEventListener("change", renderCounters);
 matchupOffRole.addEventListener("change", renderCounters);
 
 recommendRole.addEventListener("change", renderRecommendations);
