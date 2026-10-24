@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#101419" />
     <title>Draft Lantern</title>
-    <link rel="stylesheet" href="src/styles/styles.css" />
+    <link rel="stylesheet" href="src/styles/styles.css?v=20261024-team-synergy" />
     <link rel="stylesheet" href="src/styles/premade.css?v=20261003-premade-variants" />
     <link rel="stylesheet" href="src/styles/matchups.css?v=20261023-matchup-spacing" />
     <link rel="stylesheet" href="src/styles/draft-room.css" />
@@ -120,7 +120,7 @@
             <div class="section-heading">
               <div>
                 <p class="eyebrow">Next Pick</p>
-                <h2>Recommended champions</h2>
+                <h2>Researched synergy picks</h2>
               </div>
               <div class="recommendation-controls">
                 <label class="compact-select">
@@ -138,17 +138,13 @@
                     <option value="pick">Pick and poke</option>
                   </select>
                 </label>
-                <label class="compact-select compact-select--count">
-                  <span>Show</span>
-                  <select id="recommendCount">
-                    <option value="4">4 picks</option>
-                    <option value="8" selected>8 picks</option>
-                    <option value="12">12 picks</option>
-                  </select>
-                </label>
               </div>
             </div>
+            <p class="recommendation-basis">Specific ability interactions with your selected teammates. Ranked by researched connections, your goal and modeled team needs; not measured pair win rates. Three picks by default, up to six when enough qualify.</p>
+            <p id="teamSynergyCoverage" class="recommendation-basis"></p>
+            <p id="recommendationStatus" class="recommendation-status" role="status"></p>
             <div id="recommendations" class="recommendation-grid"></div>
+            <button id="recommendMore" class="text-button recommendation-more" type="button" aria-controls="recommendations" aria-expanded="false" hidden>Show up to six picks</button>
           </section>
 
           <div class="analysis-grid">
@@ -405,12 +401,14 @@
     <script src="src/data/counter-roster.js?v=20261022-full-roster"></script>
     <script src="src/data/counter-options.js?v=20261022-three-picks"></script>
     <script src="src/data/ability-evidence.js?v=20261022-three-picks"></script>
+    <script src="src/data/team-synergies.js?v=20261024-full-team-synergy"></script>
     <script src="src/core/state.js"></script>
-    <script src="src/core/dom.js?v=20261023-matchup-spacing"></script>
-    <script src="src/core/utils.js?v=20261022-full-roster"></script>
+    <script src="src/core/dom.js?v=20261024-full-team-synergy"></script>
+    <script src="src/core/utils.js?v=20261024-team-synergy"></script>
     <script src="src/features/team-builder.js"></script>
     <script src="src/features/draft-analysis.js"></script>
-    <script src="src/features/recommendations.js"></script>
+    <script src="src/features/team-synergy.js?v=20261024-full-team-synergy"></script>
+    <script src="src/features/recommendations.js?v=20261024-full-team-synergy"></script>
     <script src="src/features/favorite-builder.js"></script>
     <script src="src/features/premade-comps.js?v=20261003-premade-variants"></script>
     <script src="src/features/counter-evidence.js?v=20261022-three-picks"></script>
@@ -418,7 +416,7 @@
     <script src="src/features/matchups.js?v=20261023-matchup-spacing"></script>
     <script src="src/features/persistence.js"></script>
     <script src="src/features/draft-room.js"></script>
-    <script src="src/core/app.js?v=20261023-matchup-spacing"></script>
+    <script src="src/core/app.js?v=20261024-team-synergy"></script>
     <script src="src/features/learn.js"></script>
     <script src="src/guides/top-lane-theory.js"></script>
     <script src="src/guides/jungle-theory.js"></script>
