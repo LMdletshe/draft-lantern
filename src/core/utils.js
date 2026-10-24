@@ -526,7 +526,8 @@ function getOfficialRecord(official, version, detail = null) {
     spells: (detail?.spells || []).map((spell) => ({
       id: spell.id,
       name: spell.name,
-      description: stripRiotText(spell.description || spell.tooltip)
+      description: stripRiotText(spell.description || spell.tooltip),
+      tooltip: spell.tooltip || ""
     })),
     iconUrl: `${DDRAGON_BASE_URL}/cdn/${version}/img/champion/${official.image.full}`
   };

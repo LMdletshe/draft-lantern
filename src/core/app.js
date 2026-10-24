@@ -63,7 +63,10 @@ recommendGoal.addEventListener("change", () => {
   renderRecommendations();
   renderDraftWarnings();
 });
-recommendCount.addEventListener("change", renderRecommendations);
+recommendMore.addEventListener("click", () => {
+  synergySuggestionsExpanded = !synergySuggestionsExpanded;
+  renderRecommendations();
+});
 allowOffRolePicks.addEventListener("change", renderAll);
 
 favoriteRole.addEventListener("change", populateFavoriteControls);

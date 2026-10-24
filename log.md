@@ -119,3 +119,10 @@ Automated daily check-ins will appear below.
 - Removed the result-count dropdown and its DOM/event wiring. The finder presents up to three usable suggestions directly.
 - Fixed a measured 5px overlap between the counter label and evidence panel by giving the label its own layout box and 12px bottom spacing. Fixed the off-role checkbox's inherited grid layout, added safe text wrapping, and made rune columns and tablet cards adapt to the available width.
 - Verified Matchups and shared Explorer cards in the browser at desktop, 1024px, 768px, 390px and 320px widths, including expanded evidence and rune panels. All 17 existing regression tests and changed JavaScript syntax checks pass.
+
+## 2026-10-24 - Researched Team Builder shortlist
+
+- Replaced the 4/8/12 next-pick dropdown with three qualifying synergy picks by default and a button to expand to six. Draft/role/goal changes reset the list; short and empty results are explicit rather than padded.
+- Reviewed 79 concrete pair interactions across 56 champions using 81 official ability records from live Riot Data Dragon 16.21.1. Cards show the interaction, execution, limitations, dated/current-kit status and source links. Ranking uses researched partner count, goal, authored priority and modeled composition fit; it is not a measured win-rate ranking. Existing full-team variants and Draft Room remain modeled.
+- Restricted the researched shortlist to native roles and excluded existing selections. Replacement suggestions now evaluate the remaining teammates without the outgoing pick. Broad fit reasoning is disclosed separately from the sourced interaction.
+- All 26 tests pass (17 existing, 9 new), including caps, no filler, excluded picks, changed evidence, missing live kits, ranking and replacements. All 81 stored ability references match the fresh official source fetch. Browser checks verified three-to-six expansion, source disclosures, adding Braum to Support alongside Jinx, empty/sparse states, and readable 390px cards. The local browser's upstream proxy encountered a 502 on the version request; its dated offline fallback was verified and live source comparison was performed separately.

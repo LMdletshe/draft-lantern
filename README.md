@@ -50,8 +50,15 @@ rune plans remain available with offline labels, and failed icons use initials.
   swaps, and separate early-, mid-, and late-game plans.
 - Loads any premade template or named variation directly into the Team Builder
   for editing and deeper analysis.
-- Recommends the next pick based on the role, missing team needs, damage mix,
-  beginner difficulty, and known pair synergies.
+- Shows three researched next-pick synergy suggestions by default, with an
+  option to expand to six qualifying picks. Each needs a reviewed ability
+  interaction with a remaining teammate and includes a play, limitation and
+  official sources. Short lists are never padded with generic tag matches.
+- The initial synergy library has 79 reviewed pairs across 56 champions and
+  81 ability references (Riot Data Dragon 16.21.1, reviewed 2026-10-24).
+  This is tactical analysis rather than measured pair win rates. Native-role
+  eligibility, researched connections, selected goal and modeled team needs
+  determine the shortlist. See `docs/TEAM_SYNERGY_RESEARCH.md` for coverage.
 - Scores general comp traits like engage, frontline, damage, pick tools, poke,
   peel, and scaling.
 - Detects broad comp archetypes and explains the team's game plan in beginner
@@ -196,7 +203,7 @@ The tactical plans and stat shards are authored analysis, not statistically
 validated optimal pages. No rune API key is needed. See
 [`docs/counter-research.md`](docs/counter-research.md) for the review process.
 
-Run the offline recommendation checks with `node --test tests/runes.test.cjs`.
+Run the offline recommendation checks with `node --test tests/*.test.cjs`.
 Audit against the current official roster and rune catalogue with
 `node scripts/check-counter-coverage.cjs --live`. Add `--write-report` to
 refresh the coverage table after a successful audit. The audit never rewrites

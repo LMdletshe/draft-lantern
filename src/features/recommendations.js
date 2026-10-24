@@ -123,6 +123,9 @@ function getRecommendationsForTeam(team, role, excludedNames = new Set(), option
     .slice(0, limit);
 }
 
+let synergySuggestionsExpanded = false;
+let synergySuggestionContext = "";
+
 function renderRecommendations() {
   if (!recommendRole) return;
 
@@ -130,28 +133,40 @@ function renderRecommendations() {
   recommendRole.innerHTML = optionList(roles, previous || roles.find((role) => !roleState[role]) || "Top");
   const role = getRecommendationRole();
   recommendRole.value = role;
-  const team = selectedChampions();
+  // A replacement must fit the four remaining slots, not its outgoing pick.
+  const team = roles.filter((slot) => slot !== role && roleState[slot])
+    .map((slot) => getChampion(roleState[slot])).filter(Boolean);
   const goalId = recommendGoal?.value || "balanced";
-  const limit = Number.parseInt(recommendCount?.value || "8", 10);
-  const picks = getRecommendationsForTeam(team, role, new Set(), {
-    includeOffRole: Boolean(allowOffRolePicks?.checked),
-    goalId,
-    limit
+  const context = JSON.stringify([role, goalId, roles.map((slot) => roleState[slot])]);
+  if (context !== synergySuggestionContext) synergySuggestionsExpanded = false;
+  synergySuggestionContext = context;
+  const qualified = getResearchedTeamRecommendations(team, role, {
+    goalId, excludedNames: new Set(selectedChampions().map((champion) => champion.name))
   });
+  const picks = qualified.slice(0, synergySuggestionsExpanded ? 6 : 3);
+  recommendMore.hidden = qualified.length <= 3;
+  recommendMore.setAttribute("aria-expanded", String(synergySuggestionsExpanded));
+  recommendMore.textContent = synergySuggestionsExpanded ? "Show top three picks" : "Show up to six picks";
+  recommendationStatus.textContent = !team.length
+    ? "Add a champion in another role first to find researched partners."
+    : !qualified.length
+      ? `No reviewed ${role} synergy picks for these teammates yet. Browse the champion pool to choose manually; generic matches are not used to fill this list.`
+      : `Showing ${picks.length} of ${qualified.length} qualifying ${role} picks${roleState[role] ? ` to replace ${roleState[role]}` : ""}. Native roles only. ${qualified.length < 3 ? "Fewer than three qualify; no filler picks." : ""}`;
 
   recommendations.innerHTML = picks
-    .map((result) => `
+    .map((result, index) => `
       <article class="recommendation-card">
         <div class="recommendation-card__top">
           ${getChampionIconMarkup(result.candidate, "small")}
           <div>
             <h3>${escapeHtml(result.candidate.name)}</h3>
-            <span>${escapeHtml(result.category)} &middot; ${escapeHtml(result.role)} &middot; ${escapeHtml(getDifficulty(result.candidate))}</span>
+            <span>${escapeHtml(result.role)} &middot; ${escapeHtml(getDifficulty(result.candidate))} &middot; ${result.partners} researched partner${result.partners === 1 ? "" : "s"}</span>
           </div>
-          <strong>${result.score}</strong>
+          <strong aria-label="Suggestion ${index + 1}">#${index + 1}</strong>
         </div>
-        ${result.roleFit.offRole ? `<span class="off-role-note">${escapeHtml(result.roleFit.label)}</span>` : ""}
-        <p>${escapeHtml(result.reasons.join(" ") || result.candidate.beginner)}</p>
+        ${renderSynergyEvidence(result.links[0])}
+        ${result.links.length > 1 ? `<details class="synergy-other"><summary>${result.links.length - 1} more researched connection${result.links.length > 2 ? "s" : ""}</summary>${result.links.slice(1).map(renderSynergyEvidence).join("")}</details>` : ""}
+        <details class="synergy-fit"><summary>Modeled team fit</summary><p>${escapeHtml(result.reasons.join(" "))} These broad traits help order qualifying picks; they do not prove the combo or a win-rate advantage.</p></details>
         <div class="recommendation-card__actions">
           <button class="text-button" type="button" data-recommend="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(result.role)}">Add pick</button>
           <button class="icon-button icon-button--small" type="button" data-details="${escapeHtml(result.candidate.name)}" aria-label="View ${escapeHtml(result.candidate.name)} details">i</button>

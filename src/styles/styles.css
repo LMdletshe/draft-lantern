@@ -864,8 +864,9 @@ select:focus {
 
 .recommendation-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  align-items: start;
 }
 
 .recommendation-card {
@@ -874,7 +875,38 @@ select:focus {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.025);
   padding: 12px;
+  overflow-wrap: anywhere;
 }
+
+.recommendation-basis,
+.recommendation-status {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.recommendation-status { color: var(--gold); }
+.recommendation-more { margin-top: 14px; }
+.recommendation-more[hidden] { display: none; }
+.synergy-link { min-width: 0; margin: 12px 0; }
+.synergy-link h4 { margin: 0 0 8px; font-size: 0.85rem; }
+.synergy-link p,
+.synergy-fit p,
+.synergy-sources li { color: var(--muted); font-size: 0.78rem; line-height: 1.6; }
+.synergy-link p { margin: 8px 0; }
+.synergy-sources,
+.synergy-other,
+.synergy-fit { min-width: 0; margin: 12px 0; font-size: 0.78rem; }
+.synergy-sources summary,
+.synergy-other summary,
+.synergy-fit summary { cursor: pointer; color: var(--gold); line-height: 1.6; }
+.synergy-sources ul { padding-left: 18px; }
+.synergy-sources li { margin: 10px 0; }
+.synergy-sources li span { display: block; margin-top: 4px; }
+.synergy-sources a { color: var(--gold); }
+.synergy-other .synergy-link { padding-top: 10px; border-top: 1px solid var(--line); }
+.recommendation-card__actions { flex-wrap: wrap; }
 
 .recommendation-card__top {
   display: grid;
