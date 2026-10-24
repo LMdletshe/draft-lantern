@@ -54,11 +54,14 @@ rune plans remain available with offline labels, and failed icons use initials.
   option to expand to six qualifying picks. Each needs a reviewed ability
   interaction with a remaining teammate and includes a play, limitation and
   official sources. Short lists are never padded with generic tag matches.
-- The initial synergy library has 79 reviewed pairs across 56 champions and
-  81 ability references (Riot Data Dragon 16.21.1, reviewed 2026-10-24).
+- The synergy library has 195 reviewed pairs across all 173 champions and
+  239 ability references (Riot Data Dragon 16.21.1, reviewed 2026-10-24).
+  Each of the 263 supported champion-role combinations has at least one
+  usable partner in another role; not every arbitrary pair or open role is covered.
   This is tactical analysis rather than measured pair win rates. Native-role
   eligibility, researched connections, selected goal and modeled team needs
-  determine the shortlist. See `docs/TEAM_SYNERGY_RESEARCH.md` for coverage.
+  determine the shortlist. See `docs/TEAM_SYNERGY_RESEARCH.md` for the contract
+  and `docs/TEAM_SYNERGY_COVERAGE.md` for the per-champion audit.
 - Scores general comp traits like engage, frontline, damage, pick tools, poke,
   peel, and scaling.
 - Detects broad comp archetypes and explains the team's game plan in beginner

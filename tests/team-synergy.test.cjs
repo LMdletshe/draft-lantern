@@ -12,7 +12,7 @@ function setup() {
     'src/features/draft-analysis.js','src/features/favorite-builder.js','src/features/team-synergy.js',
     'src/features/recommendations.js','src/features/matchups.js'].forEach(file => vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file}));
   vm.runInContext('hydrateBuiltInChampionProfiles()',context);
-  return { context, ...vm.runInContext('({ teamSynergyResearch, champions, getChampion, inspectSynergyRule, getTeamSynergyShortlist, getResearchedTeamRecommendations, renderSynergyEvidence })',context) };
+  return { context, ...vm.runInContext('({ teamSynergyResearch, champions, getChampion, inspectSynergyRule, getTeamSynergyShortlist, getResearchedTeamRecommendations, getTeamSynergyCoverage, renderSynergyEvidence })',context) };
 }
 
 test('every pair has distinct real champions, reviewed ability sources, a plan and limits', () => {
@@ -97,7 +97,7 @@ test('replacing a role discards outgoing synergy and changing draft resets expan
   vm.runInContext(`
     var recommendRole={value:'Support',innerHTML:''}, recommendGoal={value:'balanced'};
     var recommendMore={hidden:false,setAttribute(){},textContent:''};
-    var recommendationStatus={textContent:''}, recommendations={innerHTML:''};
+    var recommendationStatus={textContent:''}, teamSynergyCoverage={textContent:''}, recommendations={innerHTML:''};
     roleState.ADC='Jinx'; renderRecommendations();
     synergySuggestionsExpanded=true; renderRecommendations();
   `,api.context);
@@ -108,4 +108,52 @@ test('replacing a role discards outgoing synergy and changing draft resets expan
   vm.runInContext("roleState.ADC=null; roleState.Top='Garen'; roleState.Mid='Orianna'; recommendRole.value='Mid'; renderRecommendations()",api.context);
   assert.equal(vm.runInContext('recommendations.innerHTML',api.context),'');
   assert.match(vm.runInContext('recommendationStatus.textContent',api.context),/No reviewed Mid/);
+});
+
+test('every champion and every supported role has a playable researched partner', () => {
+  const api = setup();
+  const coverage = api.getTeamSynergyCoverage();
+  assert.equal(coverage.championsTotal,173);
+  assert.equal(coverage.championsCovered,coverage.championsTotal);
+  assert.equal(coverage.rolesTotal,263);
+  assert.equal(coverage.rolesCovered,coverage.rolesTotal);
+  assert.equal(coverage.pairs,api.teamSynergyResearch.rules.length);
+  for (const anchor of api.champions) for (const anchorRole of anchor.roles) {
+    const partner = api.teamSynergyResearch.rules.filter(r=>r.champions.includes(anchor.name))
+      .map(r=>api.getChampion(r.champions.find(n=>n!==anchor.name)))
+      .find(p=>p.roles.some(role=>role!==anchorRole));
+    assert.ok(partner,`${anchor.name} as ${anchorRole}`);
+    const fillRole = partner.roles.find(role=>role!==anchorRole);
+    const picks = api.getTeamSynergyShortlist([anchor],fillRole,{limit:6});
+    assert.ok(picks.length && picks.length<=6,`${anchor.name} as ${anchorRole} -> ${fillRole}`);
+    picks.forEach(p=>assert.ok(p.candidate.name!==anchor.name && p.candidate.roles.includes(fillRole)));
+  }
+});
+
+test('coverage falls when research becomes unusable or an unreviewed champion appears', () => {
+  const api = setup();
+  vm.runInContext("getChampion('Garen').official.spells[0].description='Changed movement and silence'",api.context);
+  let coverage = api.getTeamSynergyCoverage();
+  assert.ok(coverage.championsCovered<coverage.championsTotal);
+  assert.ok(coverage.rolesCovered<coverage.rolesTotal);
+  vm.runInContext("champions.push({name:'Unreviewed future champion',roles:['Mid']})",api.context);
+  coverage = api.getTeamSynergyCoverage();
+  assert.equal(coverage.championsTotal,174);
+  assert.ok(coverage.championsCovered<174);
+  assert.equal(api.getTeamSynergyShortlist([api.getChampion('Unreviewed future champion')],'Support').length,0);
+});
+
+test('full-roster plans preserve important form, timing and damage limitations', () => {
+  const api = setup(); const find=id=>api.teamSynergyResearch.rules.find(r=>r.id===id);
+  assert.ok(find('naafiri-shen').refs.includes('Naafiri:R'));
+  assert.ok(!find('naafiri-shen').refs.includes('Naafiri:W'));
+  assert.match(find('samira-alistar').risk,/slow alone/);
+  assert.match(find('kindred-taric').risk,/Both teams/);
+  assert.match(find('bard-caitlyn').risk,/cannot be damaged during stasis/);
+  assert.match(find('mel-nidalee').play,/center/);
+  assert.match(find('shaco-lux').why,/already armed/);
+  assert.match(find('seraphine-ashe').risk,/already slowed/);
+  assert.match(find('mordekaiser-jarvaniv').risk,/Realm of Death separates/);
+  assert.ok(api.teamSynergyResearch.abilities['Karma:Q'].tooltip);
+  assert.ok(api.teamSynergyResearch.abilities['Xayah:W'].tooltip);
 });

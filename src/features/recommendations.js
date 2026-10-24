@@ -144,6 +144,8 @@ function renderRecommendations() {
     goalId, excludedNames: new Set(selectedChampions().map((champion) => champion.name))
   });
   const picks = qualified.slice(0, synergySuggestionsExpanded ? 6 : 3);
+  const coverage = getTeamSynergyCoverage();
+  teamSynergyCoverage.textContent = `Reviewed partners for ${coverage.championsCovered}/${coverage.championsTotal} champions and ${coverage.rolesCovered}/${coverage.rolesTotal} supported champion roles · ${coverage.pairs} usable pairs. This does not cover every possible pair or guarantee a pick for every open role.`;
   recommendMore.hidden = qualified.length <= 3;
   recommendMore.setAttribute("aria-expanded", String(synergySuggestionsExpanded));
   recommendMore.textContent = synergySuggestionsExpanded ? "Show top three picks" : "Show up to six picks";

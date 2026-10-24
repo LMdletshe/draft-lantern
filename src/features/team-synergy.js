@@ -50,6 +50,29 @@ function getTeamSynergyShortlist(team, role, options = {}) {
   return getResearchedTeamRecommendations(team, role, options).slice(0, limit);
 }
 
+function getTeamSynergyCoverage() {
+  const partners = new Map(champions.map((champion) => [champion.name, new Set()]));
+  let pairs = 0;
+  for (const rule of teamSynergyResearch.rules) {
+    const [a, b] = rule.champions.map(getChampion);
+    if (!a || !b || !inspectSynergyRule(rule).usable
+      || !a.roles.some((aRole) => b.roles.some((bRole) => aRole !== bRole))) continue;
+    partners.get(a.name).add(b.name);
+    partners.get(b.name).add(a.name);
+    pairs += 1;
+  }
+  let championsCovered = 0;
+  let rolesCovered = 0;
+  for (const champion of champions) {
+    const coveredRoles = champion.roles.filter((role) => [...partners.get(champion.name)]
+      .some((name) => getChampion(name).roles.some((partnerRole) => partnerRole !== role)));
+    rolesCovered += coveredRoles.length;
+    if (coveredRoles.length === champion.roles.length) championsCovered += 1;
+  }
+  return { championsTotal: champions.length, championsCovered,
+    rolesTotal: champions.reduce((sum, champion) => sum + champion.roles.length, 0), rolesCovered, pairs };
+}
+
 function renderSynergyEvidence(link) {
   const { rule, inspection, ally } = link;
   return `<section class="synergy-link">

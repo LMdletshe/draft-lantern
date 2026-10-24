@@ -15,6 +15,7 @@ const recommendRole = document.querySelector("#recommendRole");
 const recommendGoal = document.querySelector("#recommendGoal");
 const recommendMore = document.querySelector("#recommendMore");
 const recommendationStatus = document.querySelector("#recommendationStatus");
+const teamSynergyCoverage = document.querySelector("#teamSynergyCoverage");
 const allowOffRolePicks = document.querySelector("#allowOffRolePicks");
 const recommendations = document.querySelector("#recommendations");
 const savedDrafts = document.querySelector("#savedDrafts");
