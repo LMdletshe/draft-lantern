@@ -1,7 +1,7 @@
 // Reviewed Riot Data Dragon roster for complete, dated offline use.
 const bundledChampionRoster = {
-  "version": "16.21.1",
-  "reviewedDate": "2026-10-22",
+  "version": "16.22.1",
+  "reviewedDate": "2026-11-04",
   "champions": [
     {
       "id": "Aatrox",
@@ -342,7 +342,8 @@ const bundledChampionRoster = {
         {
           "id": "FerociousHowl",
           "name": "Unbreakable Will",
-          "description": "Alistar lets out a wild roar, removing all crowd control effects on himself, and reducing incoming physical and magical damage for the duration."
+          "description": "Alistar lets out a wild roar, removing all crowd control effects on himself, and reducing incoming physical and magical damage for the duration.",
+          "tooltip": "Alistar immediately cleanses all <status>Disabling</status> effects and takes {{ rdamagereduction }}% reduced damage for {{ rduration }} seconds.{{ spellmodifierdescriptionappend }}"
         }
       ]
     },
@@ -2533,7 +2534,8 @@ const bundledChampionRoster = {
         {
           "id": "GalioW",
           "name": "Shield of Durand",
-          "description": "Galio charges a defensive stance, moving slowly. Upon releasing the charge, Galio will taunt and damage nearby enemies."
+          "description": "Galio charges a defensive stance, moving slowly. Upon releasing the charge, Galio will taunt and damage nearby enemies.",
+          "tooltip": "<spellPassive>Passive:</spellPassive> Galio gains a <shield>{{ totalpassiveshield }} Magic Shield</shield> after not taking damage for {{ passiveshieldooctimer }} seconds.<br /><br /><charge>Begin Charging:</charge> Galio reduces incoming magic damage by {{ magicdamagereduction }} and incoming physical damage by {{ physicaldamagereduction }} and <status>Slows</status> himself by {{ selfslowpercent }}%.<br /><br /><release>Release:</release> Galio <status>Taunts</status> enemy champions for between {{ ccdurationmin }} to {{ ccdurationmax }} seconds, deals between <magicDamage>{{ mintotaldamage }}</magicDamage> and <magicDamage>{{ maxtotaldamage }} magic damage</magicDamage>, and refreshes the damage reduction for {{ drlingerduration }} seconds. Taunt duration, damage, and range increase with charge time.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "GalioE",
@@ -3569,7 +3571,8 @@ const bundledChampionRoster = {
         {
           "id": "JaxE",
           "name": "Counter Strike",
-          "description": "Jax's combat prowess allows him to dodge all incoming attacks for a short duration and then quickly counterattack, stunning all surrounding enemies."
+          "description": "Jax's combat prowess allows him to dodge all incoming attacks for a short duration and then quickly counterattack, stunning all surrounding enemies.",
+          "tooltip": "Jax enters a defensive stance for up to {{ dodgeduration }} seconds, dodging incoming Attacks and taking {{ aoedamagereduction }}% less damage from area of effect Abilities. After {{ dodgeduration }} seconds or <recast>Recasting</recast>, Jax deals <magicDamage>{{ totaldamage }} + {{ percenthealthdamage }}% max Health magic damage</magicDamage> and <status>Stuns</status> nearby enemies for {{ stunduration }} second. <br /><br />The damage is increased by {{ percentincreasedperdodge*100 }}% per Attack dodged, up to a maximum of <magicDamage>{{ maxdamage }} + {{ maxpercenthealthdamage }}% max Health</magicDamage>.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "JaxR",
@@ -4040,7 +4043,8 @@ const bundledChampionRoster = {
         {
           "id": "KarmaQ",
           "name": "Inner Flame",
-          "description": "Karma sends forth a ball of spirit energy that explodes and deals damage upon hitting an enemy unit. Mantra Bonus: In addition to the explosion, Mantra increases the destructive power of her Inner Flame, creating a cataclysm which deals damage after a short delay."
+          "description": "Karma sends forth a ball of spirit energy that explodes and deals damage upon hitting an enemy unit. Mantra Bonus: In addition to the explosion, Mantra increases the destructive power of her Inner Flame, creating a cataclysm which deals damage after a short delay.",
+          "tooltip": "Karma fires a blast of energy, dealing <magicDamage>{{ totaldamage }} magic damage</magicDamage> to the first target hit and surrounding enemies, and <status>Slowing</status> them by {{ slowamount*-100 }}% for {{ slowduration }} seconds.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "KarmaSpiritBind",
@@ -5424,7 +5428,8 @@ const bundledChampionRoster = {
         {
           "id": "Landslide",
           "name": "Ground Slam",
-          "description": "Malphite slams the ground, sending out a shockwave that deals magic damage based on his Armor and reduces the Attack Speed of enemies for a short duration."
+          "description": "Malphite slams the ground, sending out a shockwave that deals magic damage based on his Armor and reduces the Attack Speed of enemies for a short duration.",
+          "tooltip": "Malphite slams the ground, dealing <magicDamage>{{ edamagecalc }} magic damage</magicDamage> and reducing <attackSpeed>Attack Speed by {{ asreduction }}%</attackSpeed> for {{ duration }} seconds.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "UFSlash",
@@ -5657,13 +5662,13 @@ const bundledChampionRoster = {
         "difficulty": 5
       },
       "stats": {
-        "hp": 630,
-        "hpperlevel": 99,
-        "mp": 480,
-        "mpperlevel": 28,
+        "hp": 590,
+        "hpperlevel": 107,
+        "mp": 455,
+        "mpperlevel": 38,
         "movespeed": 330,
         "armor": 21,
-        "armorperlevel": 5.2,
+        "armorperlevel": 5.4,
         "spellblock": 30,
         "spellblockperlevel": 1.3,
         "attackrange": 550,
@@ -5673,9 +5678,9 @@ const bundledChampionRoster = {
         "mpregenperlevel": 0.9,
         "crit": 0,
         "critperlevel": 0,
-        "attackdamage": 54,
+        "attackdamage": 52,
         "attackdamageperlevel": 0,
-        "attackspeedperlevel": 2.5,
+        "attackspeedperlevel": 2.75,
         "attackspeed": 0.625
       },
       "image": {
@@ -5688,13 +5693,14 @@ const bundledChampionRoster = {
       "spells": [
         {
           "id": "MelQ",
-          "name": "Radiant Volley",
-          "description": "Mel fires a barrage of projectiles that explode around a target location, dealing damage repeatedly to enemies within the area."
+          "name": "Radiant Barrage",
+          "description": "Mel unleashes a volley of projectiles that deal magic damage. Hitting an enemy champion reduces this ability's cooldown."
         },
         {
           "id": "MelW",
           "name": "Rebuttal",
-          "description": "Mel forms a barrier around herself that reflects enemy projectiles back at the attacker, prevents her from taking damage, and grants her movement speed."
+          "description": "Mel unleashes a refraction nova that destroys enemy projectiles it collides with, retaliating with magic missiles. The nova also shields and grants move speed to Mel and her allies.",
+          "tooltip": "Mel unleashes a refraction nova that destroys enemy projectiles it collides with, retaliating for <magicDamage>{{ initialdamage }} magic damage</magicDamage>. Subsequent retaliations against the same enemy deal <magicDamage>{{ subsequentdamage }} magic damage</magicDamage> instead.<br /><br />The nova also grants <shield>{{ totalshield }} Shield</shield> and <speed>{{ totalms }} Move Speed</speed> for {{ buffduration }}s to Mel and her allies.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "MelE",
@@ -5773,7 +5779,8 @@ const bundledChampionRoster = {
         {
           "id": "MilioR",
           "name": "Breath of Life",
-          "description": "Milio unleashes a wave of soothing flames that heal and remove crowd control effects from allies in range."
+          "description": "Milio unleashes a wave of soothing flames that heal and remove crowd control effects from allies in range.",
+          "tooltip": "Milio unleashes a wave of soothing flames on nearby ally champions, cleansing <status>Disabling</status> and <status>Immobilizing</status> effects, restoring <healing>{{ healcalc }} Health</healing>, and granting {{ tenacityamount*100 }}% Tenacity for {{ tenacityduration }} seconds.{{ spellmodifierdescriptionappend }}"
         }
       ]
     },
@@ -6177,7 +6184,8 @@ const bundledChampionRoster = {
         {
           "id": "NasusW",
           "name": "Wither",
-          "description": "Nasus ages an enemy champion, decelerating their Move Speed and Attack Speed over time."
+          "description": "Nasus ages an enemy champion, decelerating their Move Speed and Attack Speed over time.",
+          "tooltip": "Nasus ages a champion, <status>Slowing</status> them by {{ slowbase }}%, increasing to {{ maxslowtooltiponly }}% over {{ duration }} seconds. Their <attackSpeed>Attack Speed</attackSpeed> is also reduced by {{ attackspeedslowmult*100 }}% of the <status>Slow</status>.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "NasusE",
@@ -8108,7 +8116,8 @@ const bundledChampionRoster = {
         {
           "id": "SeraphineE",
           "name": "Beat Drop",
-          "description": "Seraphine deals damage and impairs the movement of enemies in a line."
+          "description": "Seraphine deals damage and impairs the movement of enemies in a line.",
+          "tooltip": "Seraphine unleashes a heavy soundwave, dealing <magicDamage>{{ finaldamage }} magic damage</magicDamage> to enemies in a line and <status>Slowing</status> them by {{ slowvalue }}% for {{ slowduration }} seconds.<br /><br />Enemies that are already <status>Slowed</status> are <status>Rooted</status> instead, and <status>Immobilized</status> enemies are <status>Stunned</status>.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "SeraphineR",
@@ -9457,7 +9466,7 @@ const bundledChampionRoster = {
         "mpregenperlevel": 0.8,
         "crit": 0,
         "critperlevel": 0,
-        "attackdamage": 56,
+        "attackdamage": 54,
         "attackdamageperlevel": 0,
         "attackspeedperlevel": 3.5,
         "attackspeed": 0.625
@@ -10474,7 +10483,7 @@ const bundledChampionRoster = {
       },
       "stats": {
         "hp": 600,
-        "hpperlevel": 100,
+        "hpperlevel": 105,
         "mp": 405,
         "mpperlevel": 45,
         "movespeed": 330,
@@ -10722,7 +10731,8 @@ const bundledChampionRoster = {
         {
           "id": "WarwickE",
           "name": "Primal Howl",
-          "description": "Warwick gains damage reduction for 2.5 seconds. At the end, or if re-activated, he howls, causing nearby enemies to flee for 1 second."
+          "description": "Warwick gains damage reduction for 2.5 seconds. At the end, or if re-activated, he howls, causing nearby enemies to flee for 1 second.",
+          "tooltip": "Warwick gains {{ dramount }}% damage reduction for {{ drduration }} seconds. After it ends, Warwick howls, <status>Fearing</status> nearby enemies for {{ fearduration }} second. Warwick can <recast>Recast</recast> to end the Ability early.{{ spellmodifierdescriptionappend }}"
         },
         {
           "id": "WarwickR",

@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, "..");
 
 function setup() {
   const context = vm.createContext({ console });
-  ["src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/ability-evidence.js", "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"]
+  ["src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/counter-six-options.js", "src/data/ability-evidence.js", "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"]
     .forEach((file) => vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, { filename: file }));
   // Exercise the actual production offline roster and role assignments. The
   // fixture does not invent champion identities or infer roles from the rules.
@@ -16,7 +16,7 @@ function setup() {
     riotData.version = counterMatchupReview.patch;
     riotData.status = 'ready';
   `, context);
-  return { context, ...vm.runInContext("({ champions, roles, runeIndex, bundledRuneCatalogue, bundledChampionRoster, counterMatchupRules, counterRunePlans, reviewedAbilityEvidence, getChampion, getMatchupRunePage, renderMatchupRunes, loadRuneCatalogue, inspectCounterRule, getResearchedCounters, getResearchedExplorerMatchups, getCounterCoverage, getEvidenceBackedDifficulty, renderResearchedCounterCard })", context) };
+  return { context, ...vm.runInContext("({ champions, roles, runeIndex, bundledRuneCatalogue, bundledChampionRoster, counterMatchupRules, counterRunePlans, reviewedAbilityEvidence, getChampion, getMatchupRunePage, renderMatchupRunes, loadRuneCatalogue, inspectCounterRule, getResearchedCounters, getResearchedExplorerMatchups, getCounterCoverage, getEvidenceBackedDifficulty, renderResearchedCounterCard, getMatchupSuggestions })", context) };
 }
 
 function validatePage(page, index) {
@@ -63,7 +63,7 @@ test("every researched direction, role and alternative has references and a lega
   assert.equal(usedPlans.size, Object.keys(api.counterRunePlans).length);
 });
 
-test("every bundled champion and supported role has at least three distinct native picks and legal runes", () => {
+test("every bundled champion and supported role has at least six distinct native picks and legal runes", () => {
   const api = setup();
   assert.equal(api.champions.length, api.bundledChampionRoster.champions.length);
   assert.equal(api.champions.length, 173);
@@ -71,7 +71,8 @@ test("every bundled champion and supported role has at least three distinct nati
     assert.ok(api.getResearchedExplorerMatchups(enemy).length, `${enemy.name} needs an Explorer plan`);
     for (const role of enemy.roles) {
       const answers = api.getResearchedCounters(enemy, role, role, false);
-      assert.ok(new Set(answers.map(answer => answer.candidate.name)).size >= 3, `${enemy.name} as ${role} needs three distinct native picks`);
+      assert.ok(new Set(answers.map(answer => answer.candidate.name)).size >= 6, `${enemy.name} as ${role} needs six distinct native picks`);
+      assert.equal(api.getMatchupSuggestions(enemy, role, role).length, 6, `${enemy.name} as ${role} must display six`);
       for (const answer of answers) validatePage(api.getMatchupRunePage(answer.candidate, enemy, role, answer.rule), api.runeIndex);
     }
   }
@@ -80,7 +81,7 @@ test("every bundled champion and supported role has at least three distinct nati
   assert.equal(coverage.rolesTotal, 263);
   assert.equal(coverage.rolesCovered, coverage.rolesTotal);
   assert.equal(coverage.entries, api.counterMatchupRules.length);
-  assert.equal(coverage.minimumPicks, 3);
+  assert.equal(coverage.minimumPicks, 6);
 });
 
 test("offline startup retains every champion and marks the kit as a dated reference", () => {
@@ -94,12 +95,17 @@ test("offline startup retains every champion and marks the kit as a dated refere
   assert.doesNotMatch(api.renderResearchedCounterCard(row, 0), /Kit checked/);
 });
 
-test("coverage drops when a lane has fewer than three usable picks or a new champion appears", () => {
+test("coverage drops when a lane has fewer than six usable picks or a new champion appears", () => {
   const api = setup();
-  api.getChampion("Milio").official.spells[3].description = "A changed ability without the reviewed cleanse.";
-  const remaining = api.getResearchedCounters(api.getChampion("Renata Glasc"), "Support", "Support");
-  assert.ok(remaining.length < 3);
-  assert.ok(!remaining.some(answer => answer.candidate.name === "Milio"));
+  const enemy = api.champions.find(champion => champion.roles.some(role => api.getResearchedCounters(champion, role, role).length === 6));
+  const role = enemy.roles.find(role => api.getResearchedCounters(enemy, role, role).length === 6);
+  const removed = api.getResearchedCounters(enemy, role, role)[0];
+  const evidence = api.reviewedAbilityEvidence.abilities[removed.rule.refs[0]];
+  const actual = evidence.slot === "P" ? removed.candidate.official.passive : removed.candidate.official.spells["QWER".indexOf(evidence.slot)];
+  actual.description = "Changed mechanic requiring review";
+  const remaining = api.getResearchedCounters(enemy, role, role);
+  assert.ok(remaining.length < 6);
+  assert.ok(!remaining.some(answer => answer.candidate.name === removed.candidate.name));
   assert.ok(api.getCounterCoverage().rolesCovered < 263);
   const coverage = api.getCounterCoverage();
   api.champions.push({ name: "Future unreviewed champion", roles: ["Support"], tags: [], scores: {} });
@@ -111,12 +117,12 @@ test("coverage drops when a lane has fewer than three usable picks or a new cham
 test("Malphite results require a researched direction; high generic scores cannot add Aatrox", () => {
   const api = setup();
   const results = api.getResearchedCounters(api.getChampion("Malphite"), "Top", "Top", true);
-  assert.equal(results.length, 3);
+  assert.ok(results.length >= 6);
   assert.equal(results[0].candidate.name, "Sylas");
   assert.ok(!results.some((result) => result.candidate.name === "Aatrox"));
   assert.equal(api.getMatchupRunePage(api.getChampion("Aatrox"), api.getChampion("Malphite"), "Top"), null);
   assert.equal(results[0].rule.kind, "direct");
-  assert.equal(results[1].rule.kind, "conditional");
+  assert.ok(results.some(result => result.rule.kind === "conditional"));
 });
 
 test("unknown pairs and reverse directions never receive a generic rune page", () => {
@@ -187,6 +193,35 @@ test("researched exceptions prevent misleading blanket counter claims", () => {
   assert.match(find("Vayne", "Garen").runeWhy, /above 60% health/);
 });
 
+test("current Mel entries use projectile destruction and a shield rather than old reflection immunity", () => {
+  const api = setup();
+  const find = (candidate, enemy) => api.counterMatchupRules.find(r=>r.candidate===candidate&&r.enemy===enemy);
+  assert.match(find('Mel','Ahri').why,/destroy.*Charm/);
+  assert.match(find("Vel'Koz",'Mel').why,/beam.*nova does not destroy/);
+  assert.match(find('Morgana','Mel').risk,/nova can destroy Dark Binding/);
+  assert.doesNotMatch(find("Vel'Koz",'Mel').why,/prevents Mel from taking damage/);
+  assert.equal(api.reviewedAbilityEvidence.patch,'16.22.1');
+});
+
+test("changed full mechanic tooltip withholds affected plans and missing tooltips use dated labels", () => {
+  const api = setup();
+  const rule=api.counterMatchupRules.find(r=>r.candidate==='Galio'&&r.refs.includes('Galio:W'));
+  api.getChampion('Galio').official.spells[1].tooltip='A changed defensive effect';
+  assert.equal(api.inspectCounterRule(rule).usable,false);
+  delete api.getChampion('Galio').official.spells[1].tooltip;
+  assert.equal(api.inspectCounterRule(rule).status,'reviewed-snapshot');
+});
+
+test("six-option source pages mention only runes actually selected in their plan", () => {
+  const api = setup();
+  const runes=api.bundledRuneCatalogue.trees.flatMap(t=>t.slots.flat());
+  const newIds=vm.runInContext('new Set(sixPickCounterRules.map(rule=>rule.id))',api.context);
+  for(const rule of api.counterMatchupRules.filter(rule=>newIds.has(rule.id))) {
+    const ids=api.counterRunePlans[rule.runePlan].slice(0,2).flat();
+    for(const rune of runes) if(rule.runeWhy.includes(rune.name)) assert.ok(ids.includes(rune.id),`${rule.id}: ${rune.name}`);
+  }
+});
+
 test("resource and champion restrictions are respected by researched pages", () => {
   const api = setup();
   for (const rule of api.counterMatchupRules.filter((rule) => ["Rumble", "Yasuo", "Shen"].includes(rule.candidate))) {
@@ -201,7 +236,7 @@ test("catalogue failures keep a dated fallback", async () => {
   const api = setup();
   api.context.fetch = async () => { throw new Error("offline"); };
   await api.loadRuneCatalogue("future");
-  assert.match(api.renderMatchupRunes(api.getChampion("Sylas"), api.getChampion("Malphite"), "Top"), /Bundled rune snapshot 16\.21\.1/);
+  assert.match(api.renderMatchupRunes(api.getChampion("Sylas"), api.getChampion("Malphite"), "Top"), /Bundled rune snapshot 16\.22\.1/);
 });
 
 test("live rune effects are loaded and changed effects require review", async () => {

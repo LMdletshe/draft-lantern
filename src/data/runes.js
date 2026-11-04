@@ -1,6 +1,6 @@
-// Official rune identities and effects from the reviewed patch; used as a dated offline fallback.
+// Official rune identities and effects from the reviewed patch; dated offline fallback.
 const bundledRuneCatalogue = {
-  "version": "16.21.1",
+  "version": "16.22.1",
   "trees": [
     {
       "id": 8100,

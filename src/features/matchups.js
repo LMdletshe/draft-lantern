@@ -551,7 +551,7 @@ function renderCounters() {
     return;
   }
   const role = allyRole.value || enemyRole.value;
-  const candidates = getResearchedCounters(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked)).slice(0, 3);
+  const candidates = getMatchupSuggestions(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked));
   const coverage = getCounterCoverage();
   const waitingReview = counterMatchupRules.filter((rule) => rule.enemy === enemy.name && rule.role === role && rule.enemyRole === enemyRole.value && !inspectCounterRule(rule).usable).length;
   matchupOverview.innerHTML = `
@@ -569,6 +569,9 @@ function renderCounters() {
     : `<p class="empty-state">${waitingReview ? "The ability evidence changed and these entries need review." : "No researched counter entry is available for this champion and role combination yet. Choose your matching lane role for the researched lane answers."} This does not mean the champion has no counters. ${riotData.status !== "ready" ? `Using the dated ${escapeHtml(bundledChampionRoster.version)} full-roster snapshot.` : ""}</p>`;
 }
 
+function getMatchupSuggestions(enemy, role, enemyPosition, includeOffRole = false) {
+  return getResearchedCounters(enemy, role, enemyPosition, includeOffRole).slice(0, counterMatchupReview.minimumPicks);
+}
 
 function showChampionDetails(name) {
   const champion = getChampion(name);
