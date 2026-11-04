@@ -13,8 +13,9 @@ function inspectCounterRule(rule) {
       : champion?.official?.spells?.["QWER".indexOf(reviewed.slot)];
     if (!actual) continue;
     if (normalizeCounterEvidence(actual.description) !== normalizeCounterEvidence(reviewed.description)
-      || actual.name !== reviewed.name) changed.push(ref);
-    else current += 1;
+      || actual.name !== reviewed.name
+      || (reviewed.tooltip && actual.tooltip && normalizeCounterEvidence(actual.tooltip) !== normalizeCounterEvidence(reviewed.tooltip))) changed.push(ref);
+    else if (!reviewed.tooltip || actual.tooltip) current += 1;
   }
   return {
     usable: changed.length === 0,
@@ -114,7 +115,8 @@ function renderCounterInteraction(result) {
       <p>${escapeHtml(getCounterEvidenceStatus(inspection))}. Tactical review: ${escapeHtml(counterMatchupReview.patch)} (${escapeHtml(counterMatchupReview.date)}). Official abilities support the interaction; the counter plan is authored analysis, not Riot matchup statistics.</p>
       <ul>${uniqueList(rule.refs).map((ref) => {
         const ability = reviewedAbilityEvidence.abilities[ref];
-        return `<li><a href="${escapeHtml(ability.source)}" target="_blank" rel="noopener noreferrer">${escapeHtml(ability.champion)} ${escapeHtml(ability.slot)} · ${escapeHtml(ability.name)}</a><span>${escapeHtml(ability.description)}</span></li>`;
+        const tooltip = ability.tooltip ? stripRiotText(ability.tooltip).replace(/\{\{[^}]*\}\}/g, "[game value]") : "";
+        return `<li><a href="${escapeHtml(ability.source)}" target="_blank" rel="noopener noreferrer">${escapeHtml(ability.champion)} ${escapeHtml(ability.slot)} · ${escapeHtml(ability.name)}</a><span>${escapeHtml(ability.description)}</span>${tooltip ? `<span>Full mechanic text: ${escapeHtml(tooltip)}</span>` : ""}</li>`;
       }).join("")}</ul>
     </details>`;
 }

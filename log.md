@@ -145,3 +145,10 @@ Automated daily check-ins will appear below.
 - 2026-11-01 14:17:07 UTC daily check-in
 - 2026-11-02 17:05:49 UTC daily check-in
 - 2026-11-03 15:10:24 UTC daily check-in
+
+## 2026-11-04 - Six researched Matchups picks per supported lane
+
+- Expanded Matchups from 855 to 2,193 explicit directed entries. All 173 champions and 263 supported champion-role combinations have at least six distinct native same-role answers, with legal rune pages, named ability interactions, execution windows and limits. The finder shows up to six directly; cross-role queries remain limited to explicitly reviewed entries.
+- Reviewed against Riot Data Dragon 16.22.1, including 581 referenced abilities and 180 rune-page configurations. Updated Mel's Current Rebuttal plans for projectile destruction and shielding rather than the older reflection and immunity behavior. Required full tooltip mechanics now participate in drift checks and source disclosures.
+- Direct mechanic denial precedes conditional defensive, spacing and trade plans. These are authored tactical answers, not six guaranteed hard counters or measured matchup win-rate rankings. Changed evidence is withheld and coverage declines without filler.
+- All 32 regression tests pass. The live source and six-pick coverage audit reports no errors. Browser checks verified six Aatrox and Yuumi answers, linked ability evidence and full rune pages, adding the sixth Yuumi answer (Nautilus) into Support, desktop spacing and a readable single-column sixth card with expanded runes at 390px. Native dropdown interaction was used after the browser automation select helper timed out; the real UI completed correctly.
