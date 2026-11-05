@@ -626,6 +626,14 @@
   min-width: 0;
 }
 
+.matchup-empty, .counter-ability-tools { grid-column: 1 / -1; min-width: 0; }
+.counter-ability-tools { border-top: 1px solid var(--line); padding-top: 12px; }
+.counter-ability-tools > summary { min-height: 44px; padding: 12px 0; color: var(--blue); cursor: pointer; font-weight: 800; }
+.counter-ability-tools > summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.counter-ability-tools > p, .ability-tool-limit, .matchup-outcome p { color: var(--muted); font-size: 0.78rem; line-height: 1.55; overflow-wrap: anywhere; }
+.matchup-outcome { min-width: 0; margin-top: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(101,169,221,0.06); }
+.matchup-outcome > strong { color: var(--blue); font-size: 0.8rem; }
+
 .matchup-overview {
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);

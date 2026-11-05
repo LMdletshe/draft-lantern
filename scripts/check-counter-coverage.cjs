@@ -9,8 +9,8 @@ const context = vm.createContext({ console, fetch });
 const files = [
   "src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js",
   "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js",
-  "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/counter-six-options.js", "src/data/ability-evidence.js",
-  "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"
+  "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/counter-six-options.js", "src/data/ability-evidence.js", "src/data/matchup-outcomes.js",
+  "src/features/counter-evidence.js", "src/features/matchup-outcomes.js", "src/features/runes.js", "src/features/matchups.js"
 ];
 for (const file of files) vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, { filename: file });
 vm.runInContext("hydrateBuiltInChampionProfiles()", context);
@@ -67,25 +67,27 @@ async function main() {
     for (const enemy of champions) {
       if (!getResearchedExplorerMatchups(enemy).length) errors.push({id:enemy.name, reason:'No outgoing Explorer plan'});
       for (const role of enemy.roles) {
-        const answers = getResearchedCounters(enemy, role, role);
-        if (new Set(answers.map(answer => answer.candidate.name)).size < counterMatchupReview.minimumPicks) errors.push({id:enemy.name+':'+role, reason:'Fewer than '+counterMatchupReview.minimumPicks+' distinct native same-role picks'});
-        rows.push({enemy:enemy.name, role, answers:answers.map(a=>({champion:a.candidate.name, type:a.rule.kind, plan:a.rule.runePlan}))});
+        const answers = getMatchupSuggestions(enemy, role, role);
+        if (answers.length > counterMatchupReview.maximumPicks || new Set(answers.map(a=>a.candidate.name)).size !== answers.length) errors.push({id:enemy.name+':'+role, reason:'Shortlist exceeds cap or contains duplicate picks'});
+        if (answers.some(answer=>!getMatchupOutcomeEvidence(answer.rule))) errors.push({id:enemy.name+':'+role,reason:'Unqualified pick entered the outcome shortlist'});
+        rows.push({enemy:enemy.name, role, tools:getResearchedCounters(enemy,role,role).length, answers:answers.map(a=>({champion:a.candidate.name, type:a.rule.kind, plan:a.rule.runePlan}))});
       }
     }
     return { reviewPatch:counterMatchupReview.patch, loadedPatch:riotData.version || bundledChampionRoster.version,
       source:riotData.status === 'ready' ? 'live Riot Data Dragon' : 'bundled dated roster',
-      coverage:getCounterCoverage(), abilityReferences:Object.keys(reviewedAbilityEvidence.abilities).length,
+      coverage:getCounterCoverage(), abilityTools:getAbilityInteractionCoverage(), abilityReferences:Object.keys(reviewedAbilityEvidence.abilities).length,
       runePlans:Object.keys(counterRunePlans).length, rows, errors };
   })()`, context);
   if (writeReport && !audit.errors.length) {
     const lines = ["# Counter coverage audit", "",
       `Research patch: **${audit.reviewPatch}**. Validated with **${audit.source} ${audit.loadedPatch}**.`, "",
-      `Coverage: **${audit.coverage.championsCovered}/${audit.coverage.championsTotal} champions**, **${audit.coverage.rolesCovered}/${audit.coverage.rolesTotal} supported role combinations**, **${audit.coverage.entries} directed entries**, **${audit.runePlans} full rune plans**, and **${audit.abilityReferences} referenced official abilities**.`, "",
-      `Every row has at least ${audit.coverage.minimumPicks} distinct native same-role picks, each with a legal rune page. Both mechanical counters and conditional lane plans are included. These are not six guaranteed winning matchups. The order reflects authored interaction type and priority, not measured win rates. Cross-role team-context entries are additional to this table.`, "",
+      `Outcome shortlist: **${audit.coverage.entries} qualifying pairings** across **${audit.coverage.rolesCovered}/${audit.coverage.rolesTotal} supported enemy lanes**, with up to **${audit.coverage.maximumPicks} picks** and no forced minimum.`, "",
+      `Separate ability library: **${audit.abilityTools.entries} usable interactions**, **${audit.runePlans} legal rune configurations**, and **${audit.abilityReferences} referenced official abilities**. Tools do not qualify a pick as a winning matchup.`, "",
+      "Shortlist entries pass the dated all-ranks outcome screen and current ability/rune gates. They remain statistical associations, not certified hard counters. A zero is an evidence shortfall, not proof that no counter exists.", "",
       "Only explicitly researched pairings receive pages. Coverage of every champion does not mean every arbitrary champion pair, off-role matchup, or future patch has been reviewed.", "",
       "Reproduce with `node scripts/check-counter-coverage.cjs --live --write-report`. The command reports drift and never rewrites ability evidence or matchup decisions.", "",
-      "| Enemy | Role | Researched answers |", "| --- | --- | --- |",
-      ...audit.rows.map(row => `| ${row.enemy} | ${row.role} | ${row.answers.map(answer => `${answer.champion} (${answer.type === 'direct' ? 'mechanical' : 'conditional'})`).join('; ')} |`), ""
+      "| Enemy | Role | Stat-supported picks | Ability plans including qualified picks |", "| --- | --- | --- | ---: |",
+      ...audit.rows.map(row => `| ${row.enemy} | ${row.role} | ${row.answers.map(answer => answer.champion).join('; ') || 'None qualifying'} | ${row.tools} |`), ""
     ];
     fs.writeFileSync(path.join(root, "docs/counter-coverage.md"), lines.join("\n"));
   }

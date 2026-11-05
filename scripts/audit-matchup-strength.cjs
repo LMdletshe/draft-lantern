@@ -100,7 +100,7 @@ fs.writeFileSync(path.join(destination,'entries.csv'),[columns.map(csv).join(','
 const labels={'persistent-strong-signal':'S','provisional-strong-signal':'s','modest-positive-signal':'+','contradictory-current-signal':'X','no-positive-current-signal':'0','insufficient-current-sample':'?','missing-current-sample':'—'};
 fs.writeFileSync(path.join(destination,'lanes.md'),[
   '# All supported lanes — frozen evidence screen','',
-  'Scope: pooled all ranks, source ranked mode, current patch 16.22 with separate 16.21 context. These are the actual six displayed picks, not a replacement recommendation list. Read [the audit](README.md) before interpreting the codes.','',
+  'Scope: pooled all ranks, source ranked mode, current patch 16.22 with separate 16.21 context. These are the actual displayed picks from the audited runtime, not a replacement recommendation list. Read the matching audit report before interpreting the codes.','',
   '**S** = strong current/positive previous screen; **s** = strong current only; **+** = modest positive current signal; **X** = 1,000+ games and normalized effect at least one point against the pick; **0** = other non-positive current result at 1,000+ games; **?** = fewer than 1,000 published games; **—** = no matching published current sample. No code certifies a hard counter.','',
   '| Enemy | App-supported role | Displayed picks 1 → 6 and screen | Published current opponent rows |','| --- | --- | --- | ---: |',
   ...cohorts.map(c=>`| ${c.enemy} | ${c.role} | ${c.displayed.map(r=>`${r.slot}. ${r.candidate} **${labels[r.status]}**`).join('; ')} | ${c.currentPublishedMatchupRows} |`),''].join('\n'));

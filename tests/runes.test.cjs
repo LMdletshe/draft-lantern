@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, "..");
 
 function setup() {
   const context = vm.createContext({ console });
-  ["src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/counter-six-options.js", "src/data/ability-evidence.js", "src/features/counter-evidence.js", "src/features/runes.js", "src/features/matchups.js"]
+  ["src/data/app-config.js", "src/data/champions.js", "src/data/roster-snapshot.js", "src/core/utils.js", "src/data/runes.js", "src/data/counter-matchups.js", "src/data/counter-roster.js", "src/data/counter-options.js", "src/data/counter-six-options.js", "src/data/ability-evidence.js", "src/data/matchup-outcomes.js", "src/features/counter-evidence.js", "src/features/matchup-outcomes.js", "src/features/runes.js", "src/features/matchups.js"]
     .forEach((file) => vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, { filename: file }));
   // Exercise the actual production offline roster and role assignments. The
   // fixture does not invent champion identities or infer roles from the rules.
@@ -16,7 +16,7 @@ function setup() {
     riotData.version = counterMatchupReview.patch;
     riotData.status = 'ready';
   `, context);
-  return { context, ...vm.runInContext("({ champions, roles, runeIndex, bundledRuneCatalogue, bundledChampionRoster, counterMatchupRules, counterRunePlans, reviewedAbilityEvidence, getChampion, getMatchupRunePage, renderMatchupRunes, loadRuneCatalogue, inspectCounterRule, getResearchedCounters, getResearchedExplorerMatchups, getCounterCoverage, getEvidenceBackedDifficulty, renderResearchedCounterCard, getMatchupSuggestions })", context) };
+  return { context, ...vm.runInContext("({ champions, roles, runeIndex, bundledRuneCatalogue, bundledChampionRoster, counterMatchupRules, counterRunePlans, reviewedAbilityEvidence, getChampion, getMatchupRunePage, renderMatchupRunes, loadRuneCatalogue, inspectCounterRule, getResearchedCounters, getResearchedExplorerMatchups, getCounterCoverage, getAbilityInteractionCoverage, getEvidenceBackedDifficulty, renderResearchedCounterCard, getMatchupSuggestions, getMatchupOutcomeEvidence, matchupOutcomeSnapshot })", context) };
 }
 
 function validatePage(page, index) {
@@ -63,7 +63,7 @@ test("every researched direction, role and alternative has references and a lega
   assert.equal(usedPlans.size, Object.keys(api.counterRunePlans).length);
 });
 
-test("every bundled champion and supported role has at least six distinct native picks and legal runes", () => {
+test("all supported lanes retain legal ability tools; outcome picks have no forced minimum", () => {
   const api = setup();
   assert.equal(api.champions.length, api.bundledChampionRoster.champions.length);
   assert.equal(api.champions.length, 173);
@@ -72,22 +72,29 @@ test("every bundled champion and supported role has at least six distinct native
     for (const role of enemy.roles) {
       const answers = api.getResearchedCounters(enemy, role, role, false);
       assert.ok(new Set(answers.map(answer => answer.candidate.name)).size >= 6, `${enemy.name} as ${role} needs six distinct native picks`);
-      assert.equal(api.getMatchupSuggestions(enemy, role, role).length, 6, `${enemy.name} as ${role} must display six`);
+      const shortlist = api.getMatchupSuggestions(enemy, role, role);
+      assert.ok(shortlist.length <= 6);
+      assert.ok(shortlist.every(result => api.getMatchupOutcomeEvidence(result.rule)));
       for (const answer of answers) validatePage(api.getMatchupRunePage(answer.candidate, enemy, role, answer.rule), api.runeIndex);
     }
   }
-  const coverage = api.getCounterCoverage();
+  const coverage = api.getAbilityInteractionCoverage();
   assert.equal(coverage.championsCovered, 173);
   assert.equal(coverage.rolesTotal, 263);
   assert.equal(coverage.rolesCovered, coverage.rolesTotal);
   assert.equal(coverage.entries, api.counterMatchupRules.length);
-  assert.equal(coverage.minimumPicks, 6);
+  const qualified = api.getCounterCoverage();
+  assert.equal(qualified.maximumPicks, 6);
+  assert.equal(qualified.entries, 23);
+  assert.ok(qualified.rolesCovered < qualified.rolesTotal);
+  assert.equal(api.getMatchupSuggestions(api.getChampion('Aatrox'),'Top','Top').length,0);
+  assert.ok(api.getMatchupSuggestions(api.getChampion('Garen'),'Top','Top').length > 0);
 });
 
 test("offline startup retains every champion and marks the kit as a dated reference", () => {
   const api = setup();
   vm.runInContext("riotData.status='offline'; riotData.version=null;", api.context);
-  const coverage = api.getCounterCoverage();
+  const coverage = api.getAbilityInteractionCoverage();
   assert.equal(coverage.championsCovered, api.champions.length);
   const row = api.getResearchedCounters(api.getChampion("Locke"), "Jungle", "Jungle")[0];
   assert.equal(row.inspection.status, "reviewed-snapshot");
@@ -95,7 +102,7 @@ test("offline startup retains every champion and marks the kit as a dated refere
   assert.doesNotMatch(api.renderResearchedCounterCard(row, 0), /Kit checked/);
 });
 
-test("coverage drops when a lane has fewer than six usable picks or a new champion appears", () => {
+test("ability-tool coverage is separate from qualified outcome coverage", () => {
   const api = setup();
   const enemy = api.champions.find(champion => champion.roles.some(role => api.getResearchedCounters(champion, role, role).length === 6));
   const role = enemy.roles.find(role => api.getResearchedCounters(enemy, role, role).length === 6);
@@ -106,7 +113,7 @@ test("coverage drops when a lane has fewer than six usable picks or a new champi
   const remaining = api.getResearchedCounters(enemy, role, role);
   assert.ok(remaining.length < 6);
   assert.ok(!remaining.some(answer => answer.candidate.name === removed.candidate.name));
-  assert.ok(api.getCounterCoverage().rolesCovered < 263);
+  assert.ok(api.getAbilityInteractionCoverage().entries < api.counterMatchupRules.length);
   const coverage = api.getCounterCoverage();
   api.champions.push({ name: "Future unreviewed champion", roles: ["Support"], tags: [], scores: {} });
   assert.equal(api.getCounterCoverage().championsTotal, 174);
@@ -132,6 +139,86 @@ test("unknown pairs and reverse directions never receive a generic rune page", (
   assert.equal(api.getResearchedCounters(enemy, "Mid", "Mid", true).length, 0);
   assert.equal(api.getMatchupRunePage(api.getChampion("Lissandra"), enemy, "Mid"), null);
   assert.match(api.renderMatchupRunes(api.getChampion("Lissandra"), enemy, "Mid"), /No researched rune plan/);
+});
+
+test('qualified picks exclude contradictory and changed-patch options without filling empty lanes',()=>{
+  const api=setup();
+  assert.equal(api.getMatchupSuggestions(api.getChampion('Aatrox'),'Top','Top').length,0);
+  const picks=api.getMatchupSuggestions(api.getChampion('Garen'),'Top','Top').map(r=>r.candidate.name);
+  assert.ok(picks.includes('Tryndamere'));
+  assert.ok(!picks.includes('Jax'));
+  assert.ok(!picks.includes('Kayle'),'changed champion patch remains pending');
+  assert.equal(api.getMatchupSuggestions(api.getChampion('Malphite'),'Jungle','Top').length,0);
+  assert.ok(api.getResearchedCounters(api.getChampion('Aatrox'),'Top','Top').length>0,'ability tools remain separate');
+});
+
+test('outcome evidence fails closed for wrong scope, source, sample, direction and ability drift',()=>{
+  const edits=[
+    api=>{api.matchupOutcomeSnapshot.rank='emerald_plus';},
+    api=>{api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'].current.games=999;},
+    api=>{api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'].current.candidateDelta2=-2;},
+    api=>{api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'].source='https://example.org/fake';},
+    api=>{api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'].source=api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'].source.replace('vslane=top','vslane=jungle');},
+    api=>{api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'].current.candidate='Jax';},
+    api=>{api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'].patchCautions=['Pending review'];},
+    api=>{api.getChampion('Sylas').official.spells[3].description='Changed ultimate';},
+    api=>{vm.runInContext("riotData.version='16.23.1'",api.context);}
+  ];
+  for(const edit of edits){
+    const api=setup(),rule=api.counterMatchupRules.find(r=>r.id==='Sylas:Malphite:Top:Top');
+    assert.ok(api.getMatchupOutcomeEvidence(rule));
+    edit(api);
+    assert.equal(api.getMatchupOutcomeEvidence(rule),null);
+    assert.ok(!api.getMatchupSuggestions(api.getChampion('Malphite'),'Top','Top').some(r=>r.candidate.name==='Sylas'));
+  }
+});
+
+test('shortlist caps actual qualifying results at six and ranks normalized effect before authored priority',()=>{
+  const api=setup(),template=api.matchupOutcomeSnapshot.records['Sylas:Malphite:Top:Top'];
+  const rules=api.getResearchedCounters(api.getChampion('Aatrox'),'Top','Top').map(r=>r.rule);
+  assert.ok(rules.length>6,'fixture must exercise a genuine overflow');
+  rules.forEach((rule,index)=>{
+    // Synthetic outcome observations exercise cap/ordering; never shipped as research.
+    const record=JSON.parse(JSON.stringify(template));
+    Object.assign(record,{candidate:rule.candidate,enemy:rule.enemy,role:rule.role,enemyRole:rule.enemyRole,refs:rule.refs,runePlan:rule.runePlan,
+      source:'https://lolalytics.com/lol/aatrox/counters/?lane=top&vslane=top&tier=all&patch=16.22',
+      previousSource:'https://lolalytics.com/lol/aatrox/counters/?lane=top&vslane=top&tier=all&patch=16.21'});
+    for(const observation of [record.current,record.previous]) Object.assign(observation,{candidate:rule.candidate,games:5000,candidateWinRate:60,candidateDelta2:4+index});
+    api.matchupOutcomeSnapshot.records[rule.id]=record;
+  });
+  const picks=api.getMatchupSuggestions(api.getChampion('Aatrox'),'Top','Top');
+  assert.equal(picks.length,6);
+  const deltas=picks.map(p=>api.getMatchupOutcomeEvidence(p.rule).current.candidateDelta2);
+  assert.deepEqual(Array.from(deltas),[...deltas].sort((a,b)=>b-a));
+});
+
+test('empty outcome shortlist and conditional tools render in separate sections',()=>{
+  const api=setup();
+  const html=vm.runInContext(`
+    const enemyPick={value:'Aatrox'},enemyRole={value:'Top'},allyRole={value:'Top'},matchupOffRole={checked:false};
+    const matchupOverview={innerHTML:''},counterResults={innerHTML:''};
+    renderCounters(); counterResults.innerHTML;
+  `,api.context);
+  assert.match(html,/No pick meets the current evidence requirements/);
+  assert.match(html,/<details class="counter-ability-tools">/);
+  assert.doesNotMatch(html.split('<details class="counter-ability-tools">')[0],/Stat-supported pick/);
+  const qualified=vm.runInContext("enemyPick.value='Garen';renderCounters();counterResults.innerHTML",api.context);
+  const main=qualified.split('<details class="counter-ability-tools">')[0];
+  assert.match(main,/Tryndamere/);
+  assert.doesNotMatch(main,/<h3>Jax<\/h3>/);
+  assert.match(qualified,/Add conditional pick/);
+  assert.match(main,/dated snapshot/);
+  assert.match(main,/not statistically optimized/);
+});
+
+test('Olaf control tools explicitly cite and respect the Ragnarok exception',()=>{
+  const api=setup();
+  for(const candidate of ['Teemo','Nasus','Malphite']) {
+    const rule=api.counterMatchupRules.find(r=>r.candidate===candidate&&r.enemy==='Olaf');
+    assert.ok(rule.refs.includes('Olaf:R'));
+    assert.match(rule.why,/Ragnarok is unavailable or inactive/);
+    assert.match(rule.risk,/Ragnarok can remove or prevent/);
+  }
 });
 
 test("role and cross-role context are enforced", () => {

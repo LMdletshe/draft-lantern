@@ -69,9 +69,9 @@ rune plans remain available with offline labels, and failed icons use initials.
 - Flags composition risks such as one-sided damage, missing frontline, weak
   initiation, exposed carries, weak wave clear, slow early pressure, and short
   range. Open roles receive suggested fixes.
-- Shares the same researched counter entries between Matchups and Champion
-  Explorer. Direct mechanical counters and conditional lane answers have
-  separate labels; broad trait scores cannot create counter entries.
+- Separates stat-supported matchup picks from conditional ability tools in
+  Matchups and Champion Explorer. A shortlist contains up to six qualifying
+  picks, with no forced minimum; broad trait scores cannot qualify a pick.
 - Gives each researched matchup a complete rune plan: keystone, three primary
   runes, two secondary runes, and three stat shards. Expand **Matchup rune plan**
   for the opponent-specific reasoning, current rune effects, and any researched
@@ -171,26 +171,31 @@ Pair combos live in `pairSynergies`. Common role assignments live in
 
 ## Counter Research And Matchup Runes
 
-The purpose of Matchups is to identify specific counter interactions and choose
-runes that help execute them. The reviewed library contains **2,193 directed
-entries covering all 173 champions and all 263 supported champion-role
-combinations** on patch **16.22.1**. Every supported lane has at least **six
-distinct native same-role picks**, each with legal runes, and every champion
-has an outgoing Explorer plan. The finder shows up to six suggestions without
-a result-count dropdown.
-The coverage badge is calculated from usable entries and drops when evidence
-changes leave a lane with fewer than six usable picks, or a new champion
-has no reviewed answers. Results are ordered by
-authored interaction type and priority, not measured win rates or synthetic
-confidence. [The coverage audit](docs/counter-coverage.md) lists every role.
+Matchups shows **up to six stat-supported picks, with no minimum**. The dated
+all-ranks outcome snapshot currently qualifies **23 pairings across 21 of 263
+supported enemy lanes**. It requires 1,000+ games in each of two patches, a
+strong positive current normalized effect, positive historical evidence, no
+unresolved champion/item patch flag, and usable ability/rune evidence. Results
+sort by normalized effect, then sample size. These are pooled game-result
+associations, not certified hard counters or lane-win predictions.
 
-Full-roster coverage means each champion has researched answers. It does not
+The **2,193-entry ability library** still covers all 173 champions and 263
+app-supported champion-role combinations. These narrower plans appear in a
+separate collapsed section and do not fill the outcome shortlist. A lane with
+no qualifying pick says so explicitly. [The coverage audit](docs/counter-coverage.md)
+lists the two kinds of coverage separately; [the strength audit](docs/research/matchups-2026-11-05/README.md)
+explains why the earlier six-pick guarantee was removed.
+
+Ability-library coverage means each champion has authored tools, not a
+qualifying matchup pick. It does not
 assign a rune page to every arbitrary champion pair, off-role matchup, or
 future patch. Only explicitly researched directed pairings receive a plan.
 
 `src/data/counter-matchups.js`, `src/data/counter-roster.js`, and
 `src/data/counter-options.js` own the exact
 pairings and rune plans.
+`src/data/matchup-outcomes.js` stores the frozen outcome observations and
+`src/features/matchup-outcomes.js` enforces their scope, sample and patch gates.
 `src/data/ability-evidence.js` records the official ability text and source URLs
 used in review. `src/features/counter-evidence.js` checks the loaded kit text
 against that reference and supplies both counter views. A changed referenced
@@ -226,5 +231,5 @@ The counter library uses manually reviewed named interactions; Data Dragon
 supplies ability facts, not a matchup ranking. The separate S-to-D Champion
 Tier view, team scores, and draft comparisons remain Draft Lantern models based
 on roster attributes, role fit, and local rules. They do not establish that a
-champion is an exact counter. This app does not ingest champion matchup or rune
-win-rate datasets.
+champion is an exact counter. Matchups uses a dated champion-outcome snapshot;
+it has no live matchup feed or matchup-conditioned rune win-rate dataset.

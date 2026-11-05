@@ -177,8 +177,8 @@ function populateExplorerControls() {
   explorerRole.innerHTML = optionList(["All", ...roles], currentRole);
 
   const strengthOptions = [
-    ["all", "All researched answers"],
-    ["hard", "Direct counters"]
+    ["all", "All ability plans"],
+    ["hard", "Direct ability interactions"]
   ];
   const currentStrength = explorerStrength.value || "all";
   explorerStrength.innerHTML = strengthOptions
@@ -459,7 +459,7 @@ function renderChampionExplorer() {
         <p>${escapeHtml(champion.beginner)}</p>
       </div>
       <div class="explorer-profile__actions">
-        <span>${researchedCount} researched counter plan${researchedCount === 1 ? "" : "s"}</span>
+        <span>${researchedCount} ability plan${researchedCount === 1 ? "" : "s"}</span>
         ${champion.roles.map((role) => `<button class="text-button" type="button" data-explorer-pick="${escapeHtml(champion.name)}" data-role="${escapeHtml(role)}">Add as ${escapeHtml(role)}</button>`).join("")}
       </div>
     </div>
@@ -515,8 +515,8 @@ function renderChampionExplorer() {
 
   explorerCounterResults.innerHTML = `
     <div class="explorer-counter-heading">
-      <div><p class="eyebrow">Who ${escapeHtml(champion.name)} counters</p><h2>${matchups.length} researched answer${matchups.length === 1 ? "" : "s"}</h2></div>
-      <p>Named ability interactions and role-specific plans. Review ${escapeHtml(counterMatchupReview.patch)}; no matchup win-rate feed. ${getCounterCoverage().championsCovered}/${champions.length} loaded champions have at least ${counterMatchupReview.minimumPicks} researched picks against them in every supported role.</p>
+      <div><p class="eyebrow">${escapeHtml(champion.name)} ability interactions</p><h2>${matchups.length} ability plan${matchups.length === 1 ? "" : "s"}</h2></div>
+      <p>Ability tools are not whole-matchup recommendations. A stat-supported badge appears only when the dated all-ranks outcome evidence qualifies. Review ${escapeHtml(counterMatchupReview.patch)}.</p>
     </div>
     ${matchups.length
       ? `<div class="explorer-matchup-grid">${matchups.map((result, index) => renderResearchedCounterCard(result, index, true)).join("")}</div>`
@@ -525,20 +525,22 @@ function renderChampionExplorer() {
 }
 
 
-function renderResearchedCounterCard(result, index, explorer = false) {
+function renderResearchedCounterCard(result, index, explorer = false, toolOnly = false) {
   const shownChampion = explorer ? result.opponent : result.candidate;
+  const outcome = !toolOnly && getMatchupOutcomeEvidence(result.rule);
   return `<article class="${explorer ? "explorer-matchup-card" : "counter-card"}">
     <div class="counter-card__top">
       ${getChampionIconMarkup(shownChampion, "small")}
-      <div><span class="counter-card__rank">Researched answer ${index + 1}</span><h3>${escapeHtml(shownChampion.name)}</h3><small>${escapeHtml(result.rule.role)} vs ${escapeHtml(result.rule.enemyRole)}</small></div>
+      <div><span class="counter-card__rank">${outcome ? "Stat-supported pick" : "Ability tool only"} ${index + 1}</span><h3>${escapeHtml(shownChampion.name)}</h3><small>${escapeHtml(result.rule.role)} vs ${escapeHtml(result.rule.enemyRole)}</small></div>
     </div>
     <span class="difficulty-pill ${result.tier.className}">${escapeHtml(result.tier.label)}</span>
+    ${outcome ? renderMatchupOutcomeEvidence(result.rule) : '<p class="ability-tool-limit">This answers part of the kit. It has not qualified as a stat-supported matchup pick.</p>'}
     ${renderCounterInteraction(result)}
     ${renderMatchupRunes(result.candidate, result.opponent, result.rule.role, result.rule)}
     <div class="counter-card__actions">
       ${explorer
         ? `<button class="text-button" type="button" data-details="${escapeHtml(result.opponent.name)}">View ${escapeHtml(result.opponent.name)}</button>`
-        : `<button class="text-button" type="button" data-counter-pick="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(result.rule.role)}">Use in team</button><button class="icon-button icon-button--small" type="button" data-details="${escapeHtml(result.candidate.name)}" aria-label="View ${escapeHtml(result.candidate.name)} details">i</button>`}
+        : `<button class="text-button" type="button" data-counter-pick="${escapeHtml(result.candidate.name)}" data-role="${escapeHtml(result.rule.role)}">${outcome ? "Use in team" : "Add conditional pick"}</button><button class="icon-button icon-button--small" type="button" data-details="${escapeHtml(result.candidate.name)}" aria-label="View ${escapeHtml(result.candidate.name)} details">i</button>`}
     </div>
   </article>`;
 }
@@ -553,24 +555,27 @@ function renderCounters() {
   const role = allyRole.value || enemyRole.value;
   const candidates = getMatchupSuggestions(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked));
   const coverage = getCounterCoverage();
-  const waitingReview = counterMatchupRules.filter((rule) => rule.enemy === enemy.name && rule.role === role && rule.enemyRole === enemyRole.value && !inspectCounterRule(rule).usable).length;
+  const qualifiedIds = new Set(getQualifiedMatchupResults(enemy, role, enemyRole.value).map(result => result.rule.id));
+  const tools = getResearchedCounters(enemy, role, enemyRole.value, Boolean(matchupOffRole?.checked))
+    .filter(result => !qualifiedIds.has(result.rule.id)).slice(0, counterMatchupReview.maximumPicks);
   matchupOverview.innerHTML = `
     <div class="matchup-overview__enemy">
       ${getChampionIconMarkup(enemy, "small")}<div><span>Facing ${escapeHtml(enemy.name)} as enemy ${escapeHtml(enemyRole.value)}</span><strong>${escapeHtml(enemy.style)}</strong></div>
     </div>
     <div class="matchup-overview__notes">
-      <span><strong>Showing:</strong> ${candidates.length} researched ${escapeHtml(role)} answer${candidates.length === 1 ? "" : "s"}.</span>
-      <span><strong>Basis:</strong> Specific champion abilities, execution windows, and failure conditions. Direct mechanic denial is listed before conditional lane pressure; this is not a measured win-rate ranking.</span>
-      <span><strong>Coverage:</strong> ${coverage.championsCovered}/${coverage.championsTotal} champions · ${coverage.rolesCovered}/${coverage.rolesTotal} supported roles with ${coverage.minimumPicks}+ distinct picks · ${coverage.entries} usable directed entries. Tactical review ${escapeHtml(counterMatchupReview.patch)}.</span>
+      <span><strong>Showing:</strong> ${candidates.length} stat-supported ${escapeHtml(role)} pick${candidates.length === 1 ? "" : "s"}, up to ${coverage.maximumPicks}. No minimum is forced.</span>
+      <span><strong>Basis:</strong> Dated all-ranks game outcomes, a positive normalized matchup effect and usable ability/rune evidence. Sorted by normalized effect, then sample size. These are not certified hard counters or lane-win predictions.</span>
+      <span><strong>Evidence coverage:</strong> ${coverage.entries} qualifying pairings across ${coverage.rolesCovered}/${coverage.rolesTotal} supported enemy lanes. Ability tools are listed separately and do not count as qualifying picks.</span>
       <span><strong>Loaded data:</strong> ${escapeHtml(getRiotDataSourceLabel())}.</span>
     </div>`;
-  counterResults.innerHTML = candidates.length
-    ? `${role === enemyRole.value && candidates.length < coverage.minimumPicks ? `<p class="empty-state">Only ${candidates.length} of the ${coverage.minimumPicks} reviewed picks are currently usable. Changed ability or rune evidence is withheld pending review.</p>` : ""}${candidates.map((result, index) => renderResearchedCounterCard(result, index)).join("")}`
-    : `<p class="empty-state">${waitingReview ? "The ability evidence changed and these entries need review." : "No researched counter entry is available for this champion and role combination yet. Choose your matching lane role for the researched lane answers."} This does not mean the champion has no counters. ${riotData.status !== "ready" ? `Using the dated ${escapeHtml(bundledChampionRoster.version)} full-roster snapshot.` : ""}</p>`;
+  counterResults.innerHTML = (candidates.length
+    ? candidates.map((result, index) => renderResearchedCounterCard(result, index)).join("")
+    : `<p class="empty-state matchup-empty">No pick meets the current evidence requirements for this champion and role. Missing samples, patch changes or unusable ability/rune evidence can prevent qualification. This does not mean the champion has no counters.</p>`)
+    + (tools.length ? `<details class="counter-ability-tools"><summary>Conditional ability tools · ${tools.length} options</summary><p>These narrower interactions may help a specific play. They are not recommended as proven winning matchups and do not fill the stat-supported shortlist.</p><div class="counter-results">${tools.map((result,index) => renderResearchedCounterCard(result,index,false,true)).join("")}</div></details>` : '');
 }
 
-function getMatchupSuggestions(enemy, role, enemyPosition, includeOffRole = false) {
-  return getResearchedCounters(enemy, role, enemyPosition, includeOffRole).slice(0, counterMatchupReview.minimumPicks);
+function getMatchupSuggestions(enemy, role, enemyPosition) {
+  return getQualifiedMatchupResults(enemy, role, enemyPosition).slice(0, counterMatchupReview.maximumPicks);
 }
 
 function showChampionDetails(name) {

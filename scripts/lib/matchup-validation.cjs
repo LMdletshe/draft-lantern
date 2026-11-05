@@ -6,7 +6,7 @@ const crypto = require('node:crypto');
 const lanes = { Top:'top', Jungle:'jungle', Mid:'middle', ADC:'bottom', Support:'support' };
 function loadLibrary(root) {
   const context = vm.createContext({console});
-  for (const file of ['src/data/app-config.js','src/data/champions.js','src/data/roster-snapshot.js','src/core/utils.js','src/data/runes.js','src/data/counter-matchups.js','src/data/counter-roster.js','src/data/counter-options.js','src/data/counter-six-options.js','src/data/ability-evidence.js','src/features/counter-evidence.js','src/features/runes.js','src/features/matchups.js']) {
+  for (const file of ['src/data/app-config.js','src/data/champions.js','src/data/roster-snapshot.js','src/core/utils.js','src/data/runes.js','src/data/counter-matchups.js','src/data/counter-roster.js','src/data/counter-options.js','src/data/counter-six-options.js','src/data/ability-evidence.js','src/data/matchup-outcomes.js','src/features/counter-evidence.js','src/features/matchup-outcomes.js','src/features/runes.js','src/features/matchups.js']) {
     vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'), context, {filename:file});
   }
   vm.runInContext('hydrateBuiltInChampionProfiles()',context);
