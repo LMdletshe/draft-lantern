@@ -108,7 +108,7 @@ function renderMatchupRunes(champion, enemy, requestedRole, rule = null) {
     <summary>${renderRuneIcon(keystone)}<span><strong>Matchup rune plan</strong><span>${escapeHtml(keystone.name)} + ${escapeHtml(secondaryName)}</span></span><span class="matchup-runes__toggle" aria-hidden="true">+</span></summary>
     <div class="matchup-runes__body">
       <p class="matchup-runes__context">${escapeHtml(champion.name)} as ${escapeHtml(page.role)} vs ${escapeHtml(enemy.name)}</p>
-      <h4>Why this page for this opponent</h4>
+      <h4>Authored rune reasoning · not statistically optimized</h4>
       <p class="matchup-runes__reason">${escapeHtml(page.rule.runeWhy)}</p>
       ${renderRunePageChoices(page)}
       ${page.alternative?.page?.available ? `<details class="counter-sources matchup-runes__alternative-page"><summary>Alternative · ${escapeHtml(runeIndex.get(page.alternative.page.primary[0]).name)}</summary><p>${escapeHtml(page.alternative.why)}</p>${renderRunePageChoices(page.alternative.page)}</details>` : ""}

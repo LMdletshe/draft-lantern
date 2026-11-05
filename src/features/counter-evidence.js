@@ -24,7 +24,7 @@ function inspectCounterRule(rule) {
   };
 }
 
-function getCounterCoverage() {
+function getAbilityInteractionCoverage() {
   const usable = counterMatchupRules.filter((rule) => getChampion(rule.candidate) && getChampion(rule.enemy)
     && inspectCounterRule(rule).usable && buildResearchedRunePage(rule.runePlan, rule)?.available);
   const answers = new Map();
@@ -35,15 +35,13 @@ function getCounterCoverage() {
     if (!answers.has(key)) answers.set(key, new Set());
     answers.get(key).add(rule.candidate);
   }
-  const minimumPicks = counterMatchupReview.minimumPicks;
-  const covered = new Set([...answers].filter(([, picks]) => picks.size >= minimumPicks).map(([key]) => key));
+  const covered = new Set([...answers].filter(([, picks]) => picks.size > 0).map(([key]) => key));
   return {
     championsTotal: champions.length,
     championsCovered: champions.filter((champion) => champion.roles.every((role) => covered.has(`${champion.name}:${role}`))).length,
     rolesTotal: champions.reduce((count, champion) => count + champion.roles.length, 0),
     rolesCovered: champions.reduce((count, champion) => count + champion.roles.filter((role) => covered.has(`${champion.name}:${role}`)).length, 0),
-    entries: usable.length,
-    minimumPicks
+    entries: usable.length
   };
 }
 
@@ -67,8 +65,8 @@ function makeResearchedCounterResult(rule) {
     candidate, opponent, rule, inspection,
     roleFit: getRoleFit(candidate, rule.role),
     tier: rule.kind === "direct"
-      ? { key: "hard", label: "Direct mechanic counter", className: "is-hard" }
-      : { key: "conditional", label: "Conditional lane answer", className: "is-edge" }
+      ? { key: "interaction", label: "Direct ability interaction", className: "is-edge" }
+      : { key: "conditional", label: "Conditional ability tool", className: "is-edge" }
   };
 }
 

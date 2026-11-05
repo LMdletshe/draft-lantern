@@ -1,0 +1,20 @@
+{
+  "checkedDate": "2026-11-05",
+  "command": "node scripts/check-counter-coverage.cjs --live",
+  "exitCode": 0,
+  "reviewPatch": "16.22.1",
+  "loadedPatch": "16.22.1",
+  "source": "live Riot Data Dragon",
+  "coverage": {
+    "championsTotal": 173,
+    "championsCovered": 173,
+    "rolesTotal": 263,
+    "rolesCovered": 263,
+    "entries": 2193,
+    "minimumPicks": 6
+  },
+  "abilityReferences": 581,
+  "runePlans": 180,
+  "errors": [],
+  "limitation": "Source text, required tooltips, authored roles and rune legality only; this does not validate champion matchup advantage or optimal rune outcomes."
+}
