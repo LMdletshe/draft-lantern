@@ -1,5 +1,12 @@
 # Counter research contract
 
+**Validation update, 2026-11-05:** the [all-ranks strength audit](research/matchups-2026-11-05/README.md)
+does not support interpreting six-pick mechanical coverage as six validated
+counter recommendations. It found negative and under-supported suggestions in
+both the original library and the expansion. The current runtime still uses
+the mechanical eligibility and ordering described below; numeric strength
+screens and tactical review findings are audit evidence, not a deployed fix.
+
 Matchups and the Champion Explorer counter cards exist to answer a concrete
 question: which champion ability answers this opponent's ability, and which
 runes help execute that plan in the selected role?

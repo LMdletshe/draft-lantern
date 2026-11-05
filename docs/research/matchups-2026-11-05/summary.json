@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-05",
+  "retrievedFrom": "2026-11-05T06:13:06.737Z",
+  "retrievedThrough": "2026-11-05T06:21:51.783Z",
+  "rank": "all",
+  "region": "all source-supported regions",
+  "mode": "source ranked mode",
+  "criteria": {
+    "minimumCurrentGames": 1000,
+    "strongRawWinRate": 53,
+    "strongNormalizedDelta2": 3,
+    "rawWilsonZ": 1.96,
+    "minimumPreviousGames": 1000,
+    "previousRawWinRate": 50,
+    "previousNormalizedDelta2": 1,
+    "negativeNormalizedDelta2": -1
+  },
+  "currentPatch": "16.22",
+  "previousPatch": "16.21",
+  "source": "LoLalytics public counters pages",
+  "sourceCommit": "72a84e3d49b71fd52cdd93e04721771a517f765c",
+  "entries": 2193,
+  "originalEntries": 855,
+  "expansionEntries": 1338,
+  "champions": 173,
+  "roleCohorts": 263,
+  "sourcePages": 526,
+  "publishedMatchupRows": 34458,
+  "currentRulesWithPublishedSample": 1496,
+  "previousRulesWithPublishedSample": 2143,
+  "statusesAllEntries": {
+    "insufficient-current-sample": 1198,
+    "persistent-strong-signal": 30,
+    "modest-positive-signal": 102,
+    "missing-current-sample": 689,
+    "no-positive-current-signal": 93,
+    "cross-role-team-context": 8,
+    "contradictory-current-signal": 71,
+    "provisional-strong-signal": 2
+  },
+  "displayedEntries": 1578,
+  "statusesDisplayed": {
+    "insufficient-current-sample": 833,
+    "persistent-strong-signal": 24,
+    "modest-positive-signal": 79,
+    "missing-current-sample": 519,
+    "no-positive-current-signal": 71,
+    "contradictory-current-signal": 50,
+    "provisional-strong-signal": 2
+  },
+  "originalLibraryStatuses": {
+    "insufficient-current-sample": 443,
+    "persistent-strong-signal": 18,
+    "modest-positive-signal": 65,
+    "missing-current-sample": 265,
+    "no-positive-current-signal": 31,
+    "cross-role-team-context": 8,
+    "contradictory-current-signal": 25
+  },
+  "expansionStatuses": {
+    "insufficient-current-sample": 755,
+    "contradictory-current-signal": 46,
+    "no-positive-current-signal": 62,
+    "modest-positive-signal": 37,
+    "missing-current-sample": 424,
+    "persistent-strong-signal": 12,
+    "provisional-strong-signal": 2
+  },
+  "firstThreeStatuses": {
+    "insufficient-current-sample": 411,
+    "persistent-strong-signal": 16,
+    "missing-current-sample": 259,
+    "modest-positive-signal": 56,
+    "no-positive-current-signal": 26,
+    "contradictory-current-signal": 20,
+    "provisional-strong-signal": 1
+  },
+  "addedDisplaySlotsStatuses": {
+    "modest-positive-signal": 23,
+    "insufficient-current-sample": 422,
+    "missing-current-sample": 260,
+    "persistent-strong-signal": 8,
+    "no-positive-current-signal": 45,
+    "contradictory-current-signal": 30,
+    "provisional-strong-signal": 1
+  },
+  "families": {
+    "mobility-before-impact": 183,
+    "control-prevention-or-removal": 82,
+    "damage-mitigation": 220,
+    "untargetability-or-mist": 250,
+    "specific-other-interaction": 108,
+    "projectile-defense": 198,
+    "shared-death-prevention": 48,
+    "attack-denial": 161,
+    "attack-speed-reduction": 88
+  },
+  "cohortsWithSixPersistentStrongSignals": 0,
+  "cohortsWithNoPublishedCurrentRows": 17,
+  "certifiedHardCounters": 0,
+  "empiricallyOptimizedRunePages": 0
+}
