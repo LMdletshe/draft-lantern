@@ -1,4 +1,6 @@
 .vercel/
 .env
-.env.local
+.env.*
+!.env.example
+/dist/
 assets/rift-map.png
