@@ -8,6 +8,8 @@ Drafting asks players to weigh several decisions at once. A pick has a role, a l
 
 The project began as a self-directed experiment in using AI to turn a personal idea into a working app. League drafting gave that experiment a practical problem to solve. It also gave me a space to learn how recommendation logic, source evidence, interface design, and limits in the underlying data affect the advice a tool can responsibly show.
 
+Link to live page: https://lol-helper30.vercel.app/
+
 ## The product question
 
 How can a player compare picks and understand the reasoning behind them without treating every recommendation as a guaranteed counter?
